@@ -31,3 +31,4 @@ jobs:
           projectId: jakipot
           target: jakipot-win
           channelId: live
+          firebaseToolsVersion: 15.34.0
