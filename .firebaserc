@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "jakipot"
+  },
+  "targets": {
+    "jakipot": {
+      "hosting": {
+        "jakipot-win": [
+          "jakipot-win"
+        ]
+      }
+    }
+  }
+}
