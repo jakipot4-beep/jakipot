@@ -22,6 +22,9 @@
         .error-msg { color: #ef4444; font-size: 13px; font-weight: 600; text-align: center; margin-top: 15px; min-height: 18px; }
         .register-link { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 20px; font-weight: 500; }
         .register-link a { color: var(--cyan); text-decoration: none; font-weight: 700; }
+        
+        /* 🛑 PROOF OF UPDATE */
+        .version-tag { text-align: center; font-size: 11px; color: #10b981; margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -34,6 +37,9 @@
             <div class="error-msg" id="error-msg"></div>
         </form>
         <div class="register-link">Don't have an account? <a href="register.html">Register here</a></div>
+        
+        <!-- 🛑 THIS PROVES THE CODE IS UPDATED -->
+        <div class="version-tag">Login v3.0 (Debug Mode)</div>
     </div>
 
     <script type="module">
@@ -71,19 +77,18 @@
                 
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
-                    
-                    // 🛑 BULLETPROOF LOGIC: Force role to lowercase to avoid "Admin" vs "admin" typos
                     const userRole = userData.role ? userData.role.toLowerCase() : 'user';
                     
+                    // 🛑 DEBUG ALERT: This will pop up on your screen!
+                    alert("SUCCESS! Logged in.\n\nDatabase says your role is: " + userRole + "\n\nClick OK to be redirected.");
+
                     if (userRole === 'admin') {
-                        // Redirect to Admin Dashboard
                         window.location.replace('admin-dashboard.html');
                     } else {
-                        // Redirect to Normal User Home
                         window.location.replace('home.html');
                     }
                 } else {
-                    errorDiv.innerText = "User data not found. Please contact support.";
+                    errorDiv.innerText = "User data not found in database.";
                     btn.disabled = false; btn.innerText = "LOGIN";
                 }
 
