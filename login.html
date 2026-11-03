@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - Jakipot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #040b16; --bg-card: #0f172a; --bg-elevated: #1e293b;
+            --cyan: #00D9FF; --emerald: #10b981; --text-white: #ffffff;
+            --text-muted: #8b9bb4; --border-light: rgba(255, 255, 255, 0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { 
+            background: var(--bg-deep); color: var(--text-white); min-height: 100vh; 
+            display: flex; justify-content: center; align-items: center; padding: 20px;
+            background-image: radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.1) 0%, transparent 50%);
+        }
+        .card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 24px; padding: 35px 25px; width: 100%; max-width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .logo { font-size: 28px; font-weight: 900; text-align: center; margin-bottom: 25px; }
+        .logo span { color: var(--cyan); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
+        .form-input { width: 100%; padding: 15px; border-radius: 12px; background: var(--bg-elevated); border: 1px solid var(--border-light); color: var(--white); font-size: 15px; outline: none; transition: 0.2s; }
+        .form-input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 217, 255, 0.2); }
+        .btn-submit { width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--cyan); color: #000; font-size: 16px; font-weight: 900; cursor: pointer; margin-top: 15px; transition: 0.2s; }
+        .btn-submit:active { transform: scale(0.98); }
+        .btn-submit:disabled { background: #334155; color: var(--text-muted); cursor: not-allowed; }
+        .error-msg { color: #ef4444; font-size: 13px; font-weight: 600; text-align: center; margin-top: 15px; min-height: 18px; }
+        .register-link { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 20px; font-weight: 500; }
+        .register-link a { color: var(--cyan); text-decoration: none; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="logo">🐦 JAKI<span>POT</span></div>
+        
+        <form id="login-form">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="login-email" class="form-input" placeholder="john@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required>
+            </div>
+            
+            <button type="submit" id="submit-btn" class="btn-submit">LOGIN</button>
+            <div class="error-msg" id="error-msg"></div>
+        </form>
+        
+        <div class="register-link">Don't have an account? <a href="register.html">Register here</a></div>
+    </div>
+
+    <script type="module">
+        // Using version 13.2.0
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submit-btn');
+            const errorDiv = document.getElementById('error-msg');
+            
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            btn.disabled = true;
+            btn.innerText = "Logging in...";
+            errorDiv.innerText = "";
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                
+                // Redirect to Admin Dashboard for testing
+                window.location.replace('admin-dashboard.html');
+
+            } catch (error) {
+                console.error(error);
+                btn.disabled = false;
+                btn.innerText = "LOGIN";
+                
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    errorDiv.innerText = "Invalid email or password.";
+                } else {
+                    errorDiv.innerText = error.message;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
