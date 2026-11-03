@@ -21,6 +21,7 @@
         .error-msg { color: #ef4444; font-size: 13px; font-weight: 600; text-align: center; margin-top: 15px; min-height: 18px; }
         .login-link { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 20px; font-weight: 500; }
         .login-link a { color: var(--cyan); text-decoration: none; font-weight: 700; }
+        .version-tag { text-align: center; font-size: 11px; color: #10b981; margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -35,6 +36,7 @@
             <div class="error-msg" id="error-msg"></div>
         </form>
         <div class="login-link">Already have an account? <a href="login.html">Login here</a></div>
+        <div class="version-tag">Register v3.0 (Debug Mode)</div>
     </div>
 
     <script type="module">
@@ -68,29 +70,35 @@
             btn.disabled = true; btn.innerText = "Creating Account..."; errorDiv.innerText = "";
 
             try {
+                // 1. Create Auth User
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
                 await updateProfile(user, { displayName: name });
 
-                // Save to users collection
+                // 2. Save to users collection
                 await setDoc(doc(db, 'users', user.uid), {
                     uid: user.uid, fullName: name, email: email, phone: phone, currency: 'ZMW',
                     role: 'user', status: 'active', createdAt: serverTimestamp()
                 });
 
-                // Save to wallets collection
+                // 3. Save to wallets collection
                 await setDoc(doc(db, 'wallets', user.uid), {
                     uid: user.uid, balance: 0, currency: 'ZMW', updatedAt: serverTimestamp()
                 });
 
-                // 🛑 REDIRECT TO LOGIN (No Admin hacks)
+                // 🛑 DEBUG ALERT: Proves it wrote to the database
+                alert("SUCCESS! User created in Authentication, Firestore 'users', and 'wallets'.");
+                
                 window.location.replace('login.html');
 
             } catch (error) {
                 console.error(error);
                 btn.disabled = false; btn.innerText = "CREATE ACCOUNT";
-                errorDiv.innerText = error.code === 'auth/email-already-in-use' ? "This email is already registered." : error.message;
+                
+                // 🛑 DEBUG ALERT: Shows exactly why it failed
+                alert("ERROR CODE: " + error.code + "\n\nMESSAGE: " + error.message);
+                errorDiv.innerText = error.message;
             }
         });
     </script>
