@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JAKIPOT - Admin Control Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #040b16; 
+            --bg-card: #0f172a; 
+            --bg-elevated: #1e293b;
+            --cyan: #00D9FF; 
+            --emerald: #10b981; 
+            --gold: #fbbf24; 
+            --danger: #ef4444;
+            --text-white: #ffffff; 
+            --text-muted: #8b9bb4; 
+            --border-light: rgba(255, 255, 255, 0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg-deep); color: var(--text-white); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* TOP HEADER */
+        .top-header {
+            background: var(--bg-card); border-bottom: 1px solid var(--border-light);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px; height: 70px; flex-shrink: 0;
+        }
+        .logo-area { font-size: 20px; font-weight: 900; display: flex; align-items: center; gap: 10px; }
+        .logo-area span { color: var(--cyan); }
+        .admin-info { display: flex; align-items: center; gap: 15px; font-size: 14px; font-weight: 700; }
+        .btn-logout { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 800; transition: 0.2s; }
+        .btn-logout:hover { background: var(--danger); color: #fff; }
+
+        /* HORIZONTAL NAVIGATION */
+        .nav-bar {
+            display: flex; gap: 10px; padding: 15px 20px;
+            background: var(--bg-deep); border-bottom: 1px solid var(--border-light);
+            overflow-x: auto; scrollbar-width: none; flex-shrink: 0;
+        }
+        .nav-bar::-webkit-scrollbar { display: none; }
+        .nav-tab {
+            padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 800;
+            cursor: pointer; white-space: nowrap; transition: 0.2s; border: 1px solid transparent;
+            background: var(--bg-elevated); color: var(--text-muted);
+        }
+        .nav-tab:hover { background: #334155; color: var(--white); }
+        .nav-tab.active { background: rgba(0, 217, 255, 0.15); color: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 217, 255, 0.2); }
+
+        /* MAIN CONTENT */
+        .main-content { flex: 1; padding: 20px; overflow-y: auto; max-width: 1000px; margin: 0 auto; width: 100%; }
+        .tab-panel { display: none; animation: fadeIn 0.3s ease; }
+        .tab-panel.active { display: block; }
+        .page-title { font-size: 22px; font-weight: 900; margin-bottom: 20px; color: var(--text-white); display: flex; align-items: center; gap: 10px; }
+
+        /* DASHBOARD STAT CARDS */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px;
+            padding: 20px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .stat-info h4 { font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px; }
+        .stat-info h2 { font-size: 36px; font-weight: 900; }
+        .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: grid; place-items: center; font-size: 24px; }
+
+        /* ROW CARDS (For Users, Deposits, etc.) */
+        .list-container { display: flex; flex-direction: column; gap: 12px; }
+        .row-card {
+            background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px;
+            padding: 20px; display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 15px; transition: transform 0.2s;
+        }
+        .row-card:hover { border-color: #334155; }
+        
+        .row-info { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 200px; }
+        .row-title { font-size: 16px; font-weight: 800; color: var(--text-white); }
+        .row-sub { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+        .row-sub span { color: var(--text-white); }
+
+        .row-actions { display: flex; gap: 10px; align-items: center; }
+
+        /* BADGES */
+        .badge { padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 900; text-transform: uppercase; }
+        .badge-pending { background: rgba(251, 191, 36, 0.15); color: var(--gold); border: 1px solid rgba(251, 191, 36, 0.3); }
+        .badge-active { background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-blocked { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        /* BUTTONS */
+        .btn { padding: 10px 16px; border-radius: 10px; border: none; font-size: 13px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .btn:active { transform: scale(0.95); }
+        .btn-approve { background: var(--emerald); color: #fff; }
+        .btn-reject { background: var(--danger); color: #fff; }
+        .btn-neutral { background: var(--bg-elevated); color: var(--text-white); border: 1px solid var(--border-light); }
+        .btn-neutral:hover { background: #334155; }
+
+        /* FORM CARDS */
+        .form-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px; padding: 25px; margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .input-group label { font-size: 12px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+        .input-group input { padding: 14px; border-radius: 10px; background: var(--bg-elevated); border: 1px solid var(--border-light); color: var(--text-white); font-size: 15px; outline: none; }
+        .input-group input:focus { border-color: var(--cyan); }
+
+        /* CHAT LAYOUT */
+        .chat-container { display: flex; height: calc(100vh - 220px); background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-light); overflow: hidden; }
+        .chat-sidebar { width: 280px; border-right: 1px solid var(--border-light); overflow-y: auto; background: rgba(0,0,0,0.2); }
+        .chat-user-item { padding: 15px 20px; border-bottom: 1px solid var(--border-light); cursor: pointer; transition: 0.2s; }
+        .chat-user-item:hover, .chat-user-item.active { background: rgba(0, 217, 255, 0.1); border-left: 3px solid var(--cyan); }
+        .chat-user-item h4 { font-size: 14px; margin-bottom: 4px; color: var(--text-white); }
+        .chat-user-item p { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-main { flex: 1; display: flex; flex-direction: column; }
+        .chat-history { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .msg { max-width: 75%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.4; }
+        .msg.admin { align-self: flex-end; background: var(--cyan); color: #000; border-bottom-right-radius: 4px; font-weight: 600; }
+        .msg.user { align-self: flex-start; background: var(--bg-elevated); color: var(--text-white); border-bottom-left-radius: 4px; border: 1px solid var(--border-light); }
+        .chat-input-area { padding: 15px; border-top: 1px solid var(--border-light); display: flex; gap: 10px; background: rgba(0,0,0,0.2); }
+        .chat-input { flex: 1; padding: 15px; border-radius: 10px; border: 1px solid var(--border-light); background: var(--bg-elevated); color: var(--text-white); outline: none; }
+        .chat-input:focus { border-color: var(--cyan); }
+        .btn-send { padding: 0 25px; border-radius: 10px; border: none; background: var(--cyan); color: #000; font-weight: 900; cursor: pointer; font-size: 14px; }
+
+        /* MODAL */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: var(--bg-card); padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; border: 1px solid var(--border-light); text-align: center; }
+        .modal-content h3 { font-size: 22px; font-weight: 900; margin-bottom: 10px; }
+        .modal-content p { color: var(--text-muted); margin-bottom: 20px; font-size: 14px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <!-- TOP HEADER -->
+    <header class="top-header">
+        <div class="logo-area">🐦 JAKI<span>POT</span> Admin</div>
+        <div class="admin-info">
+            <span id="admin-name">Loading...</span>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <!-- HORIZONTAL NAVIGATION -->
+    <nav class="nav-bar">
+        <div class="nav-tab active" onclick="switchTab('dashboard', this)">📊 Overview</div>
+        <div class="nav-tab" onclick="switchTab('users', this)">👥 Users</div>
+        <div class="nav-tab" onclick="switchTab('deposits', this)">💰 Deposits</div>
+        <div class="nav-tab" onclick="switchTab('withdrawals', this)">🏦 Withdrawals</div>
+        <div class="nav-tab" onclick="switchTab('plans', this)">📈 Plans & Markets</div>
+        <div class="nav-tab" onclick="switchTab('chat', this)">💬 Live Chat</div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        
+        <!-- TAB: DASHBOARD -->
+        <div class="tab-panel active" id="tab-dashboard">
+            <div class="page-title">Quick Overview</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h4>Total Users</h4>
+                        <h2 id="stat-users" style="color: var(--cyan);">0</h2>
+                    </div>
+                    <div class="stat-icon" style="background: rgba(0, 217, 255, 0.1); color: var(--cyan);">👥</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h4>Pending Deposits</h4>
+                        <h2 id="stat-deposits" style="color: var(--gold);">0</h2>
+                    </div>
+                    <div class="stat-icon" style="background: rgba(251, 191, 36, 0.1); color: var(--gold);">💰</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h4>Pending Withdrawals</h4>
+                        <h2 id="stat-withdrawals" style="color: var(--danger);">0</h2>
+                    </div>
+                    <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">🏦</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: USERS -->
+        <div class="tab-panel" id="tab-users">
+            <div class="page-title">Manage Users</div>
+            <div class="list-container" id="users-list">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- TAB: DEPOSITS -->
+        <div class="tab-panel" id="tab-deposits">
+            <div class="page-title">Pending Deposits</div>
+            <div class="list-container" id="deposits-list">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- TAB: WITHDRAWALS -->
+        <div class="tab-panel" id="tab-withdrawals">
+            <div class="page-title">Pending Withdrawals</div>
+            <div class="list-container" id="withdrawals-list">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- TAB: PLANS & MARKETS -->
+        <div class="tab-panel" id="tab-plans">
+            <div class="page-title">Create New Plan</div>
+            <div class="form-card">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Plan Name</label>
+                        <input type="text" id="plan-name" placeholder="e.g. Gold Elite">
+                    </div>
+                    <div class="input-group">
+                        <label>Image URL (ImgBB)</label>
+                        <input type="text" id="plan-img" placeholder="https://i.ibb.co/...">
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Invest Amount</label>
+                        <input type="number" id="plan-invest" placeholder="500">
+                    </div>
+                    <div class="input-group">
+                        <label>Daily Income</label>
+                        <input type="number" id="plan-daily" placeholder="60">
+                    </div>
+                    <div class="input-group">
+                        <label>Duration (Days)</label>
+                        <input type="number" id="plan-duration" placeholder="10">
+                    </div>
+                </div>
+                <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 10px;" onclick="createPlan()">CREATE PLAN</button>
+            </div>
+
+            <div class="page-title" style="margin-top: 30px;">Live Trending Control</div>
+            <div class="form-card" style="border-color: rgba(239, 68, 68, 0.3);">
+                <div class="input-group" style="margin-bottom: 15px;">
+                    <label>Manual Crash Point (e.g. 1.50)</label>
+                    <input type="number" id="manual-crash" placeholder="1.50" step="0.01">
+                </div>
+                <button class="btn btn-reject" style="width: 100%; padding: 16px; font-size: 16px;" onclick="triggerCrash()">TRIGGER CRASH NOW</button>
+            </div>
+        </div>
+
+        <!-- TAB: CHAT -->
+        <div class="tab-panel" id="tab-chat">
+            <div class="page-title">Live Support Chat</div>
+            <div class="chat-container">
+                <div class="chat-sidebar" id="chat-user-list">
+                    <div style="padding: 20px; text-align: center; color: var(--text-muted);">Loading chats...</div>
+                </div>
+                <div class="chat-main">
+                    <div class="chat-history" id="chat-history">
+                        <div style="text-align: center; margin-top: 100px; color: var(--text-muted);">
+                            <div style="font-size: 40px; margin-bottom: 10px;">💬</div>
+                            Select a user from the left to start chatting.
+                        </div>
+                    </div>
+                    <div class="chat-input-area" id="chat-input-area" style="display: none;">
+                        <input type="text" id="chat-input" class="chat-input" placeholder="Type a message to the user...">
+                        <button class="btn-send" onclick="sendMessage()">SEND</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ADJUST BALANCE MODAL -->
+    <div class="modal-overlay" id="balance-modal">
+        <div class="modal-content">
+            <h3>Adjust Balance</h3>
+            <p>Current: <span id="modal-current-bal" style="color: var(--cyan); font-weight: 800;">0.00</span></p>
+            
+            <div class="input-group" style="text-align: left;">
+                <label>Amount (e.g. 500 or -200)</label>
+                <input type="number" id="balance-adjust-input" placeholder="0">
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 25px;">
+                <button class="btn btn-neutral" style="flex: 1;" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-approve" style="flex: 1;" onclick="confirmBalanceAdjust()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 🛑 FIXED: Changed from 13.2.0 to 10.8.0
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, query, where, orderBy, onSnapshot, updateDoc, addDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        
+        // 🛑 FIXED: Added App Check
+        initializeAppCheck(app, { 
+            provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), 
+            isTokenAutoRefreshEnabled: true 
+        });
+
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentAdmin = null;
+        let selectedUserId = null;
+        let unsubscribeChat = null;
+        let currentChatId = null;
+
+        // 1. Auth Guard
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            const snap = await getDoc(doc(db, 'users', user.uid));
+            
+            if (snap.exists() && snap.data().role === 'admin') {
+                currentAdmin = user;
+                document.getElementById('admin-name').innerText = snap.data().fullName || 'Admin';
+                initDashboard();
+            } else {
+                alert("Access Denied. You are not an Admin.");
+                window.location.replace('index.html'); // Changed to index.html since home.html might not exist yet
+            }
+        });
+
+        function initDashboard() {
+            // Users List
+            onSnapshot(collection(db, 'users'), (snap) => {
+                const list = document.getElementById('users-list');
+                list.innerHTML = '';
+                document.getElementById('stat-users').innerText = snap.size;
+                
+                snap.forEach(doc => {
+                    const u = doc.data();
+                    const isBlocked = u.status === 'suspended';
+                    
+                    list.innerHTML += `
+                        <div class="row-card">
+                            <div class="row-info">
+                                <div class="row-title">${u.fullName || 'User'}</div>
+                                <div class="row-sub">Phone: <span>${u.phone || 'N/A'}</span></div>
+                            </div>
+                            <div class="row-actions">
+                                <span class="badge ${isBlocked ? 'badge-blocked' : 'badge-active'}">${isBlocked ? 'Blocked' : 'Active'}</span>
+                                <button class="btn btn-neutral" onclick="openBalanceModal('${doc.id}', ${u.balance || 0})">💰 Adjust</button>
+                                <button class="btn ${isBlocked ? 'btn-approve' : 'btn-reject'}" onclick="toggleBlock('${doc.id}', '${u.status}')">
+                                    ${isBlocked ? 'Unblock' : 'Block'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+
+            // Deposits List
+            onSnapshot(query(collection(db, 'deposits'), where('status', '==', 'pending')), (snap) => {
+                const list = document.getElementById('deposits-list');
+                list.innerHTML = '';
+                document.getElementById('stat-deposits').innerText = snap.size;
+                
+                if(snap.empty) list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No pending deposits.</div>';
+
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    list.innerHTML += `
+                        <div class="row-card">
+                            <div class="row-info">
+                                <div class="row-title">Deposit Request</div>
+                                <div class="row-sub">Amount: <span style="color: var(--gold);">${d.amount}</span> | Method: <span>${d.method || 'Manual'}</span></div>
+                            </div>
+                            <div class="row-actions">
+                                ${d.screenshotUrl ? `<a href="${d.screenshotUrl}" target="_blank" class="btn btn-neutral">🖼️ View Proof</a>` : ''}
+                                <button class="btn btn-approve" onclick="approveDeposit('${doc.id}', '${d.uid}', ${d.amount})">Approve</button>
+                                <button class="btn btn-reject" onclick="rejectDeposit('${doc.id}')">Reject</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+
+            // Withdrawals List
+            onSnapshot(query(collection(db, 'withdrawals'), where('status', '==', 'pending')), (snap) => {
+                const list = document.getElementById('withdrawals-list');
+                list.innerHTML = '';
+                document.getElementById('stat-withdrawals').innerText = snap.size;
+                
+                if(snap.empty) list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No pending withdrawals.</div>';
+
+                snap.forEach(doc => {
+                    const w = doc.data();
+                    list.innerHTML += `
+                        <div class="row-card">
+                            <div class="row-info">
+                                <div class="row-title">Withdrawal Request</div>
+                                <div class="row-sub">Amount: <span style="color: var(--danger);">${w.amount}</span> | Phone: <span>${w.destinationPhone}</span></div>
+                            </div>
+                            <div class="row-actions">
+                                <button class="btn btn-approve" onclick="approveWithdrawal('${doc.id}')">Mark Paid</button>
+                                <button class="btn btn-reject" onclick="rejectWithdrawal('${doc.id}', '${w.uid}', ${w.amount})">Reject & Refund</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+
+            // Chat List
+            onSnapshot(query(collection(db, 'chat_groups'), orderBy('lastMessageTime', 'desc')), (snap) => {
+                const list = document.getElementById('chat-user-list');
+                list.innerHTML = '';
+                if(snap.empty) list.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">No active chats</div>';
+
+                snap.forEach(doc => {
+                    const chat = doc.data();
+                    list.innerHTML += `
+                        <div class="chat-user-item" id="chat-item-${doc.id}" onclick="openChat('${doc.id}', '${chat.userName || 'User'}')">
+                            <h4>${chat.userName || 'User'}</h4>
+                            <p>${chat.lastMessage || 'No messages yet'}</p>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // TAB SWITCHING
+        window.switchTab = (tabId, element) => {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(m => m.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            element.classList.add('active');
+        };
+
+        // --- USERS ACTIONS ---
+        window.toggleBlock = async (uid, currentStatus) => {
+            const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
+            await updateDoc(doc(db, 'users', uid), { status: newStatus });
+        };
+
+        window.openBalanceModal = (uid, currentBal) => {
+            selectedUserId = uid;
+            document.getElementById('modal-current-bal').innerText = currentBal;
+            document.getElementById('balance-adjust-input').value = '';
+            document.getElementById('balance-modal').classList.add('active');
+        };
+
+        window.closeModal = () => {
+            document.getElementById('balance-modal').classList.remove('active');
+        };
+
+        window.confirmBalanceAdjust = async () => {
+            const amount = parseFloat(document.getElementById('balance-adjust-input').value);
+            if (isNaN(amount) || amount === 0) { alert("Invalid amount"); return; }
+
+            try {
+                const batch = writeBatch(db);
+                const walletRef = doc(db, 'wallets', selectedUserId);
+                const txRef = doc(collection(db, 'transactions'));
+
+                batch.update(walletRef, {
+                    balance: increment(amount),
+                    lastTxId: txRef.id
+                });
+
+                batch.set(txRef, {
+                    uid: selectedUserId,
+                    type: 'admin_adjustment',
+                    amount: amount,
+                    status: 'completed',
+                    createdAt: serverTimestamp()
+                });
+
+                await batch.commit();
+                alert("Balance adjusted successfully!");
+                closeModal();
+            } catch (e) {
+                console.error(e);
+                alert("Failed. Check console for details.");
+            }
+        };
+
+        // --- DEPOSIT ACTIONS ---
+        window.approveDeposit = async (depositId, uid, amount) => {
+            try {
+                const batch = writeBatch(db);
+                
+                batch.update(doc(db, 'deposits', depositId), { status: 'approved', approvedAt: serverTimestamp() });
+
+                const walletRef = doc(db, 'wallets', uid);
+                const txRef = doc(collection(db, 'transactions'));
+                batch.update(walletRef, { balance: increment(amount), lastTxId: txRef.id });
+
+                batch.set(txRef, {
+                    uid: uid, type: 'deposit', amount: amount, status: 'completed', createdAt: serverTimestamp()
+                });
+
+                await batch.commit();
+                alert("Deposit Approved!");
+            } catch (e) { console.error(e); alert("Failed to approve."); }
+        };
+
+        window.rejectDeposit = async (depositId) => {
+            await updateDoc(doc(db, 'deposits', depositId), { status: 'rejected' });
+        };
+
+        // --- WITHDRAWAL ACTIONS ---
+        window.approveWithdrawal = async (withdrawId) => {
+            await updateDoc(doc(db, 'withdrawals', withdrawId), { status: 'approved' });
+            alert("Marked as paid!");
+        };
+
+        window.rejectWithdrawal = async (withdrawId, uid, amount) => {
+            try {
+                const batch = writeBatch(db);
+                
+                batch.update(doc(db, 'withdrawals', withdrawId), { status: 'rejected' });
+
+                const walletRef = doc(db, 'wallets', uid);
+                const txRef = doc(collection(db, 'transactions'));
+                batch.update(walletRef, { balance: increment(amount), lastTxId: txRef.id });
+
+                batch.set(txRef, {
+                    uid: uid, type: 'withdrawal_refund', amount: amount, status: 'completed', createdAt: serverTimestamp()
+                });
+
+                await batch.commit();
+                alert("Withdrawal Rejected and Refunded!");
+            } catch (e) { console.error(e); alert("Failed to refund."); }
+        };
+
+        // --- PLAN ACTIONS ---
+        window.createPlan = async () => {
+            const name = document.getElementById('plan-name').value;
+            const img = document.getElementById('plan-img').value;
+            const invest = parseFloat(document.getElementById('plan-invest').value);
+            const daily = parseFloat(document.getElementById('plan-daily').value);
+            const duration = parseInt(document.getElementById('plan-duration').value);
+
+            if (!name || !invest || !daily || !duration) { alert("Fill all fields"); return; }
+
+            await addDoc(collection(db, 'plans'), {
+                name, imageUrl: img, investAmount: invest, dailyIncome: daily, durationDays: duration, isActive: true
+            });
+            alert("Plan Created!");
+            document.getElementById('plan-name').value = '';
+            document.getElementById('plan-img').value = '';
+            document.getElementById('plan-invest').value = '';
+            document.getElementById('plan-daily').value = '';
+            document.getElementById('plan-duration').value = '';
+        };
+
+        // --- LIVE TRENDING ACTION ---
+        window.triggerCrash = async () => {
+            alert("Note: To trigger crashes, the Live Trending Server page must be open and running.");
+        };
+
+        // --- CHAT SYSTEM ---
+        window.openChat = (chatId, userName) => {
+            currentChatId = chatId;
+            
+            document.querySelectorAll('.chat-user-item').forEach(el => el.classList.remove('active'));
+            const activeItem = document.getElementById(`chat-item-${chatId}`);
+            if(activeItem) activeItem.classList.add('active');
+
+            document.getElementById('chat-input-area').style.display = 'flex';
+            document.getElementById('chat-history').innerHTML = `<p style="text-align: center; color: var(--text-muted); margin-top: 20px;">Loading messages...</p>`;
+            
+            if (unsubscribeChat) unsubscribeChat();
+
+            const q = query(collection(db, 'chat_messages'), where('groupId', '==', chatId), orderBy('createdAt', 'asc'));
+            unsubscribeChat = onSnapshot(q, (snap) => {
+                const history = document.getElementById('chat-history');
+                history.innerHTML = '';
+                
+                if (snap.empty) {
+                    history.innerHTML = `<div style="text-align: center; margin-top: 50px; color: var(--text-muted);">
+                        <div style="font-size: 30px; margin-bottom: 10px;">👋</div>
+                        Send a message to start the conversation.
+                    </div>`;
+                    return;
+                }
+
+                snap.forEach(doc => {
+                    const msg = doc.data();
+                    const isAdmin = msg.senderId === currentAdmin.uid;
+                    history.innerHTML += `<div class="msg ${isAdmin ? 'admin' : 'user'}">${msg.text}</div>`;
+                });
+                
+                history.scrollTop = history.scrollHeight;
+            });
+        };
+
+        window.sendMessage = async () => {
+            const text = document.getElementById('chat-input').value;
+            if (!text || !currentChatId) return;
+
+            const chatRef = doc(db, 'chat_groups', currentChatId);
+            await updateDoc(chatRef, { lastMessage: text, lastMessageTime: serverTimestamp() });
+
+            await addDoc(collection(db, 'chat_messages'), {
+                groupId: currentChatId,
+                senderId: currentAdmin.uid,
+                senderName: 'Admin',
+                text: text,
+                createdAt: serverTimestamp()
+            });
+
+            document.getElementById('chat-input').value = '';
+        };
+
+        window.logout = async () => {
+            await signOut(auth);
+            window.location.replace('login.html');
+        };
+
+    </script>
+</body>
+</html>

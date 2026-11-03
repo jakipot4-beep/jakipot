@@ -6,24 +6,16 @@
     <title>Register - Jakipot</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-deep: #040b16; --bg-card: #0f172a; --bg-elevated: #1e293b;
-            --cyan: #00D9FF; --emerald: #10b981; --text-white: #ffffff;
-            --text-muted: #8b9bb4; --border-light: rgba(255, 255, 255, 0.08);
-        }
+        :root { --bg-deep: #040b16; --bg-card: #0f172a; --bg-elevated: #1e293b; --cyan: #00D9FF; --text-white: #ffffff; --text-muted: #8b9bb4; --border-light: rgba(255,255,255,0.08); }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { 
-            background: var(--bg-deep); color: var(--text-white); min-height: 100vh; 
-            display: flex; justify-content: center; align-items: center; padding: 20px;
-            background-image: radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.1) 0%, transparent 50%);
-        }
+        body { background: var(--bg-deep); color: var(--text-white); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; background-image: radial-gradient(circle at 50% 0%, rgba(0,217,255,0.1) 0%, transparent 50%); }
         .card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 24px; padding: 35px 25px; width: 100%; max-width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .logo { font-size: 28px; font-weight: 900; text-align: center; margin-bottom: 25px; }
         .logo span { color: var(--cyan); }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 12px; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
-        .form-input { width: 100%; padding: 15px; border-radius: 12px; background: var(--bg-elevated); border: 1px solid var(--border-light); color: var(--white); font-size: 15px; outline: none; transition: 0.2s; }
-        .form-input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 217, 255, 0.2); }
+        .form-input { width: 100%; padding: 15px; border-radius: 12px; background: var(--bg-elevated); border: 1px solid var(--border-light); color: var(--text-white); font-size: 15px; outline: none; }
+        .form-input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0,217,255,0.2); }
         .btn-submit { width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--cyan); color: #000; font-size: 16px; font-weight: 900; cursor: pointer; margin-top: 15px; transition: 0.2s; }
         .btn-submit:active { transform: scale(0.98); }
         .btn-submit:disabled { background: #334155; color: var(--text-muted); cursor: not-allowed; }
@@ -33,57 +25,37 @@
     </style>
 </head>
 <body>
-
     <div class="card">
         <div class="logo">🐦 JAKI<span>POT</span></div>
-        
         <form id="register-form">
-            <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" id="reg-name" class="form-input" placeholder="John Doe" required>
-            </div>
-            <div class="form-group">
-                <label>Email Address</label>
-                <input type="email" id="reg-email" class="form-input" placeholder="john@example.com" required>
-            </div>
-            <div class="form-group">
-                <label>Phone Number</label>
-                <input type="tel" id="reg-phone" class="form-input" placeholder="0971234567" required>
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="reg-password" class="form-input" placeholder="Min 6 characters" required>
-            </div>
-            
+            <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" class="form-input" placeholder="John Doe" required></div>
+            <div class="form-group"><label>Email Address</label><input type="email" id="reg-email" class="form-input" placeholder="john@example.com" required></div>
+            <div class="form-group"><label>Phone Number</label><input type="tel" id="reg-phone" class="form-input" placeholder="0971234567" required></div>
+            <div class="form-group"><label>Password</label><input type="password" id="reg-password" class="form-input" placeholder="Min 6 characters" required></div>
             <button type="submit" id="submit-btn" class="btn-submit">CREATE ACCOUNT</button>
             <div class="error-msg" id="error-msg"></div>
         </form>
-        
         <div class="login-link">Already have an account? <a href="login.html">Login here</a></div>
     </div>
 
     <script type="module">
-        // Using version 13.2.0
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+        import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
-            authDomain: "jakipot.firebaseapp.com",
-            projectId: "jakipot",
-            storageBucket: "jakipot.firebasestorage.app",
-            messagingSenderId: "396191754293",
-            appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", authDomain: "jakipot.firebaseapp.com", projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app", messagingSenderId: "396191754293", appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
         };
 
         const app = initializeApp(firebaseConfig);
+        initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), isTokenAutoRefreshEnabled: true });
         const auth = getAuth(app);
         const db = getFirestore(app);
 
         document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const btn = document.getElementById('submit-btn');
             const errorDiv = document.getElementById('error-msg');
             
@@ -94,51 +66,32 @@
 
             if (password.length < 6) { errorDiv.innerText = "Password must be at least 6 characters."; return; }
 
-            btn.disabled = true;
-            btn.innerText = "Creating Account...";
-            errorDiv.innerText = "";
+            btn.disabled = true; btn.innerText = "Creating Account..."; errorDiv.innerText = "";
 
             try {
-                // 1. Create Auth User
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // 2. Update Auth Profile
                 await updateProfile(user, { displayName: name });
 
-                // 3. Create User Document (Role is strictly 'user')
+                // Save to users collection
                 await setDoc(doc(db, 'users', user.uid), {
-                    uid: user.uid,
-                    fullName: name,
-                    email: email,
-                    phone: phone,
-                    currency: 'ZMW',
-                    role: 'user', // Default role
-                    status: 'active',
-                    createdAt: serverTimestamp()
+                    uid: user.uid, fullName: name, email: email, phone: phone, currency: 'ZMW',
+                    role: 'user', status: 'active', createdAt: serverTimestamp()
                 });
 
-                // 4. Create Wallet Document (Required for Ledger System)
+                // Save to wallets collection
                 await setDoc(doc(db, 'wallets', user.uid), {
-                    uid: user.uid,
-                    balance: 0,
-                    currency: 'ZMW',
-                    updatedAt: serverTimestamp()
+                    uid: user.uid, balance: 0, currency: 'ZMW', updatedAt: serverTimestamp()
                 });
 
-                // 5. Redirect to Admin Dashboard for testing
-                window.location.replace('admin-dashboard.html');
+                // Redirect to login page after successful registration
+                window.location.replace('login.html');
 
             } catch (error) {
                 console.error(error);
-                btn.disabled = false;
-                btn.innerText = "CREATE ACCOUNT";
-                
-                if (error.code === 'auth/email-already-in-use') {
-                    errorDiv.innerText = "This email is already registered.";
-                } else {
-                    errorDiv.innerText = error.message;
-                }
+                btn.disabled = false; btn.innerText = "CREATE ACCOUNT";
+                errorDiv.innerText = error.code === 'auth/email-already-in-use' ? "This email is already registered." : error.message;
             }
         });
     </script>
