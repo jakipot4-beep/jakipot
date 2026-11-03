@@ -1,138 +1,139 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jakipot</title>
-  <meta name="description" content="Welcome to Jakipot, your world of games.">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JAKIPOT - Welcome</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #040b16; 
+            --cyan: #00D9FF; 
+            --emerald: #10b981; 
+            --text-white: #ffffff;
+            --text-muted: #8b9bb4; 
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        
+        body { 
+            background: var(--bg-deep); color: var(--text-white); 
+            height: 100vh; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; padding: 20px;
+            background-image: radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.15) 0%, transparent 60%);
+            overflow: hidden;
+        }
 
-    body {
-      background: #0b1020;
-      color: white;
-      font-family: Arial, sans-serif;
-      min-height: 100vh;
-    }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 1s ease;
+        }
 
-    header {
-      padding: 20px;
-      background: #151d33;
-      text-align: center;
-      border-bottom: 1px solid #293451;
-    }
+        .bird-icon {
+            font-size: 80px;
+            filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.5));
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+        }
 
-    header h1 {
-      color: #58e6c5;
-      font-size: 30px;
-    }
+        .title {
+            font-size: 36px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: var(--text-white);
+        }
 
-    header p {
-      color: #aab5cc;
-      margin-top: 8px;
-    }
+        .title span {
+            color: var(--cyan);
+        }
 
-    main {
-      max-width: 900px;
-      margin: auto;
-      padding: 25px 16px;
-    }
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
 
-    .welcome {
-      text-align: center;
-      padding: 35px 15px;
-    }
+        .action-buttons {
+            width: 100%;
+            max-width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            animation: fadeInUp 1s ease 0.3s forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
 
-    .welcome h2 {
-      font-size: 28px;
-      margin-bottom: 12px;
-    }
+        .btn {
+            width: 100%;
+            padding: 18px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            border: none;
+        }
 
-    .welcome p {
-      color: #aab5cc;
-      line-height: 1.6;
-    }
+        .btn-register {
+            background: var(--emerald);
+            color: var(--text-white);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+        }
 
-    .games {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 15px;
-      margin-top: 25px;
-    }
+        .btn-register:hover, .btn-register:active {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+        }
 
-    .game {
-      background: #151d33;
-      border: 1px solid #293451;
-      border-radius: 14px;
-      padding: 25px 15px;
-      text-align: center;
-    }
+        .btn-login {
+            background: transparent;
+            color: var(--text-white);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
 
-    .game .symbol {
-      font-size: 35px;
-      margin-bottom: 12px;
-    }
+        .btn-login:hover, .btn-login:active {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--cyan);
+        }
 
-    .game h3 {
-      color: #58e6c5;
-      margin-bottom: 8px;
-    }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
 
-    .game p {
-      color: #aab5cc;
-      font-size: 13px;
-    }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-    footer {
-      text-align: center;
-      padding: 25px;
-      color: #77839e;
-      font-size: 13px;
-    }
-  </style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <h1>JAKIPOT</h1>
-    <p>Your Game. Your Moment.</p>
-  </header>
+    <div class="logo-container">
+        <div class="bird-icon">🐦</div>
+        <div class="title">JAKI<span>POT</span></div>
+        <div class="subtitle">GLOBAL INVESTMENT & GAMING</div>
+    </div>
 
-  <main>
-    <section class="welcome">
-      <h2>Welcome to Jakipot 🎮</h2>
-      <p>Discover exciting games and enjoy your gaming experience.</p>
-    </section>
-
-    <section class="games">
-      <div class="game">
-        <div class="symbol">🎯</div>
-        <h3>Arcade</h3>
-        <p>Classic arcade fun</p>
-      </div>
-
-      <div class="game">
-        <div class="symbol">🧩</div>
-        <h3>Puzzle</h3>
-        <p>Challenge your mind</p>
-      </div>
-
-      <div class="game">
-        <div class="symbol">🏆</div>
-        <h3>Challenges</h3>
-        <p>Test your skills</p>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    © 2026 Jakipot. All rights reserved.
-  </footer>
+    <div class="action-buttons">
+        <!-- Points to register.html -->
+        <a href="register.html" class="btn btn-register">GET STARTED</a>
+        
+        <!-- Points to login.html -->
+        <a href="login.html" class="btn btn-login">I ALREADY HAVE AN ACCOUNT</a>
+    </div>
 
 </body>
 </html>
