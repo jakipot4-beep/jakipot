@@ -290,7 +290,6 @@
     </div>
 
     <script type="module">
-        // 🛑 FIXED: Changed from 13.2.0 to 10.8.0
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -307,7 +306,6 @@
 
         const app = initializeApp(firebaseConfig);
         
-        // 🛑 FIXED: Added App Check
         initializeAppCheck(app, { 
             provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), 
             isTokenAutoRefreshEnabled: true 
@@ -332,7 +330,7 @@
                 initDashboard();
             } else {
                 alert("Access Denied. You are not an Admin.");
-                window.location.replace('index.html'); // Changed to index.html since home.html might not exist yet
+                window.location.replace('home.html'); // Fixed to home.html
             }
         });
 

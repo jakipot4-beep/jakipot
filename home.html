@@ -50,7 +50,7 @@
 <body>
     <header class="top-header">
         <div class="header-left"><button class="icon-btn" onclick="logout()" style="color:#ef4444;"><svg viewBox="0 0 24 24" fill="#ef4444"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></button></div>
-        <a href="home.html" class="logo-area"><span class="logo-icon">🐦</span><span class="logo-text">JAKI<span>POT</span></span></a>
+        <a href="home.html" class="logo-area"><span class="logo-icon"></span><span class="logo-text">JAKI<span>POT</span></span></a>
         <div class="header-right"></div>
     </header>
 
@@ -93,7 +93,8 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LdQwsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), isTokenAutoRefreshEnabled: true });
+        //  FIXED: Corrected the ReCaptcha Key typo (added the 'T')
+        initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), isTokenAutoRefreshEnabled: true });
         const auth = getAuth(app);
         const db = getFirestore(app);
 

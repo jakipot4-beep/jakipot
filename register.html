@@ -22,6 +22,9 @@
         .error-msg { color: #ef4444; font-size: 13px; font-weight: 600; text-align: center; margin-top: 15px; min-height: 18px; }
         .login-link { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 20px; font-weight: 500; }
         .login-link a { color: var(--cyan); text-decoration: none; font-weight: 700; }
+        
+        /* 🛑 NEW: The visual check */
+        .version-tag { text-align: center; font-size: 11px; color: #10b981; margin-top: 15px; font-weight: bold; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -36,6 +39,9 @@
             <div class="error-msg" id="error-msg"></div>
         </form>
         <div class="login-link">Already have an account? <a href="login.html">Login here</a></div>
+        
+        <!-- 🛑 NEW: This will prove the new code is loaded -->
+        <div class="version-tag">Version 2.0 - Updated</div>
     </div>
 
     <script type="module">
