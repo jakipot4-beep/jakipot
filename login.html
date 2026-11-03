@@ -72,7 +72,10 @@
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
                     
-                    if (userData.role === 'admin') {
+                    // 🛑 BULLETPROOF LOGIC: Force role to lowercase to avoid "Admin" vs "admin" typos
+                    const userRole = userData.role ? userData.role.toLowerCase() : 'user';
+                    
+                    if (userRole === 'admin') {
                         // Redirect to Admin Dashboard
                         window.location.replace('admin-dashboard.html');
                     } else {
