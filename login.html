@@ -6,116 +6,58 @@
     <title>Login - Jakipot</title>
     <style>
         :root {
-            --bg-dark: #060b19;
-            --bg-card: #111827;
-            --emerald: #10b981;
-            --emerald-glow: rgba(16, 185, 129, 0.3);
-            --light-blue: #38bdf8;
-            --white: #ffffff;
-            --text-muted: #94a3b8;
-            --danger: #ef4444;
-            --border-color: #1e293b;
-            --input-bg: #0f172a;
+            --bg-dark: #060b19; --bg-card: #111827; --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.3); --light-blue: #38bdf8;
+            --white: #ffffff; --text-muted: #94a3b8; --danger: #ef4444;
+            --border-color: #1e293b; --input-bg: #0f172a;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        body { 
-            background: var(--bg-dark); color: var(--white); min-height: 100vh; 
-            display: flex; flex-direction: column; align-items: center; padding: 20px; 
-            overflow-x: hidden;
-            background-image: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.05) 0%, transparent 40%);
-        }
-
-        /* Navigation */
-        .nav-bar { width: 100%; max-width: 450px; display: flex; justify-content: flex-start; align-items: center; margin-top: 10px; margin-bottom: 30px; animation: slideDownFade 0.6s ease; }
-        .back-link { color: var(--text-muted); text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 5px; transition: color 0.3s; }
-        .back-link:hover { color: var(--emerald); }
-
-        /* Header */
-        .header { text-align: center; margin-bottom: 30px; animation: slideUpFade 0.7s ease; }
+        body { background: var(--bg-dark); color: var(--white); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-x: hidden; background-image: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.05) 0%, transparent 40%); }
+        .nav-bar { width: 100%; max-width: 450px; display: flex; justify-content: flex-start; align-items: center; margin-top: 10px; margin-bottom: 30px; }
+        .back-link { color: var(--text-muted); text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 5px; }
+        .header { text-align: center; margin-bottom: 30px; }
         .logo-svg { width: 80px; height: 80px; filter: drop-shadow(0 0 15px var(--emerald-glow)); margin-bottom: 15px; }
-        .header h1 { font-size: 22px; font-weight: 900; letter-spacing: 1px; color: var(--white); }
-        .header p { font-size: 14px; color: var(--light-blue); margin-top: 8px; font-weight: 500; }
-
-        /* Card */
-        .card { background: var(--bg-card); padding: 30px 25px; border-radius: 20px; width: 100%; max-width: 450px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid var(--border-color); animation: slideUpFade 0.7s ease 0.1s forwards; opacity: 0; transform: translateY(20px); }
-
-        /* Google Button */
-        .btn-google { width: 100%; padding: 14px; background: var(--white); color: #333; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s; }
-        .btn-google:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,255,255,0.1); }
-        .btn-google:active:not(:disabled) { transform: scale(0.98); }
-        .btn-google:disabled { opacity: 0.6; cursor: not-allowed; }
+        .header h1 { font-size: 22px; font-weight: 900; color: var(--white); }
+        .header p { font-size: 14px; color: var(--light-blue); margin-top: 8px; }
+        .card { background: var(--bg-card); padding: 30px 25px; border-radius: 20px; width: 100%; max-width: 450px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid var(--border-color); }
+        .btn-google { width: 100%; padding: 14px; background: var(--white); color: #333; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; }
         .google-icon { width: 22px; height: 22px; }
-
-        /* Divider */
-        .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; color: var(--text-muted); font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+        .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; color: var(--text-muted); font-size: 11px; font-weight: 700; }
         .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-color); }
-        .divider:not(:empty)::before { margin-right: 15px; }
-        .divider:not(:empty)::after { margin-left: 15px; }
-
-        /* Inputs */
+        .divider:not(:empty)::before { margin-right: 15px; } .divider:not(:empty)::after { margin-left: 15px; }
         .input-group { position: relative; margin-bottom: 15px; }
-        .input-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; fill: var(--text-muted); transition: fill 0.3s; pointer-events: none; }
-        .input-field { width: 100%; padding: 15px 45px 15px 45px; border-radius: 12px; border: 1.5px solid #334155; background: var(--input-bg); color: var(--white); font-size: 15px; transition: border-color 0.3s, background 0.3s; }
-        .input-field:focus { outline: none; border-color: var(--emerald); background: rgba(6, 11, 25, 0.8); }
-        .input-group:focus-within .input-icon { fill: var(--emerald); }
-        .input-field::placeholder { color: #64748b; }
-
-        /* Toggle Password */
-        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; fill: var(--text-muted); cursor: pointer; transition: fill 0.3s; z-index: 10; }
-        .toggle-password:hover { fill: var(--emerald); }
-
-        /* Forgot Password */
-        .forgot-link { display: block; text-align: right; font-size: 12px; color: var(--light-blue); text-decoration: none; font-weight: 600; margin-top: -5px; margin-bottom: 20px; transition: color 0.3s; }
-        .forgot-link:hover { color: var(--emerald); }
-
-        /* Submit Button */
-        .btn-continue { width: 100%; padding: 16px; background: var(--emerald); color: var(--white); border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: background 0.3s, transform 0.2s; box-shadow: 0 4px 15px var(--emerald-glow); display: flex; justify-content: center; align-items: center; }
-        .btn-continue:hover:not(:disabled) { background: #059669; transform: translateY(-2px); }
-        .btn-continue:active:not(:disabled) { transform: scale(0.98); }
-        .btn-continue:disabled { opacity: 0.6; cursor: not-allowed; background: #334155; box-shadow: none; }
-
-        /* Error / Success Message */
-        .message-box { margin-top: 12px; font-size: 13px; text-align: center; min-height: 18px; font-weight: 500; }
+        .input-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; fill: var(--text-muted); }
+        .input-field { width: 100%; padding: 15px 45px; border-radius: 12px; border: 1.5px solid #334155; background: var(--input-bg); color: var(--white); font-size: 15px; }
+        .input-field:focus { outline: none; border-color: var(--emerald); }
+        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; fill: var(--text-muted); cursor: pointer; }
+        .forgot-link { display: block; text-align: right; font-size: 12px; color: var(--light-blue); text-decoration: none; margin-top: -5px; margin-bottom: 20px; }
+        .btn-continue { width: 100%; padding: 16px; background: var(--emerald); color: var(--white); border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; }
+        .message-box { margin-top: 12px; font-size: 13px; text-align: center; min-height: 18px; }
         .message-box.error { color: var(--danger); }
         .message-box.success { color: var(--emerald); }
-
-        /* Footer */
         .footer { margin-top: 25px; text-align: center; font-size: 14px; color: var(--text-muted); }
-        .footer a { color: var(--light-blue); text-decoration: none; font-weight: 700; transition: color 0.3s; }
-        .footer a:hover { color: var(--emerald); }
+        .footer a { color: var(--light-blue); text-decoration: none; font-weight: 700; }
+        
+        /* 🛑 THE VISUAL VERSION TAG */
+        .version-tag { text-align: center; font-size: 12px; color: #10b981; margin-top: 15px; font-weight: bold; letter-spacing: 1px; background: rgba(16,185,129,0.1); padding: 5px; border-radius: 5px; }
 
-        /* Loading Overlay */
-        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(6,11,25,0.98); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        #loading-overlay { display: none; position: fixed; inset: 0; background: rgba(6,11,25,0.98); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
         #loading-overlay.show { display: flex; }
-        .bird-container { position: relative; width: 100%; height: 100px; overflow: hidden; margin-bottom: 20px; }
-        .flying-bird { position: absolute; font-size: 60px; top: 50%; left: -20%; transform: translateY(-50%); animation: flyAcross 2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .flying-bird { font-size: 60px; animation: flyAcross 2s forwards; margin-bottom: 20px; }
         .loading-title { color: var(--white); font-size: 18px; font-weight: 800; margin-bottom: 8px; }
-        .loading-text { color: var(--light-blue); font-size: 14px; font-weight: 600; animation: blink 1.5s infinite; }
-
-        /* Animations */
-        @keyframes slideUpFade { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
-        @keyframes slideDownFade { 0% { opacity: 0; transform: translateY(-10px); } 100% { opacity: 1; transform: translateY(0); } }
-        @keyframes flyAcross { 0% { left: -20%; transform: translateY(-50%) scale(0.8) rotate(10deg); } 50% { transform: translateY(-60%) scale(1.1) rotate(-5deg); } 100% { left: 120%; transform: translateY(-50%) scale(0.8) rotate(10deg); } }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .loading-text { color: var(--light-blue); font-size: 14px; font-weight: 600; }
+        @keyframes flyAcross { 0% { transform: translateX(-100px); } 100% { transform: translateX(100px); } }
     </style>
 </head>
 <body>
-
     <div class="nav-bar">
-        <a href="index.html" class="back-link">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
-            Back to Home
-        </a>
+        <a href="index.html" class="back-link">← Back to Home</a>
     </div>
 
     <div class="header">
         <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <path d="M10 80 L20 30 L40 50 L50 15 L60 50 L80 30 L90 80 Z" fill="none" stroke="#10b981" stroke-width="6" stroke-linejoin="round"/>
-            <circle cx="20" cy="25" r="5" fill="#38bdf8"/>
-            <circle cx="50" cy="10" r="5" fill="#38bdf8"/>
-            <circle cx="80" cy="25" r="5" fill="#38bdf8"/>
+            <circle cx="20" cy="25" r="5" fill="#38bdf8"/><circle cx="50" cy="10" r="5" fill="#38bdf8"/><circle cx="80" cy="25" r="5" fill="#38bdf8"/>
             <line x1="10" y1="85" x2="90" y2="85" stroke="#38bdf8" stroke-width="6" stroke-linecap="round"/>
         </svg>
         <h1>WELCOME BACK</h1>
@@ -123,67 +65,50 @@
     </div>
 
     <div class="card">
-        
         <button class="btn-google" id="google-btn" onclick="loginWithGoogle()">
-            <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
+            <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
             Continue with Google
         </button>
 
         <div class="divider">OR LOGIN WITH EMAIL</div>
 
         <form id="login-form" onsubmit="handleEmailLogin(event)">
-            
             <div class="input-group">
                 <svg class="input-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-                <input type="email" id="login-email" class="input-field" placeholder="Enter your email address" required autocomplete="email">
+                <input type="email" id="login-email" class="input-field" placeholder="Enter your email address" required>
             </div>
-
             <div class="input-group">
                 <svg class="input-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-                <input type="password" id="login-password" class="input-field" placeholder="Enter your password" required autocomplete="current-password">
+                <input type="password" id="login-password" class="input-field" placeholder="Enter your password" required>
                 <svg class="toggle-password" onclick="togglePassword()" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
             </div>
-
             <a href="#" class="forgot-link" onclick="forgotPassword(event)">Forgot Password?</a>
-
             <button type="submit" id="submit-btn" class="btn-continue">LOGIN →</button>
-            
             <div id="message-box" class="message-box"></div>
         </form>
-
+        
+        <!-- 🛑 VISUAL CHECK: If you see this, the code is updated! -->
+        <div class="version-tag">Version 4.0 (Live)</div>
     </div>
 
-    <div class="footer">
-        Don't have an account? <a href="register.html">Sign Up</a>
-    </div>
+    <div class="footer">Don't have an account? <a href="register.html">Sign Up</a></div>
 
-    <!-- Loading Overlay -->
     <div id="loading-overlay">
-        <div class="bird-container">
-            <div class="flying-bird">🐦</div>
-        </div>
+        <div class="flying-bird">🐦</div>
         <div class="loading-title">Authenticating</div>
         <div class="loading-text">Verifying your account...</div>
     </div>
 
-    <!-- Firebase Logic -->
     <script type="module">
+        // 🛑 ALERT: Proves the script loaded
+        console.log("Login Script V4 Loaded");
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
         import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", authDomain: "jakipot.firebaseapp.com",
-            projectId: "jakipot", storageBucket: "jakipot.firebasestorage.app",
-            messagingSenderId: "396191754293", appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", authDomain: "jakipot.firebaseapp.com", projectId: "jakipot", storageBucket: "jakipot.firebasestorage.app", messagingSenderId: "396191754293", appId: "1:396191754293:web:5b11a11d82e773d19ee97c" };
         const app = initializeApp(firebaseConfig);
         initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), isTokenAutoRefreshEnabled: true });
         const auth = getAuth(app);
@@ -192,29 +117,24 @@
         const msgBox = document.getElementById('message-box');
         const submitBtn = document.getElementById('submit-btn');
 
-        // 🛑 FIXED: Removed onAuthStateChanged auto-redirect. User must click Login.
-
-        // Helper to route user based on their Firestore role
+        // 🛑 THE FIX: We REMOVED onAuthStateChanged. The user must click Login.
+        
         async function routeUser(user) {
             try {
                 const docRef = doc(db, 'users', user.uid);
                 const docSnap = await getDoc(docRef);
 
                 if (!docSnap.exists()) {
-                    // If Auth exists but no Database record, show error instead of silent redirect
-                    showError("Account profile not found in database. Please register again.");
-                    document.getElementById('loading-overlay').classList.remove('show');
+                    showError("Account profile not found. Redirecting to register...");
+                    setTimeout(() => window.location.replace('register.html'), 2000);
                     return;
                 }
 
                 const data = docSnap.data();
                 
-                // 1. Check if Admin
                 if (data.role === 'admin') {
                     window.location.replace('admin-dashboard.html');
-                } 
-                // 2. Check if Normal User
-                else {
+                } else {
                     window.location.replace('home.html');
                 }
             } catch (err) {
@@ -224,38 +144,29 @@
             }
         }
 
-        // 1. Show/Hide Password
         window.togglePassword = () => {
             const pwdInput = document.getElementById('login-password');
             pwdInput.type = pwdInput.type === 'password' ? 'text' : 'password';
         };
 
-        // 2. Google Login
         window.loginWithGoogle = async () => {
             msgBox.className = 'message-box'; msgBox.innerText = "";
             const googleBtn = document.getElementById('google-btn');
             googleBtn.disabled = true;
-            
             const provider = new GoogleAuthProvider();
-            provider.setCustomParameters({ prompt: 'select_account' });
-
             try {
                 const result = await signInWithPopup(auth, provider);
                 document.getElementById('loading-overlay').classList.add('show');
                 await routeUser(result.user);
             } catch (error) {
-                console.error('[Google Login]', error);
                 googleBtn.disabled = false;
-                if (error.code === 'auth/popup-blocked') { showError('Popup blocked. Please allow popups.'); } 
-                else { showError(error.message || 'Google login failed.'); }
+                showError(error.message || 'Google login failed.');
             }
         };
 
-        // 3. Email Login
         window.handleEmailLogin = async (e) => {
             e.preventDefault();
             msgBox.className = 'message-box'; msgBox.innerText = "";
-
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
 
@@ -268,37 +179,26 @@
                 document.getElementById('loading-overlay').classList.add('show');
                 await routeUser(result.user);
             } catch (error) {
-                console.error('[Email Login]', error);
                 submitBtn.disabled = false; submitBtn.innerText = 'LOGIN →';
-                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                if (error.code === 'auth/invalid-credential') {
                     showError('Invalid email or password.');
-                } else if (error.code === 'auth/too-many-requests') {
-                    showError('Too many failed attempts. Please wait.');
                 } else {
-                    showError(error.message || 'Login failed.');
+                    showError(error.message);
                 }
             }
         };
 
-        // 4. Forgot Password
         window.forgotPassword = async (e) => {
             e.preventDefault();
             msgBox.className = 'message-box'; msgBox.innerText = "";
-
             const email = document.getElementById('login-email').value.trim();
             if (!email) { showError('Please enter your email address first.'); return; }
-
             try {
                 await sendPasswordResetEmail(auth, email);
-                msgBox.className = 'message-box success'; msgBox.innerText = 'Password reset link sent! Check your email.';
-            } catch (error) {
-                console.error('[Reset Password]', error);
-                if (error.code === 'auth/user-not-found') { showError('No account found with this email.'); } 
-                else { showError('Failed to send reset email.'); }
-            }
+                msgBox.className = 'message-box success'; msgBox.innerText = 'Password reset link sent!';
+            } catch (error) { showError('Failed to send reset email.'); }
         };
 
-        // Helpers
         function showError(msg) { msgBox.className = 'message-box error'; msgBox.innerText = msg; }
 
         ['login-email', 'login-password'].forEach(id => {
