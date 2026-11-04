@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JAKIPOT - Deposit Amount</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #040b16; --bg-card: #0f172a; --bg-elevated: #1e293b;
+            --cyan: #00D9FF; --emerald: #10b981; --gold: #fbbf24;
+            --text-white: #ffffff; --text-muted: #8b9bb4; --border-light: rgba(255, 255, 255, 0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg-deep); color: var(--text-white); min-height: 100vh; display: flex; flex-direction: column; background-image: radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.05) 0%, transparent 50%); }
+        
+        .top-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border-light); }
+        .back-btn { background: transparent; border: none; cursor: pointer; color: var(--cyan); padding: 4px; }
+        .back-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .header-title { font-size: 16px; font-weight: 900; text-transform: uppercase; }
+
+        .content-area { flex: 1; padding: 30px 20px; display: flex; flex-direction: column; }
+        .section-label { font-size: 13px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; margin-top: 20px; letter-spacing: 1px; }
+        
+        .input-box { background: var(--bg-card); border: 2px solid var(--border-light); border-radius: 16px; padding: 20px; transition: border-color 0.3s; }
+        .input-box:focus-within { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 217, 255, 0.2); }
+        
+        .amount-input-wrap { display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .currency-symbol { font-size: 32px; font-weight: 800; color: var(--gold); }
+        .main-input { background: transparent; border: none; color: var(--white); font-size: 40px; font-weight: 900; width: 100%; text-align: center; outline: none; }
+        
+        .phone-input { background: transparent; border: none; color: var(--white); font-size: 20px; font-weight: 800; width: 100%; text-align: center; outline: none; }
+        .phone-label { font-size: 12px; color: var(--emerald); text-align: center; margin-top: 5px; font-weight: 700; }
+
+        .btn-next { width: 100%; padding: 18px; border-radius: 14px; border: none; background: var(--cyan); color: #000; font-size: 16px; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 20px rgba(0, 217, 255, 0.3); margin-top: auto; }
+        .btn-next:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+    <header class="top-header">
+        <button class="back-btn" onclick="window.location.href='wallet.html'"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+        <div class="header-title">Deposit</div>
+        <div style="width:24px;"></div>
+    </header>
+
+    <main class="content-area">
+        <div class="section-label">Enter Amount to Deposit</div>
+        <div class="input-box">
+            <div class="amount-input-wrap">
+                <span class="currency-symbol" id="currency-symbol">K</span>
+                <input type="number" id="deposit-amount" class="main-input" placeholder="0.00" min="10">
+            </div>
+        </div>
+
+        <div class="section-label">Your Registered Phone Number</div>
+        <div class="input-box">
+            <input type="tel" id="deposit-phone" class="phone-input" placeholder="097..." readonly>
+            <div class="phone-label">This is the number linked to your account.</div>
+        </div>
+
+        <button class="btn-next" onclick="goToNext()">NEXT →</button>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", authDomain: "jakipot.firebaseapp.com", projectId: "jakipot", storageBucket: "jakipot.firebasestorage.app", messagingSenderId: "396191754293", appId: "1:396191754293:web:5b11a11d82e773d19ee97c" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const CURRENCY_MAP = { 'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵' };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            const snap = await getDoc(doc(db, 'users', user.uid));
+            if (snap.exists()) {
+                const data = snap.data();
+                document.getElementById('currency-symbol').innerText = CURRENCY_MAP[data.currency] || 'K';
+                if (data.phone) document.getElementById('deposit-phone').value = data.phone;
+            }
+        });
+
+        window.goToNext = () => {
+            const amount = parseFloat(document.getElementById('deposit-amount').value);
+            const phone = document.getElementById('deposit-phone').value;
+
+            if (!amount || amount < 10) { alert("Minimum deposit is 10."); return; }
+            if (!phone) { alert("Phone number is required."); return; }
+
+            sessionStorage.setItem('dep_amount', amount);
+            sessionStorage.setItem('dep_phone', phone);
+            sessionStorage.setItem('dep_currency', document.getElementById('currency-symbol').innerText);
+
+            window.location.href = 'deposit2.html';
+        };
+    </script>
+</body>
+</html>

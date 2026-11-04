@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JAKIPOT - Live Trending</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #040b16;
+            --bg-panel: rgba(10, 25, 47, 0.95);
+            --neon-cyan: #00e5ff;
+            --emerald: #10b981;
+            --gold: #fbbf24;
+            --danger: #ff3366;
+            --text-white: #ffffff;
+            --text-muted: #8b9bb4;
+            --border-glow: rgba(0, 229, 255, 0.2);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg-deep); color: var(--text-white); 
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* --- HEADER --- */
+        .top-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px; background: var(--bg-panel); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-glow); z-index: 10; flex-shrink: 0;
+        }
+        .back-btn { background: transparent; border: none; cursor: pointer; color: var(--text-white); padding: 4px; }
+        .header-logo { display: flex; align-items: center; gap: 8px; }
+        .header-logo svg { width: 22px; height: 22px; fill: var(--neon-cyan); filter: drop-shadow(0 0 8px var(--neon-cyan)); }
+        .header-title { 
+            font-size: 14px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; 
+            display: flex; align-items: center; gap: 8px;
+        }
+        
+        .live-badge {
+            background: var(--danger); color: white; font-size: 10px; font-weight: 900;
+            padding: 2px 6px; border-radius: 4px; letter-spacing: 1px;
+            animation: pulse-red 1.5s infinite; box-shadow: 0 0 10px rgba(255, 51, 102, 0.6);
+        }
+        
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+        }
+        
+        .header-right { display: flex; align-items: center; gap: 10px; }
+        
+        .header-avatar {
+            width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--neon-cyan);
+            object-fit: cover; background: #1e293b; display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 900; color: var(--neon-cyan); box-shadow: 0 0 10px rgba(0,229,255,0.3);
+        }
+
+        .wallet-pill { 
+            display: flex; align-items: center; gap: 6px; background: rgba(251, 191, 36, 0.1); 
+            padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+        .wallet-pill svg { width: 16px; height: 16px; fill: var(--gold); }
+        .wallet-balance { font-size: 13px; font-weight: 800; color: var(--gold); }
+
+        /* --- MAIN LAYOUT --- */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* --- GRAPH AREA --- */
+        .graph-area { flex: 1; position: relative; overflow: hidden; min-height: 250px; background: #060d1a; }
+        #graph-canvas { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
+
+        .market-info {
+            position: absolute; top: 15px; left: 20px; z-index: 5;
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
+            padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .flag-container { width: 24px; height: 16px; border-radius: 2px; overflow: hidden; display: flex; border: 1px solid rgba(255,255,255,0.2); }
+        .flag-container svg { width: 100%; height: 100%; object-fit: cover; }
+        .country-text { font-size: 12px; font-weight: 800; color: var(--text-white); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .center-overlay {
+            position: absolute; inset: 0; z-index: 4; pointer-events: none;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .multi-value { 
+            font-size: 80px; font-weight: 900; line-height: 1; color: var(--text-white); 
+            text-shadow: 0 0 40px rgba(0, 229, 255, 0.4); transition: color 0.2s, text-shadow 0.2s;
+        }
+        .multi-status { 
+            font-size: 11px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase; 
+            letter-spacing: 2px; margin-top: 10px; background: rgba(0, 229, 255, 0.1); 
+            padding: 4px 12px; border-radius: 12px; border: 1px solid var(--border-glow); 
+        }
+
+        /* --- LIVE TRENDERS SECTION --- */
+        .trenders-section {
+            flex: 0.9; display: flex; flex-direction: column;
+            background: var(--bg-panel); border-top: 1px solid var(--border-glow);
+            overflow: hidden;
+        }
+        .trenders-header {
+            display: flex; padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: rgba(0,0,0,0.2); flex-shrink: 0;
+        }
+        .col-header { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .col-user { flex: 2; }
+        .col-bet { flex: 1; text-align: right; }
+        .col-mult { flex: 1; text-align: right; }
+        .col-win { flex: 1; text-align: right; }
+        
+        .trenders-list { 
+            flex: 1; overflow-y: auto; padding: 0 20px; 
+            scrollbar-width: thin; scrollbar-color: rgba(0, 229, 255, 0.3) transparent;
+        }
+        .trenders-list::-webkit-scrollbar { width: 4px; }
+        .trenders-list::-webkit-scrollbar-track { background: transparent; }
+        .trenders-list::-webkit-scrollbar-thumb { background: rgba(0, 229, 255, 0.3); border-radius: 4px; }
+
+        .player-row {
+            display: flex; align-items: center; padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03); transition: background 0.2s;
+        }
+        .player-row.is-you { 
+            background: rgba(16, 185, 129, 0.08); 
+            border-left: 3px solid var(--emerald); 
+            border-radius: 4px; 
+            padding-left: 10px; 
+        }
+        
+        .user-info { flex: 2; display: flex; align-items: center; gap: 8px; }
+        
+        .avatar-wrap {
+            width: 28px; height: 28px; border-radius: 50%; padding: 2px;
+            display: flex; justify-content: center; align-items: center;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+        .is-you .avatar-wrap { 
+            border-color: var(--emerald); 
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); 
+        }
+        .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .avatar-svg { width: 100%; height: 100%; border-radius: 50%; }
+        
+        .username { font-size: 12px; font-weight: 700; color: var(--text-white); max-width: 70px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .is-you .username { color: var(--emerald); }
+        
+        .row-bet { flex: 1; text-align: right; font-size: 12px; font-weight: 700; color: var(--text-muted); }
+        .row-mult { flex: 1; text-align: right; font-size: 12px; font-weight: 800; }
+        .row-win { flex: 1; text-align: right; font-size: 12px; font-weight: 800; color: var(--emerald); }
+
+        .mult-active { color: var(--neon-cyan); }
+        .mult-won { color: var(--emerald); }
+        .mult-lost { color: var(--danger); }
+
+        /* --- BOTTOM CONTROLS --- */
+        .controls-panel {
+            background: var(--bg-panel); padding: 12px 20px 18px;
+            border-top: 1px solid var(--border-glow); flex-shrink: 0;
+            display: flex; flex-direction: column; gap: 10px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+        }
+
+        .control-row { display: flex; gap: 10px; align-items: center; }
+        
+        .amount-box {
+            flex: 1; display: flex; align-items: center; justify-content: space-between;
+            background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 6px;
+        }
+        .adj-btn { background: transparent; border: none; color: var(--text-muted); font-size: 22px; font-weight: 900; width: 36px; height: 36px; cursor: pointer; }
+        .input-wrap { display: flex; align-items: center; gap: 4px; }
+        .currency-symbol { color: var(--gold); font-weight: 900; font-size: 14px; }
+        .bet-input { background: transparent; border: none; color: var(--text-white); font-size: 18px; font-weight: 800; width: 70px; text-align: center; outline: none; }
+        
+        .quick-bets { display: flex; gap: 6px; }
+        .quick-btn { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 6px 0; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
+        .quick-btn:hover { background: rgba(0, 229, 255, 0.1); color: var(--neon-cyan); }
+
+        .action-btn { 
+            width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 900; 
+            cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px;
+            background: linear-gradient(90deg, #0052d4, #4364f7, #6fb1fc); color: var(--text-white);
+            box-shadow: 0 4px 15px rgba(67, 100, 247, 0.4);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+        }
+        .action-btn .btn-main-text { font-size: 15px; }
+        .action-btn .btn-sub-text { font-size: 13px; opacity: 0.8; font-weight: 700; }
+        
+        .action-btn.stop { background: linear-gradient(90deg, #ff3366, #ff6b6b); box-shadow: 0 4px 15px rgba(255, 51, 102, 0.4); }
+        .action-btn:disabled { background: rgba(255,255,255,0.1); color: var(--text-muted); cursor: not-allowed; box-shadow: none; }
+
+        /* --- TIMEOUT OVERLAY --- */
+        .timeout-overlay {
+            position: absolute; inset: 0; background: rgba(4, 11, 22, 0.95); z-index: 50;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .timeout-overlay.active { opacity: 1; pointer-events: auto; }
+        .timeout-title { font-size: 20px; font-weight: 900; color: var(--text-white); letter-spacing: 2px; margin-bottom: 8px; text-align: center; }
+        .timeout-sub { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .timeout-countdown { font-size: 80px; font-weight: 900; color: var(--neon-cyan); text-shadow: 0 0 30px rgba(0,229,255,0.5); margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="top-header">
+        <button class="back-btn" onclick="window.location.href='home.html'">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+        <div class="header-logo">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21.5 4.5C20.5 3.5 18.5 3.5 17 5L14 8L9 5L6 8L8 11L4 13L10 15L9 18L12 19L14 16L17 17L19 14L22 15L21 11L23 8L21.5 4.5ZM16 10C15.4 10 15 9.6 15 9C15 8.4 15.4 8 16 8C16.6 8 17 8.4 17 9C17 9.6 16.6 10 16 10Z"/>
+            </svg>
+            <div class="header-title">Live Trending <span class="live-badge">LIVE</span></div>
+        </div>
+        
+        <div class="header-right">
+            <div id="header-profile-pic" class="header-avatar">U</div>
+            <div class="wallet-pill">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/></svg>
+                <span class="wallet-balance" id="header-balance">0.00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        
+        <!-- GRAPH AREA -->
+        <div class="graph-area">
+            <canvas id="graph-canvas"></canvas>
+            
+            <div class="market-info">
+                <div class="flag-container" id="flag-container"></div>
+                <div class="country-text" id="country-text">Next Trend: Loading...</div>
+            </div>
+
+            <div class="center-overlay">
+                <div class="multi-value" id="center-multi">1.00x</div>
+                <div class="multi-status" id="status-text">Awaiting Market</div>
+            </div>
+
+            <div class="timeout-overlay" id="timeout-overlay">
+                <div class="timeout-title">THE MARKET TIME OUT</div>
+                <div class="timeout-sub">NEXT ROUND STARTS IN</div>
+                <div class="timeout-countdown" id="timeout-count">10s</div>
+            </div>
+        </div>
+
+        <!-- LIVE TRENDERS TABLE -->
+        <div class="trenders-section">
+            <div class="trenders-header">
+                <div class="col-header col-user">Trader</div>
+                <div class="col-header col-bet">Amount</div>
+                <div class="col-header col-mult">Mult</div>
+                <div class="col-header col-win">Profit</div>
+            </div>
+            <div class="trenders-list" id="trenders-list">
+                <!-- Real-time rows injected via JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BOTTOM CONTROLS -->
+    <div class="controls-panel">
+        <div class="control-row">
+            <div class="amount-box">
+                <button class="adj-btn" onclick="window.adjustBet(-50)">−</button>
+                <div class="input-wrap">
+                    <span class="currency-symbol" id="currency-symbol-input">K</span>
+                    <input type="number" id="bet-input" class="bet-input" value="100" readonly>
+                </div>
+                <button class="adj-btn" onclick="window.adjustBet(50)">+</button>
+            </div>
+        </div>
+        
+        <div class="quick-bets">
+            <button class="quick-btn" data-amount="100" onclick="window.setBet(100)">K100</button>
+            <button class="quick-btn" data-amount="500" onclick="window.setBet(500)">K500</button>
+            <button class="quick-btn" data-amount="1000" onclick="window.setBet(1000)">K1K</button>
+            <button class="quick-btn" data-amount="5000" onclick="window.setBet(5000)">K5K</button>
+        </div>
+
+        <button class="action-btn" id="action-btn" onclick="window.handleAction()">
+            <span class="btn-main-text">START TREND</span>
+            <span class="btn-sub-text" id="btn-sub-text">K100</span>
+        </button>
+    </div>
+
+    <!-- FIREBASE & GAME LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        // 🛑 FIXED: Added getDoc and setDoc to the imports
+        import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, collection, query, orderBy, limit, onSnapshot, serverTimestamp, increment, where, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
+            measurementId: "G-L1CLB5TDHV"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- STATE ---
+        let currentUser = null;
+        let userProfilePic = null;
+        let userFullName = 'You';
+        let userBalance = 0;
+        
+        // CURRENCY STATE
+        let userCurrency = 'ZMW';
+        let currencySymbol = 'K';
+        const CURRENCY_MAP = {
+            'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 
+            'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'TZS': 'TSh', 
+            'UGX': 'USh', 'BWP': 'P', 'MWK': 'MK', 'MZN': 'MT', 
+            'NAD': 'N$', 'AOA': 'Kz', 'PHP': '₱', 'IDR': 'Rp', 
+            'PKR': '₨', 'BDT': '৳'
+        };
+
+        let currentRoundId = null;
+        let gameStatus = 'waiting'; 
+        let currentMultiplier = 1.00;
+        let lastTickMultiplier = 1.00;
+        let myBetId = null; 
+        let betAmount = 100;
+        let isPlaying = false;
+        let hasBetThisRound = false;
+        
+        // Graph Engine
+        let points = [];
+        let animationFrame = null;
+        let roundStartTime = 0;
+        let crashPoint = 5.00; 
+        const timeToStart = 15; 
+        
+        // Canvas
+        const canvas = document.getElementById('graph-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Real Players
+        let activePlayers = [];
+        let unsubscribeLiveBets = null;
+
+        // ==========================================
+        // HIGH-QUALITY SOUND ENGINE (Web Audio API)
+        // ==========================================
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        let masterGain = null;
+
+        function initAudio() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new AudioContext();
+                    masterGain = audioCtx.createGain();
+                    masterGain.gain.value = 0.5; // Master volume
+                    masterGain.connect(audioCtx.destination);
+                }
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            } catch(e) {}
+        }
+
+        function playStart() {
+            if (!audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.4);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.connect(gain); gain.connect(masterGain);
+                osc.start(now); osc.stop(now + 0.4);
+            } catch(e) {}
+        }
+
+        function playTick(multiplier) {
+            if (!audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                const baseFreq = 800 + Math.min(multiplier * 100, 1200);
+                osc.frequency.setValueAtTime(baseFreq, now);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                osc.connect(gain); gain.connect(masterGain);
+                osc.start(now); osc.stop(now + 0.08);
+            } catch(e) {}
+        }
+
+        function playCashout() {
+            if (!audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+                notes.forEach((freq, index) => {
+                    const startTime = now + (index * 0.1);
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, startTime);
+                    gain.gain.setValueAtTime(0.2, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.4);
+                    osc.connect(gain); gain.connect(masterGain);
+                    osc.start(startTime); osc.stop(startTime + 0.4);
+                });
+            } catch(e) {}
+        }
+
+        function playCrash() {
+            if (!audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.exponentialRampToValueAtTime(30, now + 0.6);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                osc.connect(gain); gain.connect(masterGain);
+                osc.start(now); osc.stop(now + 0.6);
+
+                const bufferSize = audioCtx.sampleRate * 0.3;
+                const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const noiseData = noiseBuffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) { noiseData[i] = Math.random() * 2 - 1; }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = noiseBuffer;
+                const noiseGain = audioCtx.createGain();
+                noiseGain.gain.setValueAtTime(0.2, now);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                noise.connect(noiseGain); noiseGain.connect(masterGain);
+                noise.start(now);
+            } catch(e) {}
+        }
+
+        function playClick() {
+            if (!audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(1000, now);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.connect(gain); gain.connect(masterGain);
+                osc.start(now); osc.stop(now + 0.05);
+            } catch(e) {}
+        }
+
+        // --- FLAGS ---
+        const countries = [
+            { name: 'USA', code: 'us' }, { name: 'UK', code: 'uk' }, { name: 'Japan', code: 'jp' },
+            { name: 'Brazil', code: 'br' }, { name: 'Nigeria', code: 'ng' }, { name: 'Zambia', code: 'zm' }, { name: 'S. Africa', code: 'za' }
+        ];
+        function getFlagSVG(code) {
+            switch(code) {
+                case 'us': return `<svg viewBox="0 0 60 40"><rect fill="#B22234" width="60" height="40"/><rect fill="#fff" y="3" width="60" height="3"/><rect fill="#fff" y="9" width="60" height="3"/><rect fill="#fff" y="15" width="60" height="3"/><rect fill="#fff" y="21" width="60" height="3"/><rect fill="#fff" y="27" width="60" height="3"/><rect fill="#fff" y="33" width="60" height="3"/><rect fill="#3C3B6E" width="24" height="22"/></svg>`;
+                case 'uk': return `<svg viewBox="0 0 60 40"><rect fill="#012169" width="60" height="40"/><path d="M0,0 L60,40 M60,0 L0,40" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,40 M60,0 L0,40" stroke="#C8102E" stroke-width="4"/><path d="M30,0 L30,40 M0,20 L60,20" stroke="#fff" stroke-width="10"/><path d="M30,0 L30,40 M0,20 L60,20" stroke="#C8102E" stroke-width="6"/></svg>`;
+                case 'jp': return `<svg viewBox="0 0 60 40"><rect fill="#fff" width="60" height="40"/><circle cx="30" cy="20" r="12" fill="#bc002d"/></svg>`;
+                case 'br': return `<svg viewBox="0 0 60 40"><rect fill="#009c3b" width="60" height="40"/><polygon points="30,5 55,20 30,35 5,20" fill="#ffdf00"/><circle cx="30" cy="20" r="8" fill="#002776"/></svg>`;
+                case 'ng': return `<svg viewBox="0 0 60 40"><rect fill="#008751" width="60" height="40"/><rect fill="#fff" x="20" width="20" height="40"/></svg>`;
+                case 'zm': return `<svg viewBox="0 0 60 40"><rect fill="#198a00" width="60" height="40"/><rect fill="#de2010" x="40" y="20" width="15" height="10"/><rect fill="#000" x="40" y="30" width="15" height="10"/><rect fill="#ef7d00" x="40" y="10" width="15" height="10"/></svg>`;
+                case 'za': return `<svg viewBox="0 0 60 40"><rect fill="#002395" width="60" height="20"/><rect fill="#DE3831" y="20" width="60" height="20"/><path d="M0,0 L25,20 L0,40" fill="#007A4D"/><path d="M0,10 L20,20 L0,30" fill="#FFB612"/><path d="M0,15 L15,20 L0,25" fill="#000"/></svg>`;
+                default: return '';
+            }
+        }
+
+        // --- INITIALIZATION ---
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+                
+                onAuthStateChanged(auth, async (user) => {
+                    if (!user) { window.location.replace('login.html'); return; }
+                    currentUser = user;
+
+                    onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
+                        if (snap.exists()) {
+                            userBalance = snap.data().balance || 0;
+                            document.getElementById('header-balance').innerText = `${currencySymbol}${userBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                        }
+                    });
+
+                    onSnapshot(doc(db, 'users', user.uid), (snap) => {
+                        if (snap.exists()) {
+                            const data = snap.data();
+                            userFullName = data.fullName || 'You';
+                            
+                            if (data.currency) {
+                                userCurrency = data.currency;
+                                currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
+                                updateCurrencyUI(); 
+                            }
+                            
+                            if (data.profilePicUrl) {
+                                userProfilePic = data.profilePicUrl;
+                                document.getElementById('header-profile-pic').innerHTML = `<img src="${userProfilePic}" class="avatar-img">`;
+                            } else {
+                                document.getElementById('header-profile-pic').innerText = userFullName.charAt(0).toUpperCase();
+                            }
+                        }
+                    });
+
+                    listenToGameState();
+                });
+            }, 100);
+        });
+
+        // --- CURRENCY UI ENGINE ---
+        function updateCurrencyUI() {
+            document.getElementById('header-balance').innerText = `${currencySymbol}${userBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('currency-symbol-input').innerText = currencySymbol;
+            
+            document.querySelectorAll('.quick-btn').forEach(btn => {
+                const amt = btn.getAttribute('data-amount');
+                if (amt) {
+                    const displayAmt = parseInt(amt) >= 1000 ? (parseInt(amt) / 1000) + 'K' : amt;
+                    btn.innerText = `${currencySymbol}${displayAmt}`;
+                }
+            });
+            
+            updateButtonText();
+            renderPlayers(); 
+        }
+
+        function resizeCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                ctx.scale(dpr, dpr);
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+                if (gameStatus !== 'running') drawGraph(); 
+            }
+        }
+
+        // --- UI CONTROLS ---
+        window.adjustBet = (amount) => {
+            initAudio();
+            playClick();
+            if (gameStatus === 'running') return;
+            betAmount = Math.max(50, betAmount + amount);
+            document.getElementById('bet-input').value = betAmount;
+            updateButtonText();
+        };
+
+        window.setBet = (amount) => {
+            initAudio();
+            playClick();
+            if (gameStatus === 'running') return;
+            betAmount = amount;
+            document.getElementById('bet-input').value = betAmount;
+            updateButtonText();
+        };
+
+        function updateButtonText() {
+            const btn = document.getElementById('action-btn');
+            if (gameStatus === 'waiting' && !hasBetThisRound) {
+                btn.innerHTML = `<span class="btn-main-text">START TREND</span><span class="btn-sub-text">${currencySymbol}${betAmount}</span>`;
+            }
+        }
+
+        // --- REAL-TIME GAME STATE SYNC ---
+        function listenToGameState() {
+            const q = query(collection(db, 'live_trends'), orderBy('createdAt', 'desc'), limit(1));
+            
+            onSnapshot(q, (snapshot) => {
+                if (snapshot.empty) {
+                    createNewRound();
+                    return;
+                }
+
+                const roundDoc = snapshot.docs[0];
+                const data = roundDoc.data();
+                
+                if (currentRoundId !== roundDoc.id) {
+                    currentRoundId = roundDoc.id;
+                    crashPoint = data.crashPoint;
+                    myBetId = null;
+                    isPlaying = false;
+                    hasBetThisRound = false;
+                    subscribeToLiveBets(currentRoundId);
+                }
+
+                if (data.status === 'waiting' && gameStatus !== 'waiting') {
+                    startCountdown(data.startTime.toMillis());
+                }
+
+                if (data.status === 'running' && gameStatus !== 'running') {
+                    startRound(data.startTime.toMillis() + (timeToStart * 1000));
+                }
+
+                if (data.status === 'crashed' && gameStatus !== 'crashed') {
+                    triggerCrashUI(data.crashPoint);
+                }
+            });
+        }
+
+        // --- REAL-TIME PLAYERS LISTENER ---
+        function subscribeToLiveBets(roundId) {
+            if (unsubscribeLiveBets) unsubscribeLiveBets();
+            
+            const q = query(collection(db, 'live_bets'), where('roundId', '==', roundId));
+            unsubscribeLiveBets = onSnapshot(q, (snapshot) => {
+                activePlayers = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    activePlayers.push({
+                        id: doc.id,
+                        uid: data.uid,
+                        name: data.username,
+                        bet: data.amount,
+                        status: data.status,
+                        cashedOutAt: data.cashOutMultiplier,
+                        payout: data.payout,
+                        profilePic: data.profilePic || null,
+                        isSelf: data.uid === currentUser.uid,
+                        color: '#10b981'
+                    });
+                    
+                    if (data.uid === currentUser.uid && data.status === 'active') {
+                        myBetId = doc.id;
+                        isPlaying = true;
+                        hasBetThisRound = true;
+                        updateUIState(); 
+                    }
+                });
+                
+                activePlayers.sort((a, b) => (b.isSelf ? 1 : 0) - (a.isSelf ? 1 : 0) || a.name.localeCompare(b.name));
+                renderPlayers();
+            });
+        }
+
+        // 🛑 THE NEW SHUFFLED SEQUENCE LOGIC 🛑
+        async function createNewRound() {
+            // 1. Fetch the Admin's sequence
+            const seqDoc = await getDoc(doc(db, 'settings', 'crash_sequence'));
+            
+            let crashPoint = 2.00; // Fallback default
+
+            if (seqDoc.exists() && seqDoc.data().rounds && seqDoc.data().rounds.length === 20) {
+                let sequence = seqDoc.data().rounds; // Get the array of 20 numbers
+                
+                // Get the current round number
+                const counterDoc = await getDoc(doc(db, 'settings', 'game_counter'));
+                let currentIndex = counterDoc.exists() ? counterDoc.data().index : 0;
+
+                // SHUFFLE LOGIC: If we reached the end of the 20 rounds, shuffle the deck!
+                if (currentIndex >= 20) {
+                    // Fisher-Yates Shuffle Algorithm
+                    for (let i = sequence.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [sequence[i], sequence[j]] = [sequence[j], sequence[i]];
+                    }
+                    
+                    // Save the newly shuffled sequence back to the database
+                    await setDoc(doc(db, 'settings', 'crash_sequence'), { rounds: sequence });
+                    
+                    // Reset the index back to the start
+                    currentIndex = 0;
+                }
+
+                // Get the crash point for this round
+                crashPoint = sequence[currentIndex];
+
+                // Increment the index for the next round
+                let nextIndex = currentIndex + 1;
+
+                // Save the new index
+                await setDoc(doc(db, 'settings', 'game_counter'), { index: nextIndex });
+            } else {
+                // Fallback if no sequence is set by admin (uses original math)
+                const array = new Uint32Array(1);
+                window.crypto.getRandomValues(array);
+                crashPoint = await calculateCrashPoint(array[0].toString());
+            }
+
+            // 2. Start the new round with the chosen crash point
+            const newRoundRef = await addDoc(collection(db, 'live_trends'), {
+                status: 'waiting',
+                startTime: serverTimestamp(),
+                roundNumber: Date.now(),
+                crashPoint: crashPoint,
+                createdAt: serverTimestamp()
+            });
+        }
+
+        function startCountdown(startTimeMs) {
+            gameStatus = 'waiting';
+            updateUIState();
+            
+            const updateTimer = () => {
+                const timeLeft = Math.max(0, Math.ceil((startTimeMs + (timeToStart * 1000) - Date.now()) / 1000));
+                
+                if (timeLeft <= 0) {
+                    startRound(startTimeMs + (timeToStart * 1000));
+                } else {
+                    requestAnimationFrame(updateTimer);
+                }
+            };
+            requestAnimationFrame(updateTimer);
+        }
+
+        function startRound(startTimeMs) {
+            if (gameStatus === 'running') return;
+            gameStatus = 'running';
+            updateUIState();
+            
+            playStart(); 
+            
+            roundStartTime = startTimeMs;
+
+            const animate = () => {
+                if (gameStatus !== 'running') return;
+
+                const elapsed = (Date.now() - roundStartTime) / 1000;
+                currentMultiplier = 1.00 + Math.pow(elapsed, 1.35) * 0.15;
+
+                const xPos = elapsed * 40; 
+                const yPos = canvas.height - ((currentMultiplier - 1) * 60); 
+
+                if (points.length === 0 || points[points.length-1].x < xPos) {
+                    points.push({ x: xPos, y: yPos });
+                }
+
+                if (Math.floor(currentMultiplier * 10) > Math.floor(lastTickMultiplier * 10)) {
+                    playTick(currentMultiplier);
+                    lastTickMultiplier = currentMultiplier;
+                }
+
+                drawGraph();
+
+                const currentColor = getMultiplierColor(currentMultiplier);
+                document.getElementById('center-multi').innerText = currentMultiplier.toFixed(2) + 'x';
+                document.getElementById('center-multi').style.color = currentColor;
+                document.getElementById('center-multi').style.textShadow = `0 0 30px ${currentColor}80`;
+
+                if (isPlaying) {
+                    const winAmount = betAmount * currentMultiplier;
+                    document.getElementById('action-btn').innerHTML = `<span class="btn-main-text">STOP TREND</span><span class="btn-sub-text">${currencySymbol}${winAmount.toFixed(2)}</span>`;
+                }
+
+                if (currentMultiplier >= crashPoint) {
+                    triggerCrash(currentMultiplier);
+                    return;
+                }
+
+                animationFrame = requestAnimationFrame(animate);
+            };
+            animate();
+        }
+
+        async function triggerCrash(crashMultiplier) {
+            if (gameStatus === 'crashed') return;
+            
+            gameStatus = 'crashed';
+            cancelAnimationFrame(animationFrame);
+
+            if (unsubscribeLiveBets) unsubscribeLiveBets();
+            const q = query(collection(db, 'live_bets'), where('roundId', '==', currentRoundId), where('status', '==', 'active'));
+            const snapshot = await getDocs(q);
+            const batch = writeBatch(db);
+            snapshot.forEach(doc => {
+                batch.update(doc.ref, { status: 'lost' });
+            });
+            await batch.commit();
+
+            triggerCrashUI(crashMultiplier);
+
+            setTimeout(() => { createNewRound(); }, 4000);
+        }
+
+        function triggerCrashUI(crashMultiplier) {
+            document.getElementById('center-multi').style.color = '#ff3366';
+            document.getElementById('center-multi').style.textShadow = '0 0 30px rgba(255, 51, 102, 0.6)';
+            
+            updateUIState();
+            drawGraph();
+            playCrash(); 
+
+            if (isPlaying) {
+                isPlaying = false;
+                hasBetThisRound = false;
+                myBetId = null;
+            }
+
+            const overlay = document.getElementById('timeout-overlay');
+            const countdownEl = document.getElementById('timeout-count');
+            overlay.classList.add('active');
+            
+            let timeLeft = 10;
+            countdownEl.innerText = `${timeLeft}s`;
+            
+            const interval = setInterval(() => {
+                timeLeft--;
+                countdownEl.innerText = `${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    overlay.classList.remove('active');
+                    createNewRound();
+                }
+            }, 1000);
+        }
+
+        function updateUIState() {
+            const btn = document.getElementById('action-btn');
+            const statusText = document.getElementById('status-text');
+
+            if (gameStatus === 'waiting') {
+                btn.innerText = myBetId ? 'AWAITING...' : `PLACE TREND (${currencySymbol}${betAmount})`;
+                btn.className = 'action-btn place-bet';
+                btn.disabled = !!myBetId;
+                statusText.innerText = 'Awaiting Market';
+            } 
+            else if (gameStatus === 'running') {
+                statusText.innerText = 'Analyzing Trend...';
+                if (isPlaying) {
+                    btn.className = 'action-btn stop';
+                    btn.disabled = false;
+                } else {
+                    btn.innerText = 'MONITORING...';
+                    btn.className = 'action-btn place-bet';
+                    btn.disabled = true;
+                }
+            } 
+            else if (gameStatus === 'crashed') {
+                statusText.innerText = 'TREND CRASHED';
+                btn.innerText = 'WAITING...';
+                btn.className = 'action-btn place-bet';
+                btn.disabled = true;
+            }
+        }
+
+        // --- THE VARIABLE ODDS MATH (Fallback) ---
+        async function calculateCrashPoint(seed) {
+            const msgBuffer = new TextEncoder().encode(seed);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            
+            const hashInt = parseInt(hashHex.substring(0, 8), 16);
+            const maxInt = 0xffffffff;
+            const randomVal = hashInt / maxInt;
+
+            if (randomVal < 0.40) return 1.01 + (randomVal * 1.25); 
+            else if (randomVal < 0.70) return 1.50 + ((randomVal - 0.40) * 3.33); 
+            else if (randomVal < 0.90) return 2.50 + ((randomVal - 0.70) * 12.5); 
+            else return 5.00 + ((randomVal - 0.90) * 450.0); 
+        }
+
+        // --- USER ACTIONS ---
+        window.handleAction = async () => {
+            initAudio(); 
+            if (gameStatus === 'waiting' && !hasBetThisRound) {
+                await placeBet();
+            } else if (gameStatus === 'running' && isPlaying) {
+                await cashOut();
+            }
+        };
+
+        async function placeBet() {
+            if (betAmount < 50) { alert(`Minimum trend amount is ${currencySymbol}50`); return; }
+            if (betAmount > userBalance) { alert('Insufficient balance!'); return; }
+
+            try {
+                const batch = writeBatch(db);
+                
+                const walletRef = doc(db, 'wallets', currentUser.uid);
+                const txRef = doc(collection(db, 'transactions'));
+                
+                batch.update(walletRef, { 
+                    balance: increment(-betAmount),
+                    lastTxId: txRef.id 
+                });
+
+                batch.set(txRef, {
+                    uid: currentUser.uid, type: 'bet', amount: -betAmount, status: 'completed', createdAt: serverTimestamp()
+                });
+
+                const betRef = doc(collection(db, 'live_bets'));
+                batch.set(betRef, {
+                    uid: currentUser.uid,
+                    username: userFullName,
+                    roundId: currentRoundId,
+                    amount: betAmount,
+                    status: 'active',
+                    cashOutMultiplier: 0,
+                    payout: 0,
+                    profilePic: userProfilePic,
+                    createdAt: serverTimestamp()
+                });
+
+                await batch.commit();
+                playClick(); 
+
+            } catch (e) { 
+                console.error(e); 
+                alert("Transaction failed."); 
+            }
+        }
+
+        async function cashOut() {
+            if (!isPlaying) return;
+            
+            const cashoutMultiplier = currentMultiplier;
+            const payout = betAmount * cashoutMultiplier;
+
+            try {
+                const batch = writeBatch(db);
+
+                batch.update(doc(db, 'live_bets', myBetId), {
+                    status: 'won',
+                    cashOutMultiplier: cashoutMultiplier,
+                    payout: payout
+                });
+
+                const walletRef = doc(db, 'wallets', currentUser.uid);
+                const txRef = doc(collection(db, 'transactions'));
+                
+                batch.update(walletRef, { 
+                    balance: increment(payout),
+                    lastTxId: txRef.id 
+                });
+
+                batch.set(txRef, {
+                    uid: currentUser.uid, type: 'payout', amount: payout, status: 'completed', createdAt: serverTimestamp()
+                });
+
+                await batch.commit();
+
+                playCashout(); 
+                
+                isPlaying = false;
+                hasBetThisRound = false;
+                myBetId = null;
+                updateUIState();
+
+            } catch(e) { console.error(e); }
+        }
+
+        // --- DRAWING & RENDERING ---
+        function getMultiplierColor(m) {
+            if (m >= 6.00) return '#b829ff'; if (m >= 3.00) return '#ffcc00'; if (m >= 2.00) return '#00ff88'; return '#00e5ff'; 
+        }
+
+        function drawGraph() {
+            try {
+                const w = canvas.width / (window.devicePixelRatio || 1);
+                const h = canvas.height / (window.devicePixelRatio || 1);
+                if (w <= 0 || h <= 0) return;
+                ctx.clearRect(0, 0, w, h);
+                
+                const padLeft = 40; const padRight = 20; const padTop = 30; const padBottom = 30;
+                const graphWidth = w - padLeft - padRight; const graphHeight = h - padTop - padBottom;
+                const maxY = Math.max(2.0, currentMultiplier + 0.5); const minY = 1.0; const maxX = 30; 
+
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)'; ctx.lineWidth = 1; ctx.font = '10px Inter'; ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; ctx.textAlign = 'right';
+                for (let i = 0; i <= 4; i++) {
+                    const yVal = minY + ((maxY - minY) / 4) * i;
+                    const yPos = h - padBottom - ((yVal - minY) / (maxY - minY)) * graphHeight;
+                    ctx.beginPath(); ctx.moveTo(padLeft, yPos); ctx.lineTo(w - padRight, yPos); ctx.stroke(); ctx.fillText(yVal.toFixed(1) + 'x', padLeft - 5, yPos + 4);
+                }
+
+                if (points.length < 2) return;
+                let mapped = points.map(p => ({ x: padLeft + (p.x / maxX) * graphWidth, y: h - padBottom - ((p.y - minY) / (maxY - minY)) * graphHeight }));
+
+                ctx.beginPath(); ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = gameStatus === 'crashed' ? '#ff3366' : getMultiplierColor(currentMultiplier); ctx.lineWidth = 4; ctx.shadowBlur = 15; ctx.shadowColor = ctx.strokeStyle;
+                ctx.moveTo(mapped[0].x, mapped[0].y); for (let i = 1; i < mapped.length; i++) ctx.lineTo(mapped[i].x, mapped[i].y); ctx.stroke();
+
+                if (gameStatus === 'running') {
+                    ctx.beginPath(); ctx.arc(mapped[mapped.length-1].x, mapped[mapped.length-1].y, 5, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
+                }
+            } catch(e) {}
+        }
+
+        function renderPlayers() {
+            const list = document.getElementById('trenders-list');
+            list.innerHTML = '';
+            activePlayers.forEach(p => {
+                const row = document.createElement('div'); row.className = `player-row ${p.isSelf ? 'is-you' : ''}`;
+                
+                let multHtml = '';
+                let winHtml = '';
+
+                if (p.status === 'active') {
+                    multHtml = `<span class="mult-active">...</span>`;
+                    winHtml = `-`;
+                } else if (p.status === 'won') {
+                    multHtml = `<span class="mult-won">${p.cashedOutAt.toFixed(2)}x</span>`;
+                    winHtml = `+${currencySymbol}${p.payout.toFixed(0)}`;
+                } else {
+                    multHtml = `<span class="mult-lost">Lost</span>`;
+                    winHtml = `-${currencySymbol}${p.bet}`;
+                }
+                
+                let avatar = p.profilePic ? `<img src="${p.profilePic}" class="avatar-img">` : `<svg class="avatar-svg" viewBox="0 0 40 40"><rect width="40" height="40" fill="${p.color}" opacity="0.15"/><circle cx="20" cy="15" r="7" fill="${p.color}"/><path d="M 8 40 Q 8 26 20 26 Q 32 26 32 40" fill="${p.color}"/></svg>`;
+
+                row.innerHTML = `
+                    <div class="user-info"><div class="avatar-wrap">${avatar}</div><div class="username">${p.name}</div></div>
+                    <div class="row-bet">${currencySymbol}${p.bet}</div><div class="row-mult">${multHtml}</div><div class="row-win">${winHtml}</div>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+    </script>
+</body>
+</html>

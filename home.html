@@ -7,99 +7,327 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-deep: #060b19; --bg-card: #0f172a; --bg-elevated: #1e293b; --royal-blue: #2563eb;
-            --electric-blue: #38bdf8; --blue-glow: rgba(56, 189, 248, 0.3); --white: #ffffff;
-            --text-muted: #94a3b8; --border-light: rgba(255, 255, 255, 0.08);
+            --bg-deep: #060b19;
+            --bg-card: #0f172a;
+            --bg-elevated: #1e293b;
+            --royal-blue: #2563eb;
+            --electric-blue: #38bdf8;
+            --blue-glow: rgba(56, 189, 248, 0.3);
+            --white: #ffffff;
+            --text-muted: #94a3b8;
+            --border-light: rgba(255, 255, 255, 0.08);
         }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg-deep); color: var(--white); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; background-image: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.1) 0%, transparent 50%); background-attachment: fixed; }
+
+        /* HEADER */
         .top-header { position: fixed; top: 0; left: 0; width: 100%; height: 65px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background: rgba(6, 11, 25, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-light); z-index: 100; }
+        
         .header-left { flex: 1; display: flex; justify-content: flex-start; }
         .logo-area { display: flex; align-items: center; gap: 8px; text-decoration: none; justify-content: center; }
         .logo-icon { font-size: 22px; filter: drop-shadow(0 0 10px var(--blue-glow)); }
         .logo-text { font-size: 18px; font-weight: 900; color: var(--white); letter-spacing: 1px; }
         .logo-text span { color: var(--electric-blue); }
         .header-right { flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
+        
         .icon-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border-light); cursor: pointer; position: relative; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; transition: background 0.2s; }
+        .icon-btn:hover { background: rgba(255,255,255,0.1); }
         .icon-btn svg { width: 20px; height: 20px; fill: var(--white); }
-        .main-content { flex: 1; padding: 85px 20px 100px 20px; max-width: 500px; margin: 0 auto; width: 100%; }
-        .profile-section { background: var(--bg-card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border-light); margin-bottom: 25px; }
-        .cover-photo { height: 120px; background: linear-gradient(135deg, var(--royal-blue), var(--electric-blue)); }
+        .notification-dot { position: absolute; top: 8px; right: 9px; width: 8px; height: 8px; background: var(--electric-blue); border-radius: 50%; border: 2px solid var(--bg-deep); }
+
+        /* SIDE MENU */
+        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; opacity: 0; visibility: hidden; transition: 0.3s; backdrop-filter: blur(4px); }
+        .drawer-overlay.active { opacity: 1; visibility: visible; }
+        .side-menu { position: fixed; top: 0; right: -300px; width: 280px; height: 100vh; background: var(--bg-card); z-index: 201; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; border-left: 1px solid var(--border-light); }
+        .side-menu.active { right: 0; box-shadow: -10px 0 30px rgba(0,0,0,0.8); }
+        .menu-header { padding: 30px 20px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 15px; }
+        .menu-avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--royal-blue), var(--electric-blue)); display: grid; place-items: center; font-weight: 900; color: var(--white); font-size: 20px; overflow: hidden; }
+        .menu-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .menu-user-info h4 { font-size: 16px; font-weight: 800; color: var(--white); }
+        .menu-user-info p { font-size: 12px; color: var(--electric-blue); font-weight: 600; }
+        .menu-links { padding: 15px; flex: 1; overflow-y: auto; }
+        .menu-link { display: flex; align-items: center; gap: 15px; padding: 14px 15px; color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 12px; transition: 0.2s; }
+        .menu-link:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+        .menu-link svg { width: 20px; height: 20px; fill: var(--text-muted); transition: 0.2s; }
+        .menu-link:hover svg { fill: var(--electric-blue); }
+        .menu-link.danger { color: #ef4444; margin-top: 10px; border-top: 1px solid var(--border-light); border-radius: 0 0 12px 12px; }
+        .menu-link.danger svg { fill: #ef4444; }
+
+        /* MAIN CONTENT */
+        .main-content { flex: 1; padding: 85px 20px 100px 20px; max-width: 500px; margin: 0 auto; width: 100%; animation: fadeIn 0.5s ease; }
+
+        /* PROFILE SECTION */
+        .profile-section { background: var(--bg-card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border-light); margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .cover-photo { height: 120px; background: linear-gradient(135deg, var(--royal-blue), var(--electric-blue)); background-image: url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=1000&auto=format&fit=crop'); background-size: cover; background-position: center; position: relative; }
+        .cover-photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 30%, var(--bg-card) 100%); }
         .profile-info-container { position: relative; padding: 0 20px 20px 20px; margin-top: -40px; text-align: center; z-index: 2; }
         .profile-avatar-wrapper { position: relative; width: 80px; height: 80px; margin: 0 auto 10px auto; }
         .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--bg-deep); border: 4px solid var(--bg-card); display: grid; place-items: center; overflow: hidden; }
         .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, var(--royal-blue), var(--electric-blue)); display: grid; place-items: center; font-weight: 900; color: var(--white); font-size: 28px; }
-        .profile-name { font-size: 20px; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .profile-status { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-        .section-title { font-size: 18px; font-weight: 800; margin-bottom: 15px; }
+        .edit-avatar-btn { position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--electric-blue); border: 2px solid var(--bg-card); display: grid; place-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 3; }
+        .edit-avatar-btn svg { width: 14px; height: 14px; fill: var(--bg-deep); }
+        .profile-name { font-size: 20px; font-weight: 900; color: var(--white); display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .verified-badge { width: 16px; height: 16px; fill: var(--electric-blue); }
+        .profile-status { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: 4px; }
+
+        /* TRENDING */
+        .trending-widget { background: linear-gradient(180deg, #0b1221 0%, #060b19 100%); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 20px; padding: 20px; margin-bottom: 30px; position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(56, 189, 248, 0.1); }
+        .trending-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; z-index: 2; position: relative; }
+        .trending-title { font-size: 16px; font-weight: 900; color: var(--white); display: flex; align-items: center; gap: 8px; }
+        .trending-title span { color: var(--electric-blue); }
+        .live-badge { font-size: 10px; background: rgba(56, 189, 248, 0.2); color: var(--electric-blue); padding: 4px 8px; border-radius: 12px; font-weight: 800; animation: pulse 1.5s infinite; }
+        .trending-canvas-container { height: 120px; width: 100%; position: relative; margin-bottom: 15px; }
+        #trending-canvas { width: 100%; height: 100%; display: block; }
+        .trending-stats { display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 2; }
+        .multiplier-box { display: flex; flex-direction: column; }
+        .multiplier-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+        .multiplier-value { font-size: 36px; font-weight: 900; color: var(--electric-blue); text-shadow: 0 0 15px rgba(56, 189, 248, 0.5); line-height: 1; }
+        .win-box { text-align: right; display: flex; flex-direction: column; }
+        .win-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+        .win-value { font-size: 22px; font-weight: 900; color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+
+        /* FEATURES */
+        .section-title { font-size: 18px; font-weight: 800; color: var(--white); margin-bottom: 15px; }
         .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 35px; }
-        .feature-card { height: 140px; border-radius: 20px; text-decoration: none; color: var(--white); display: flex; flex-direction: column; justify-content: flex-end; padding: 15px; position: relative; overflow: hidden; border: 1px solid var(--border-light); }
+        .feature-card { height: 140px; border-radius: 20px; text-decoration: none; color: var(--white); display: flex; flex-direction: column; justify-content: flex-end; padding: 15px; position: relative; overflow: hidden; border: 1px solid var(--border-light); transition: transform 0.2s; }
+        .feature-card:hover { transform: translateY(-3px); }
         .feature-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(6, 11, 25, 0.95) 0%, rgba(6, 11, 25, 0.4) 100%); z-index: 1; }
+        
         .feature-card.plans { background: url('https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=400&auto=format&fit=crop') center/cover; }
         .feature-card.fruit { background: url('https://images.unsplash.com/photo-1596838132731-3301c3fd4317?q=80&w=400&auto=format&fit=crop') center/cover; }
+        
         .feature-content { position: relative; z-index: 2; }
-        .feature-title { font-size: 15px; font-weight: 800; }
-        .bottom-nav { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 65px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border: 1px solid var(--border-light); border-radius: 35px; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); font-size: 10px; font-weight: 700; text-decoration: none; flex: 1; }
-        .nav-item svg { width: 22px; height: 22px; fill: var(--text-muted); }
+        .feature-title { font-size: 15px; font-weight: 800; margin-bottom: 2px; }
+        .feature-desc { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+
+        /* FEED */
+        .feed-container { display: flex; flex-direction: column; gap: 12px; }
+        .feed-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px; padding: 15px; display: flex; gap: 12px; align-items: center; animation: slideUp 0.4s ease; }
+        .feed-avatar { width: 45px; height: 45px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(135deg, var(--royal-blue), var(--electric-blue)); display: grid; place-items: center; font-weight: 900; color: var(--white); font-size: 16px; overflow: hidden; }
+        .feed-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .feed-content { flex: 1; }
+        .feed-text { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+        .feed-text b { color: var(--white); font-weight: 700; }
+        .feed-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+        .feed-time { font-size: 10px; color: #64748b; font-weight: 500; }
+        .btn-view-profile { font-size: 11px; color: var(--electric-blue); text-decoration: none; font-weight: 700; padding: 4px 10px; border-radius: 6px; background: rgba(56, 189, 248, 0.1); transition: 0.2s; }
+        .btn-view-profile:hover { background: rgba(56, 189, 248, 0.2); }
+        .empty-feed { text-align: center; color: var(--text-muted); font-size: 13px; padding: 30px 20px; background: var(--bg-card); border-radius: 16px; border: 1px dashed var(--border-light); }
+
+        /* BOTTOM NAV */
+        .bottom-nav { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 65px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border: 1px solid var(--border-light); border-radius: 35px; display: flex; justify-content: space-around; align-items: center; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1); padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); font-size: 10px; font-weight: 700; text-decoration: none; transition: 0.3s; flex: 1; padding: 10px 0; }
+        .nav-item svg { width: 22px; height: 22px; fill: var(--text-muted); transition: 0.3s; }
         .nav-item.active { color: var(--electric-blue); }
-        .nav-item.active svg { fill: var(--electric-blue); }
+        .nav-item.active svg { fill: var(--electric-blue); filter: drop-shadow(0 0 8px var(--blue-glow)); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
+
+    <input type="file" id="profile-upload-input" accept="image/jpeg,image/jpg,image/png" hidden>
+
     <header class="top-header">
-        <div class="header-left"><button class="icon-btn" onclick="logout()" style="color:#ef4444;"><svg viewBox="0 0 24 24" fill="#ef4444"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></button></div>
-        <a href="home.html" class="logo-area"><span class="logo-icon"></span><span class="logo-text">JAKI<span>POT</span></span></a>
-        <div class="header-right"></div>
+        <div class="header-left">
+            <button class="icon-btn" onclick="toggleMenu()">
+                <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+            </button>
+        </div>
+        
+        <a href="home.html" class="logo-area">
+            <span class="logo-icon">🐦</span>
+            <span class="logo-text">JAKI<span>POT</span></span>
+        </a>
+        
+        <div class="header-right">
+            <button class="icon-btn" onclick="alert('No new notifications')">
+                <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                <div class="notification-dot"></div>
+            </button>
+        </div>
     </header>
+
+    <div class="drawer-overlay" id="drawer-overlay" onclick="toggleMenu()"></div>
+    <aside class="side-menu" id="side-menu">
+        <div class="menu-header">
+            <div class="menu-avatar" id="menu-avatar">U</div>
+            <div class="menu-user-info">
+                <h4 id="menu-name">User</h4>
+                <p>Verified Member</p>
+            </div>
+        </div>
+        <div class="menu-links">
+            <a href="profile.html" class="menu-link">
+                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                My Profile
+            </a>
+            <a href="orders.html" class="menu-link">
+                <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                My Orders
+            </a>
+            <a href="referral.html" class="menu-link">
+                <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                Referrals
+            </a>
+            <a href="wallet.html" class="menu-link">
+                <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                My Wallet
+            </a>
+            <a href="deposit.html" class="menu-link">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                Deposit
+            </a>
+            <a href="withdraw.html" class="menu-link">
+                <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>
+                Withdraw
+            </a>
+            <a href="history.html" class="menu-link">
+                <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+                History
+            </a>
+            <a href="chat-rooms.html" class="menu-link">
+                <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                Community Chat
+            </a>
+            <a href="#" class="menu-link danger" onclick="logout()">
+                <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                Logout
+            </a>
+        </div>
+    </aside>
 
     <main class="main-content">
         <div class="profile-section">
             <div class="cover-photo"></div>
             <div class="profile-info-container">
                 <div class="profile-avatar-wrapper">
-                    <div class="profile-avatar" id="profile-avatar-container"><div class="avatar-inner" id="profile-initial">U</div></div>
+                    <div class="profile-avatar" id="profile-avatar-container">
+                        <div class="avatar-inner" id="profile-initial">U</div>
+                    </div>
+                    <div class="edit-avatar-btn" onclick="document.getElementById('profile-upload-input').click()">
+                        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    </div>
                 </div>
-                <h2 class="profile-name"><span id="profile-name">User Name</span></h2>
+                <h2 class="profile-name">
+                    <span id="profile-name">User Name</span>
+                    <svg class="verified-badge" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.4-1.4 3.6 3.6 7.6-7.6L19 8l-9 9z"/></svg>
+                </h2>
                 <div class="profile-status">Verified JAKIPOT Member</div>
+            </div>
+        </div>
+
+        <div class="trending-widget">
+            <div class="trending-header">
+                <div class="trending-title">Trending <span>📉</span></div>
+                <div class="live-badge">LIVE</div>
+            </div>
+            <div class="trending-canvas-container">
+                <canvas id="trending-canvas"></canvas>
+            </div>
+            <div class="trending-stats">
+                <div class="multiplier-box">
+                    <span class="multiplier-label">Multiplier</span>
+                    <span class="multiplier-value" id="trend-multiplier">1.00x</span>
+                </div>
+                <div class="win-box">
+                    <span class="win-label">Winning</span>
+                    <span class="win-value" id="trend-win">+$0.00</span>
+                </div>
             </div>
         </div>
 
         <h2 class="section-title">Start Earning</h2>
         <div class="features-grid">
-            <a href="#" class="feature-card plans"><div class="feature-content"><div class="feature-title">Locked Plans</div></div></a>
-            <a href="#" class="feature-card fruit"><div class="feature-content"><div class="feature-title">Fruit 777</div></div></a>
+            <a href="locked-plans.html" class="feature-card plans">
+                <div class="feature-content">
+                    <div class="feature-title">Locked Plans</div>
+                    <div class="feature-desc">Secure daily returns</div>
+                </div>
+            </a>
+            <a href="fruit.html" class="feature-card fruit">
+                <div class="feature-content">
+                    <div class="feature-title">Fruit 777</div>
+                    <div class="feature-desc">Spin & win big</div>
+                </div>
+            </a>
+        </div>
+
+        <h2 class="section-title">Recent Activity</h2>
+        <div class="feed-container" id="activity-feed">
+            <div class="empty-feed">No recent activity to show.</div>
         </div>
     </main>
 
     <nav class="bottom-nav">
-        <a href="home.html" class="nav-item active"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</a>
-        <a href="#" class="nav-item"><svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>Trending</a>
-        <a href="#" class="nav-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>Machine</a>
-        <a href="#" class="nav-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>Deposit</a>
-        <a href="#" class="nav-item"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>Chat</a>
+        <a href="home.html" class="nav-item active">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            Home
+        </a>
+        <a href="live-trending.html" class="nav-item">
+            <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+            Trending
+        </a>
+        <a href="trending-machine.html" class="nav-item">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+            Machine
+        </a>
+        <a href="deposit.html" class="nav-item">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            Deposit
+        </a>
+        <a href="chat-rooms.html" class="nav-item">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+            Chat
+        </a>
     </nav>
 
     <script type="module">
+        // 🛑 FIXED: Changed from 13.2.0 to 10.8.0
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, limit, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", authDomain: "jakipot.firebaseapp.com", projectId: "jakipot",
-            storageBucket: "jakipot.firebasestorage.app", messagingSenderId: "396191754293", appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
+            measurementId: "G-L1CLB5TDHV"
+        };
+
+        const CLOUDINARY = {
+            cloudName: 'c2n8j0v',
+            uploadPreset: 'doravica_unsigned',
+            folder: 'jakipot/profiles'
         };
 
         const app = initializeApp(firebaseConfig);
-        //  FIXED: Corrected the ReCaptcha Key typo (added the 'T')
-        initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), isTokenAutoRefreshEnabled: true });
+        
+        // 🛑 FIXED: Added App Check
+        initializeAppCheck(app, { 
+            provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), 
+            isTokenAutoRefreshEnabled: true 
+        });
+
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        let currentUserUid = null;
+
         onAuthStateChanged(auth, (user) => {
-            if (!user) { window.location.replace('login.html'); return; }
+            if (!user) {
+                window.location.replace('login.html');
+                return;
+            }
+            currentUserUid = user.uid;
 
             onSnapshot(doc(db, 'users', user.uid), (userDoc) => {
                 if (userDoc.exists()) {
@@ -107,10 +335,172 @@
                     const name = data.fullName || 'User';
                     
                     document.getElementById('profile-name').innerText = name;
-                    document.getElementById('profile-initial').innerText = name.charAt(0).toUpperCase();
+                    document.getElementById('menu-name').innerText = name;
+                    
+                    if (data.profilePicUrl) {
+                        document.getElementById('profile-avatar-container').innerHTML = `<img src="${data.profilePicUrl}" alt="Profile">`;
+                        document.getElementById('menu-avatar').innerHTML = `<img src="${data.profilePicUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+                    } else {
+                        document.getElementById('profile-initial').innerText = name.charAt(0).toUpperCase();
+                        document.getElementById('menu-avatar').innerText = name.charAt(0).toUpperCase();
+                    }
                 }
             });
+
+            const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(10));
+            onSnapshot(q, (snapshot) => {
+                const feedContainer = document.getElementById('activity-feed');
+                const users = snapshot.docs
+                    .map(doc => ({ id: doc.id, ...doc.data() }))
+                    .filter(u => u.fullName && u.createdAt);
+
+                if (users.length === 0) {
+                    feedContainer.innerHTML = '<div class="empty-feed">No recent activity to show.</div>';
+                    return;
+                }
+
+                feedContainer.innerHTML = '';
+                
+                users.forEach(u => {
+                    const initial = (u.fullName || 'U').charAt(0).toUpperCase();
+                    const dateStr = new Date(u.createdAt.toMillis()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    
+                    const avatarHtml = u.profilePicUrl 
+                        ? `<img src="${u.profilePicUrl}" alt="${initial}">` 
+                        : initial;
+                    
+                    feedContainer.innerHTML += `
+                        <div class="feed-card">
+                            <div class="feed-avatar">${avatarHtml}</div>
+                            <div class="feed-content">
+                                <div class="feed-text">
+                                    👋 <b>${u.fullName}</b> joined JAKIPOT!
+                                </div>
+                                <div class="feed-meta">
+                                    <span class="feed-time">${dateStr}</span>
+                                    <a href="profile.html?uid=${u.id}" class="btn-view-profile">View Profile</a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
         });
+
+        // TRENDING ANIMATION
+        const canvas = document.getElementById('trending-canvas');
+        const ctx = canvas.getContext('2d');
+        let multiplier = 1.00;
+        let points = [];
+        let trendInterval;
+        let isCrashed = false;
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function drawTrend() {
+            if (isCrashed) return;
+
+            multiplier += (Math.random() * 0.01) + 0.01;
+            
+            document.getElementById('trend-multiplier').innerText = multiplier.toFixed(2) + 'x';
+            document.getElementById('trend-win').innerText = `+$${(multiplier * 15).toFixed(2)}`;
+
+            points.push({
+                x: points.length * 2, 
+                y: canvas.height - ((multiplier - 1) * 30)
+            });
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.beginPath();
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 3;
+            ctx.lineJoin = 'round';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(56, 189, 248, 0.6)';
+            
+            if (points.length > 0) {
+                ctx.moveTo(points[0].x, points[0].y);
+                for (let i = 1; i < points.length; i++) {
+                    ctx.lineTo(points[i].x, points[i].y);
+                }
+                ctx.stroke();
+            }
+
+            if (Math.random() < 0.015 || points.length * 2 > canvas.width - 10) {
+                isCrashed = true;
+                ctx.strokeStyle = '#ef4444';
+                ctx.shadowColor = 'rgba(239, 68, 68, 0.6)';
+                ctx.stroke();
+                
+                setTimeout(() => {
+                    multiplier = 1.00;
+                    points = [];
+                    isCrashed = false;
+                    document.getElementById('trend-multiplier').innerText = '1.00x';
+                    document.getElementById('trend-win').innerText = '+$0.00';
+                    clearInterval(trendInterval);
+                    trendInterval = setInterval(drawTrend, 150);
+                }, 3000);
+            }
+        }
+        
+        trendInterval = setInterval(drawTrend, 150);
+
+        // PROFILE PICTURE UPLOAD
+        document.getElementById('profile-upload-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file || !currentUserUid) return;
+
+            if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
+                alert('Only JPG, JPEG, or PNG allowed.');
+                return;
+            }
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Image too large. Max 2MB.');
+                return;
+            }
+
+            const avatarContainer = document.getElementById('profile-avatar-container');
+            avatarContainer.innerHTML = `<div style="color:#38bdf8; font-size:12px; font-weight:800;">Uploading...</div>`;
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY.uploadPreset);
+                formData.append('folder', `${CLOUDINARY.folder}/${currentUserUid}`);
+
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await res.json();
+                if (data.secure_url) {
+                    await updateDoc(doc(db, 'users', currentUserUid), {
+                        profilePicUrl: data.secure_url,
+                        updatedAt: new Date()
+                    });
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Failed to upload profile picture. Please try again.');
+                const name = document.getElementById('profile-name').innerText;
+                avatarContainer.innerHTML = `<div class="avatar-inner">${name.charAt(0).toUpperCase()}</div>`;
+            }
+        });
+
+        window.toggleMenu = () => {
+            document.getElementById('side-menu').classList.toggle('active');
+            document.getElementById('drawer-overlay').classList.toggle('active');
+        };
 
         window.logout = async () => {
             await signOut(auth);

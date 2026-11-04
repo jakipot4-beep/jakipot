@@ -3,137 +3,433 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JAKIPOT - Welcome</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>Jakipot - Win Investment in WildWorld</title>
     <style>
+        /* =========================================
+           1. GLOBAL & THEME VARIABLES
+           ========================================= */
         :root {
-            --bg-deep: #040b16; 
-            --cyan: #00D9FF; 
-            --emerald: #10b981; 
-            --text-white: #ffffff;
-            --text-muted: #8b9bb4; 
+            --bg-dark: #060b19;
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.6);
+            --light-blue: #38bdf8;
+            --white: #ffffff;
+            --text-muted: #94a3b8;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
         body { 
-            background: var(--bg-deep); color: var(--text-white); 
-            height: 100vh; display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; padding: 20px;
-            background-image: radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.15) 0%, transparent 60%);
+            background: var(--bg-dark); color: var(--white); 
+            min-height: 100vh; overflow: hidden; 
+        }
+
+        /* =========================================
+           2. BACKGROUND PARTICLES CANVAS
+           ========================================= */
+        #particle-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* =========================================
+           3. SPLASH SCREEN (WELCOME)
+           ========================================= */
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 20px; z-index: 10;
+            transition: opacity 0.8s ease;
             overflow: hidden;
         }
 
         .logo-container {
-            text-align: center;
-            margin-bottom: 50px;
-            animation: fadeInDown 1s ease;
-        }
-
-        .bird-icon {
-            font-size: 80px;
-            filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.5));
-            margin-bottom: 15px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .title {
-            font-size: 36px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            color: var(--text-white);
-        }
-
-        .title span {
-            color: var(--cyan);
-        }
-
-        .subtitle {
-            font-size: 14px;
-            color: var(--text-muted);
-            font-weight: 500;
-            margin-top: 10px;
-            letter-spacing: 1px;
-        }
-
-        .action-buttons {
-            width: 100%;
-            max-width: 350px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            animation: fadeInUp 1s ease 0.3s forwards;
+            position: relative;
+            animation: logoEntrance 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
-            transform: translateY(20px);
+            transform: scale(0.8);
         }
 
-        .btn {
-            width: 100%;
-            padding: 18px;
-            border-radius: 14px;
-            font-size: 16px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            text-decoration: none;
+        .logo-svg {
+            width: 110px; height: 110px;
+            filter: drop-shadow(0 0 20px var(--emerald-glow));
+            animation: logoPulse 3s infinite alternate;
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 6px; height: 6px;
+            background: var(--light-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--light-blue);
+            opacity: 0;
+        }
+        .sparkle:nth-child(1) { top: 5px; left: 30px; animation: sparkleAnim 2s infinite 0.5s; }
+        .sparkle:nth-child(2) { top: -5px; left: 55px; animation: sparkleAnim 2s infinite 1.2s; }
+        .sparkle:nth-child(3) { top: 10px; right: 30px; animation: sparkleAnim 2s infinite 1.8s; }
+
+        .splash-title {
+            font-size: 38px; font-weight: 900; letter-spacing: 4px;
+            background: linear-gradient(to right, var(--emerald), var(--light-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-top: 10px; margin-bottom: 5px;
+            text-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
+            animation: slideUpFade 1s ease forwards 0.5s; opacity: 0;
+        }
+
+        .mascot-container {
+            margin: 15px 0;
+            opacity: 0;
+            animation: fadeIn 1s forwards 1.2s, birdFloat 4s ease-in-out infinite 1.2s;
+        }
+        
+        .bird-svg {
+            width: 80px; height: 60px;
+            filter: drop-shadow(0 5px 10px rgba(16, 185, 129, 0.4));
+        }
+
+        .wing {
+            transform-origin: center;
+            animation: flapWings 0.4s ease-in-out infinite alternate;
+        }
+
+        .splash-text-group { margin-top: 10px; }
+        
+        .splash-subtitle { 
+            font-size: 20px; font-weight: 800; color: var(--white); 
+            letter-spacing: 1px; margin-bottom: 8px;
+            animation: slideUpFade 1s ease forwards 1.5s; opacity: 0;
+        }
+        
+        .splash-desc { 
+            font-size: 14px; color: var(--text-muted); margin-bottom: 40px; 
+            max-width: 300px; line-height: 1.6;
+            animation: slideUpFade 1s ease forwards 1.8s; opacity: 0;
+        }
+
+        .btn-glow {
+            position: relative;
+            background: linear-gradient(135deg, var(--emerald), #059669);
+            color: var(--white);
+            padding: 16px 45px; border: none; border-radius: 30px;
+            font-size: 16px; font-weight: 800; cursor: pointer;
+            letter-spacing: 1px;
+            box-shadow: 0 0 20px var(--emerald-glow);
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: slideUpFade 1s ease forwards 2.1s, btnPulse 2s infinite alternate 2.1s;
+            overflow: hidden;
+        }
+
+        .btn-glow::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: 0.5s;
+        }
+
+        .btn-glow:hover::before { left: 100%; }
+
+        .btn-glow:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 30px var(--emerald);
+        }
+
+        /* =========================================
+           4. TRANSITION & LOADING SCREEN
+           ========================================= */
+        #transition-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            background: var(--bg-dark);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 20; opacity: 0; visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+
+        .flying-bird {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 60px;
+            opacity: 0;
+        }
+
+        .flying-bird.fly-away {
+            animation: birdFlyAway 1.5s cubic-bezier(0.5, 0, 1, 1) forwards;
+        }
+
+        .loading-container {
             text-align: center;
-            cursor: pointer;
-            transition: 0.3s;
-            border: none;
+            margin-top: 120px;
+            opacity: 0;
+            transition: opacity 0.5s ease 0.5s;
         }
 
-        .btn-register {
-            background: var(--emerald);
-            color: var(--text-white);
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+        .loading-container.show { opacity: 1; }
+
+        .progress-bar-bg {
+            width: 250px; height: 6px;
+            background: #1e293b; border-radius: 10px;
+            margin: 0 auto 15px auto;
+            overflow: hidden;
         }
 
-        .btn-register:hover, .btn-register:active {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+        .progress-bar-fill {
+            width: 0%; height: 100%;
+            background: linear-gradient(90deg, var(--emerald), var(--light-blue));
+            border-radius: 10px;
+            box-shadow: 0 0 10px var(--emerald);
         }
 
-        .btn-login {
-            background: transparent;
-            color: var(--text-white);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .progress-bar-fill.animate {
+            animation: fillProgress 2.5s ease-in-out forwards;
         }
 
-        .btn-login:hover, .btn-login:active {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: var(--cyan);
+        .transition-text { 
+            font-size: 15px; color: var(--light-blue); font-weight: bold;
+            animation: blink 1.5s infinite;
         }
 
-        @keyframes float {
+        /* =========================================
+           5. KEYFRAMES
+           ========================================= */
+        @keyframes logoEntrance {
+            0% { opacity: 0; transform: scale(0.5) translateY(20px); filter: blur(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+
+        @keyframes logoPulse {
+            0% { filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.4)); }
+            100% { filter: drop-shadow(0 0 30px rgba(56, 189, 248, 0.8)); }
+        }
+
+        @keyframes sparkleAnim {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        @keyframes slideUpFade {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes birdFloat {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-15px); }
         }
 
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes flapWings {
+            0% { transform: scaleY(1); }
+            100% { transform: scaleY(0.3); }
         }
 
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes btnPulse {
+            0% { box-shadow: 0 0 15px var(--emerald-glow); }
+            100% { box-shadow: 0 0 30px var(--emerald), 0 0 15px var(--light-blue); }
+        }
+
+        @keyframes birdFlyAway {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            30% { opacity: 1; transform: translate(10%, -100%) scale(1.2); }
+            100% { opacity: 0; transform: translate(150%, -200%) scale(0.5); }
+        }
+
+        @keyframes fillProgress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
     </style>
 </head>
 <body>
 
-    <div class="logo-container">
-        <div class="bird-icon">🐦</div>
-        <div class="title">JAKI<span>POT</span></div>
-        <div class="subtitle">GLOBAL INVESTMENT & GAMING</div>
-    </div>
+    <!-- BACKGROUND PARTICLES -->
+    <canvas id="particle-canvas"></canvas>
 
-    <div class="action-buttons">
-        <!-- Points to register.html -->
-        <a href="register.html" class="btn btn-register">GET STARTED</a>
+    <!-- 1. SPLASH SCREEN -->
+    <div id="splash-screen">
+        <div class="logo-container">
+            <!-- Custom SVG Crown Logo -->
+            <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 80 L20 30 L40 50 L50 15 L60 50 L80 30 L90 80 Z" fill="none" stroke="#10b981" stroke-width="6" stroke-linejoin="round"/>
+                <circle cx="20" cy="25" r="5" fill="#38bdf8"/>
+                <circle cx="50" cy="10" r="5" fill="#38bdf8"/>
+                <circle cx="80" cy="25" r="5" fill="#38bdf8"/>
+                <line x1="10" y1="85" x2="90" y2="85" stroke="#38bdf8" stroke-width="6" stroke-linecap="round"/>
+            </svg>
+            <!-- Sparkles -->
+            <div class="sparkle"></div>
+            <div class="sparkle"></div>
+            <div class="sparkle"></div>
+        </div>
         
-        <!-- Points to login.html -->
-        <a href="login.html" class="btn btn-login">I ALREADY HAVE AN ACCOUNT</a>
+        <h1 class="splash-title">JAKIPOT</h1>
+        
+        <!-- Bird Mascot -->
+        <div class="mascot-container">
+            <svg class="bird-svg" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">
+                <!-- Body -->
+                <path d="M 20 50 Q 50 30 80 50 Q 50 80 20 50" fill="#10b981"/>
+                <!-- Wing -->
+                <path class="wing" d="M 50 45 Q 30 20 10 30 Q 30 50 50 45" fill="#38bdf8"/>
+                <!-- Eye -->
+                <circle cx="70" cy="48" r="3" fill="#fff"/>
+                <circle cx="71" cy="48" r="1.5" fill="#060b19"/>
+                <!-- Beak -->
+                <path d="M 80 50 L 90 45 L 80 55 Z" fill="#f59e0b"/>
+            </svg>
+        </div>
+
+        <div class="splash-text-group">
+            <h2 class="splash-subtitle">WELCOME TO JAKIPOT</h2>
+            <p class="splash-subtitle" style="font-size: 14px; color: var(--light-blue);">WIN INVESTMENT IN WILDWORLD</p>
+            <p class="splash-desc">Join us today and be part of our growing community!</p>
+        </div>
+
+        <button class="btn-glow" onclick="startTransition()">JOIN US TODAY</button>
     </div>
 
+    <!-- 2. TRANSITION SCREEN -->
+    <div id="transition-screen">
+        <div id="flying-bird" class="flying-bird">🐦</div>
+        <div id="loading-container" class="loading-container">
+            <div class="progress-bar-bg">
+                <div id="progress-bar" class="progress-bar-fill"></div>
+            </div>
+            <p class="transition-text">Wait... 🐦 As we take you to the sign-up page.</p>
+        </div>
+    </div>
+
+    <!-- FIREBASE & LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
+        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app-check.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
+            measurementId: "G-L1CLB5TDHV"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        try { getAnalytics(app); } catch (e) { console.warn('[Analytics]', e?.message); }
+
+        // App Check
+        const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        if (isLocal) self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+
+        try {
+            initializeAppCheck(app, {
+                provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'),
+                isTokenAutoRefreshEnabled: true
+            });
+        } catch (e) { console.warn('[AppCheck]', e?.message); }
+
+        // --- UI/UX TRANSITION LOGIC ---
+        window.startTransition = () => {
+            const splash = document.getElementById('splash-screen');
+            const transition = document.getElementById('transition-screen');
+            const flyingBird = document.getElementById('flying-bird');
+            const loadingContainer = document.getElementById('loading-container');
+            const progressBar = document.getElementById('progress-bar');
+            
+            // 1. Fade out splash
+            splash.style.opacity = '0';
+            
+            setTimeout(() => {
+                splash.style.display = 'none';
+                transition.style.opacity = '1';
+                transition.style.visibility = 'visible';
+                
+                // 2. Fly bird away
+                flyingBird.classList.add('fly-away');
+                
+                // 3. Show loading bar after bird starts flying
+                setTimeout(() => {
+                    loadingContainer.classList.add('show');
+                    progressBar.classList.add('animate');
+                }, 500);
+
+                // 4. Redirect to register.html after animation completes
+                setTimeout(() => {
+                    window.location.href = 'register.html';
+                }, 3500);
+
+            }, 500);
+        };
+
+        // --- OPTIMIZED CANVAS PARTICLES ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2.5 + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * -0.5 - 0.1; 
+                this.color = Math.random() > 0.5 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(56, 189, 248, 0.6)'; 
+                this.glow = Math.random() * 5 + 2;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.y < -10) {
+                    this.y = canvas.height + 10;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = this.glow;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 40; i++) { particles.push(new Particle()); }
+
+        function animateParticles() {
+            if (!document.getElementById('splash-screen').classList.contains('hidden')) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(animateParticles);
+            }
+        }
+        animateParticles();
+    </script>
 </body>
 </html>

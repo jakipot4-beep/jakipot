@@ -3,103 +3,790 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Register - Jakipot</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>Create Account - Jakipot</title>
     <style>
-        :root { --bg-deep: #040b16; --bg-card: #0f172a; --bg-elevated: #1e293b; --cyan: #00D9FF; --text-white: #ffffff; --text-muted: #8b9bb4; --border-light: rgba(255,255,255,0.08); }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg-deep); color: var(--text-white); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; background-image: radial-gradient(circle at 50% 0%, rgba(0,217,255,0.1) 0%, transparent 50%); }
-        .card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 24px; padding: 35px 25px; width: 100%; max-width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .logo { font-size: 28px; font-weight: 900; text-align: center; margin-bottom: 25px; }
-        .logo span { color: var(--cyan); }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
-        .form-input { width: 100%; padding: 15px; border-radius: 12px; background: var(--bg-elevated); border: 1px solid var(--border-light); color: var(--text-white); font-size: 15px; outline: none; }
-        .form-input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0,217,255,0.2); }
-        .btn-submit { width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--cyan); color: #000; font-size: 16px; font-weight: 900; cursor: pointer; margin-top: 15px; transition: 0.2s; }
-        .btn-submit:active { transform: scale(0.98); }
-        .error-msg { color: #ef4444; font-size: 13px; font-weight: 600; text-align: center; margin-top: 15px; min-height: 18px; }
-        .login-link { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 20px; font-weight: 500; }
-        .login-link a { color: var(--cyan); text-decoration: none; font-weight: 700; }
-        .version-tag { text-align: center; font-size: 11px; color: #10b981; margin-top: 15px; font-weight: bold; }
+        :root {
+            --bg-dark: #060b19;
+            --bg-card: #111827;
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.4);
+            --light-blue: #38bdf8;
+            --white: #ffffff;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --border-color: #1e293b;
+            --input-bg: #0f172a;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+        
+        body { 
+            background: var(--bg-dark); 
+            color: var(--white); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            padding: 20px; 
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.05) 0%, transparent 40%);
+        }
+
+        /* Navigation */
+        .nav-bar {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            margin-bottom: 30px;
+            animation: slideDownFade 0.6s ease;
+        }
+        .back-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.3s;
+        }
+        .back-link:hover { color: var(--emerald); }
+        .login-link {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+        .login-link a {
+            color: var(--light-blue);
+            text-decoration: none;
+            font-weight: 700;
+            transition: color 0.3s;
+        }
+        .login-link a:hover { color: var(--emerald); }
+
+        /* Header */
+        .header { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            animation: slideUpFade 0.7s ease;
+        }
+        .logo-svg {
+            width: 80px; 
+            height: 80px;
+            filter: drop-shadow(0 0 15px var(--emerald-glow));
+            margin-bottom: 15px;
+        }
+        .header h1 { 
+            font-size: 22px; 
+            font-weight: 900; 
+            letter-spacing: 1px; 
+            color: var(--white); 
+        }
+        .header p { 
+            font-size: 14px; 
+            color: var(--light-blue); 
+            margin-top: 8px; 
+            font-weight: 500;
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card); 
+            padding: 30px 25px; 
+            border-radius: 20px;
+            width: 100%; 
+            max-width: 450px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            border: 1px solid var(--border-color); 
+            animation: slideUpFade 0.7s ease 0.1s forwards;
+            opacity: 0; 
+            transform: translateY(20px);
+        }
+
+        /* Google Button */
+        .btn-google {
+            width: 100%; 
+            padding: 14px; 
+            background: var(--white); 
+            color: #333;
+            border: none; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            font-weight: 700;
+            cursor: pointer; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 10px;
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+        }
+        .btn-google:hover:not(:disabled) { 
+            transform: translateY(-2px); 
+            box-shadow: 0 5px 15px rgba(255,255,255,0.1); 
+        }
+        .btn-google:active:not(:disabled) { transform: scale(0.98); }
+        .btn-google:disabled { opacity: 0.6; cursor: not-allowed; }
+        .google-icon { width: 22px; height: 22px; }
+
+        /* Divider */
+        .divider {
+            display: flex; 
+            align-items: center; 
+            text-align: center;
+            margin: 25px 0; 
+            color: var(--text-muted); 
+            font-size: 11px; 
+            font-weight: 700; 
+            letter-spacing: 1px;
+        }
+        .divider::before, .divider::after {
+            content: ''; 
+            flex: 1; 
+            border-bottom: 1px solid var(--border-color);
+        }
+        .divider:not(:empty)::before { margin-right: 15px; }
+        .divider:not(:empty)::after { margin-left: 15px; }
+
+        /* Inputs */
+        .input-group { 
+            position: relative; 
+            margin-bottom: 15px; 
+        }
+        .input-icon {
+            position: absolute; 
+            left: 15px; 
+            top: 50%; 
+            transform: translateY(-50%);
+            width: 20px; 
+            height: 20px; 
+            fill: var(--text-muted);
+            transition: fill 0.3s;
+            pointer-events: none;
+        }
+        .input-field {
+            width: 100%; 
+            padding: 15px 45px 15px 45px; 
+            border-radius: 12px;
+            border: 1.5px solid #334155; 
+            background: var(--input-bg); 
+            color: var(--white);
+            font-size: 15px; 
+            transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+        }
+        .input-field:focus { 
+            outline: none; 
+            border-color: var(--emerald); 
+            background: rgba(6, 11, 25, 0.8);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+        .input-group:focus-within .input-icon { fill: var(--emerald); }
+        .input-field::placeholder { color: #64748b; }
+
+        /* Phone Specific */
+        .phone-group {
+            display: flex;
+            gap: 10px;
+        }
+        .country-select {
+            width: 120px;
+            padding: 15px 10px;
+            border-radius: 12px;
+            border: 1.5px solid #334155;
+            background: var(--input-bg);
+            color: var(--white);
+            font-size: 14px;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%;
+            background-size: 10px auto;
+            cursor: pointer;
+        }
+        .country-select:focus {
+            outline: none;
+            border-color: var(--emerald);
+        }
+        .phone-input-wrapper {
+            position: relative;
+            flex: 1;
+        }
+        .phone-input-wrapper .input-field {
+            padding-left: 15px;
+        }
+
+        /* Password Toggle */
+        .toggle-password {
+            position: absolute; 
+            right: 15px; 
+            top: 50%; 
+            transform: translateY(-50%);
+            width: 20px; 
+            height: 20px; 
+            fill: var(--text-muted); 
+            cursor: pointer;
+            transition: fill 0.3s;
+            z-index: 10;
+        }
+        .toggle-password:hover { fill: var(--emerald); }
+
+        /* Button */
+        .btn-continue {
+            width: 100%; 
+            padding: 16px; 
+            background: var(--emerald); 
+            color: var(--white);
+            border: none; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            font-weight: 800;
+            cursor: pointer; 
+            margin-top: 10px; 
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 0 4px 15px var(--emerald-glow);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .btn-continue:hover:not(:disabled) { 
+            background: #059669; 
+            transform: translateY(-2px); 
+        }
+        .btn-continue:active:not(:disabled) { transform: scale(0.98); }
+        .btn-continue:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Error */
+        .error { 
+            color: var(--danger); 
+            margin-top: 12px; 
+            font-size: 13px; 
+            text-align: center; 
+            min-height: 18px;
+            font-weight: 500;
+        }
+
+        /* =========================================
+           META-STYLE AI WIDGET
+           ========================================= */
+        .ai-fab {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+            border: 2px solid var(--emerald);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .ai-fab:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(16, 185, 129, 0.6);
+        }
+        .ai-fab:active { transform: scale(0.92); }
+        
+        /* Rotating Ring Effect */
+        .ai-ring {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent, var(--emerald), var(--light-blue), var(--emerald), transparent);
+            animation: spin 3s linear infinite;
+            position: relative;
+        }
+        .ai-ring::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            background: var(--bg-card);
+            border-radius: 50%;
+        }
+
+        /* AI Chat Bubble */
+        .ai-bubble {
+            position: fixed;
+            bottom: 95px;
+            right: 25px;
+            max-width: 280px;
+            background: var(--bg-card);
+            color: var(--white);
+            padding: 14px 18px;
+            border-radius: 18px 18px 0 18px;
+            font-size: 13.5px;
+            line-height: 1.5;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            z-index: 999;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+        .ai-bubble.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .ai-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            right: 20px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid var(--bg-card);
+        }
+
+        /* Animations */
+        @keyframes slideUpFade {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideDownFade {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <div class="logo">🐦 JAKI<span>POT</span></div>
-        <form id="register-form">
-            <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" class="form-input" placeholder="John Doe" required></div>
-            <div class="form-group"><label>Email Address</label><input type="email" id="reg-email" class="form-input" placeholder="john@example.com" required></div>
-            <div class="form-group"><label>Phone Number</label><input type="tel" id="reg-phone" class="form-input" placeholder="0971234567" required></div>
-            <div class="form-group"><label>Password</label><input type="password" id="reg-password" class="form-input" placeholder="Min 6 characters" required></div>
-            <button type="submit" id="submit-btn" class="btn-submit">CREATE ACCOUNT</button>
-            <div class="error-msg" id="error-msg"></div>
-        </form>
-        <div class="login-link">Already have an account? <a href="login.html">Login here</a></div>
-        <div class="version-tag">Register v3.0 (Debug Mode)</div>
+
+    <!-- Navigation -->
+    <div class="nav-bar">
+        <a href="index.html" class="back-link">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+            Back
+        </a>
+        <div class="login-link">
+            Already have an account? <a href="login.html">Login</a>
+        </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
-        import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    <!-- Header -->
+    <div class="header">
+        <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 80 L20 30 L40 50 L50 15 L60 50 L80 30 L90 80 Z" fill="none" stroke="#10b981" stroke-width="6" stroke-linejoin="round"/>
+            <circle cx="20" cy="25" r="5" fill="#38bdf8"/>
+            <circle cx="50" cy="10" r="5" fill="#38bdf8"/>
+            <circle cx="80" cy="25" r="5" fill="#38bdf8"/>
+            <line x1="10" y1="85" x2="90" y2="85" stroke="#38bdf8" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+        <h1>CREATE YOUR JAKIPOT ACCOUNT</h1>
+        <p>Join JAKIPOT today!</p>
+    </div>
 
+    <!-- Registration Card -->
+    <div class="card">
+        
+        <!-- Google Auth -->
+        <button class="btn-google" id="google-btn" onclick="signInWithGoogle()">
+            <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Continue with Google
+        </button>
+
+        <div class="divider">OR REGISTER WITH EMAIL</div>
+
+        <!-- Email Form -->
+        <form id="email-form" onsubmit="handleEmailSubmit(event)">
+            
+            <!-- Email -->
+            <div class="input-group">
+                <svg class="input-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                <input type="email" id="reg-email" class="input-field" placeholder="Enter your email address" required autocomplete="email">
+            </div>
+
+            <!-- Password -->
+            <div class="input-group">
+                <svg class="input-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                <input type="password" id="reg-password" class="input-field" placeholder="Create your password" required autocomplete="new-password">
+                <svg class="toggle-password" onclick="togglePassword()" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="input-group phone-group">
+                <select id="country-code" class="country-select" aria-label="Country Code">
+                    <!-- Options populated by JavaScript -->
+                </select>
+                <div class="phone-input-wrapper">
+                    <input type="tel" id="reg-phone" class="input-field" placeholder="Phone number" required autocomplete="tel">
+                </div>
+            </div>
+
+            <!-- Referral Code -->
+            <div class="input-group">
+                <svg class="input-icon" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                <input type="text" id="reg-referral" class="input-field" placeholder="Enter referral code (optional)" autocomplete="off" style="text-transform: uppercase;">
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="submit-btn" class="btn-continue">CONTINUE →</button>
+            
+            <div id="error-msg" class="error"></div>
+        </form>
+    </div>
+
+    <!-- META-STYLE AI WIDGET -->
+    <div id="ai-fab" class="ai-fab" onclick="toggleAI()">
+        <div class="ai-ring"></div>
+    </div>
+    <div id="ai-bubble" class="ai-bubble">
+        Hello 👋 friend fill everything to join us.
+    </div>
+
+    <!-- Firebase Logic & Country Codes -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
+        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app-check.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+
+        // 1. Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", authDomain: "jakipot.firebaseapp.com", projectId: "jakipot",
-            storageBucket: "jakipot.firebasestorage.app", messagingSenderId: "396191754293", appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
+            measurementId: "G-L1CLB5TDHV"
         };
 
         const app = initializeApp(firebaseConfig);
-        initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), isTokenAutoRefreshEnabled: true });
+        try { getAnalytics(app); } catch (e) { console.warn('[Analytics]', e?.message); }
+
+        // 2. App Check
+        const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        if (isLocal) self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+
+        try {
+            initializeAppCheck(app, {
+                provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'),
+                isTokenAutoRefreshEnabled: true
+            });
+        } catch (e) { console.warn('[AppCheck]', e?.message); }
+
         const auth = getAuth(app);
-        const db = getFirestore(app);
+        const errorDiv = document.getElementById('error-msg');
+        let isSubmitting = false;
 
-        document.getElementById('register-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submit-btn');
-            const errorDiv = document.getElementById('error-msg');
+        // ==========================================
+        // AI WIDGET LOGIC
+        // ==========================================
+        const aiBubble = document.getElementById('ai-bubble');
+        let aiTimeout;
+
+        // Show greeting after a short delay when page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                aiBubble.classList.add('show');
+            }, 1500);
+            // Hide it after 6 seconds automatically
+            setTimeout(() => {
+                aiBubble.classList.remove('show');
+            }, 8000);
+        });
+
+        window.toggleAI = () => {
+            aiBubble.classList.toggle('show');
+            if(aiBubble.classList.contains('show')) {
+                aiBubble.innerHTML = "I am Jakipot AI. I am here to help you register safely!";
+            }
+        };
+
+        // AI Senses Inputs
+        function aiSpeak(message) {
+            clearTimeout(aiTimeout);
+            aiBubble.innerHTML = message;
+            aiBubble.classList.add('show');
             
-            const name = document.getElementById('reg-name').value.trim();
-            const email = document.getElementById('reg-email').value.trim();
-            const phone = document.getElementById('reg-phone').value.trim();
-            const password = document.getElementById('reg-password').value;
+            // Hide bubble after 4 seconds of no typing
+            aiTimeout = setTimeout(() => {
+                aiBubble.classList.remove('show');
+            }, 4000);
+        }
 
-            if (password.length < 6) { errorDiv.innerText = "Password must be at least 6 characters."; return; }
+        document.getElementById('reg-email').addEventListener('focus', () => {
+            aiSpeak("Please enter a valid email address. We will use this to log you in.");
+        });
 
-            btn.disabled = true; btn.innerText = "Creating Account..."; errorDiv.innerText = "";
+        document.getElementById('reg-password').addEventListener('focus', () => {
+            aiSpeak("That one is for your password. Make sure it has 8+ characters, uppercase, lowercase, and a number!");
+        });
+
+        document.getElementById('reg-phone').addEventListener('focus', () => {
+            aiSpeak("Select your country code and enter your mobile number.");
+        });
+
+        document.getElementById('country-code').addEventListener('focus', () => {
+            aiSpeak("Scroll to find your country code here.");
+        });
+
+        document.getElementById('reg-referral').addEventListener('focus', () => {
+            aiSpeak("If a friend invited you, enter their referral code here to get bonuses!");
+        });
+
+
+        // 3. Generate ALL Country Codes
+        const countryCodes = [
+            { name: "Afghanistan", dial_code: "+93", code: "AF" }, { name: "Albania", dial_code: "+355", code: "AL" },
+            { name: "Algeria", dial_code: "+213", code: "DZ" }, { name: "Andorra", dial_code: "+376", code: "AD" },
+            { name: "Angola", dial_code: "+244", code: "AO" }, { name: "Antigua and Barbuda", dial_code: "+1-268", code: "AG" },
+            { name: "Argentina", dial_code: "+54", code: "AR" }, { name: "Armenia", dial_code: "+374", code: "AM" },
+            { name: "Australia", dial_code: "+61", code: "AU" }, { name: "Austria", dial_code: "+43", code: "AT" },
+            { name: "Azerbaijan", dial_code: "+994", code: "AZ" }, { name: "Bahamas", dial_code: "+1-242", code: "BS" },
+            { name: "Bahrain", dial_code: "+973", code: "BH" }, { name: "Bangladesh", dial_code: "+880", code: "BD" },
+            { name: "Barbados", dial_code: "+1-246", code: "BB" }, { name: "Belarus", dial_code: "+375", code: "BY" },
+            { name: "Belgium", dial_code: "+32", code: "BE" }, { name: "Belize", dial_code: "+501", code: "BZ" },
+            { name: "Benin", dial_code: "+229", code: "BJ" }, { name: "Bhutan", dial_code: "+975", code: "BT" },
+            { name: "Bolivia", dial_code: "+591", code: "BO" }, { name: "Bosnia and Herzegovina", dial_code: "+387", code: "BA" },
+            { name: "Botswana", dial_code: "+267", code: "BW" }, { name: "Brazil", dial_code: "+55", code: "BR" },
+            { name: "Brunei", dial_code: "+673", code: "BN" }, { name: "Bulgaria", dial_code: "+359", code: "BG" },
+            { name: "Burkina Faso", dial_code: "+226", code: "BF" }, { name: "Burundi", dial_code: "+257", code: "BI" },
+            { name: "Cabo Verde", dial_code: "+238", code: "CV" }, { name: "Cambodia", dial_code: "+855", code: "KH" },
+            { name: "Cameroon", dial_code: "+237", code: "CM" }, { name: "Canada", dial_code: "+1", code: "CA" },
+            { name: "Central African Republic", dial_code: "+236", code: "CF" }, { name: "Chad", dial_code: "+235", code: "TD" },
+            { name: "Chile", dial_code: "+56", code: "CL" }, { name: "China", dial_code: "+86", code: "CN" },
+            { name: "Colombia", dial_code: "+57", code: "CO" }, { name: "Comoros", dial_code: "+269", code: "KM" },
+            { name: "Congo (Congo-Brazzaville)", dial_code: "+242", code: "CG" }, { name: "Congo (DRC)", dial_code: "+243", code: "CD" },
+            { name: "Costa Rica", dial_code: "+506", code: "CR" }, { name: "Croatia", dial_code: "+385", code: "HR" },
+            { name: "Cuba", dial_code: "+53", code: "CU" }, { name: "Cyprus", dial_code: "+357", code: "CY" },
+            { name: "Czechia", dial_code: "+420", code: "CZ" }, { name: "Denmark", dial_code: "+45", code: "DK" },
+            { name: "Djibouti", dial_code: "+253", code: "DJ" }, { name: "Dominica", dial_code: "+1-767", code: "DM" },
+            { name: "Dominican Republic", dial_code: "+1-809", code: "DO" }, { name: "Ecuador", dial_code: "+593", code: "EC" },
+            { name: "Egypt", dial_code: "+20", code: "EG" }, { name: "El Salvador", dial_code: "+503", code: "SV" },
+            { name: "Equatorial Guinea", dial_code: "+240", code: "GQ" }, { name: "Eritrea", dial_code: "+291", code: "ER" },
+            { name: "Estonia", dial_code: "+372", code: "EE" }, { name: "Eswatini", dial_code: "+268", code: "SZ" },
+            { name: "Ethiopia", dial_code: "+251", code: "ET" }, { name: "Fiji", dial_code: "+679", code: "FJ" },
+            { name: "Finland", dial_code: "+358", code: "FI" }, { name: "France", dial_code: "+33", code: "FR" },
+            { name: "Gabon", dial_code: "+241", code: "GA" }, { name: "Gambia", dial_code: "+220", code: "GM" },
+            { name: "Georgia", dial_code: "+995", code: "GE" }, { name: "Germany", dial_code: "+49", code: "DE" },
+            { name: "Ghana", dial_code: "+233", code: "GH" }, { name: "Greece", dial_code: "+30", code: "GR" },
+            { name: "Grenada", dial_code: "+1-473", code: "GD" }, { name: "Guatemala", dial_code: "+502", code: "GT" },
+            { name: "Guinea", dial_code: "+224", code: "GN" }, { name: "Guinea-Bissau", dial_code: "+245", code: "GW" },
+            { name: "Guyana", dial_code: "+592", code: "GY" }, { name: "Haiti", dial_code: "+509", code: "HT" },
+            { name: "Honduras", dial_code: "+504", code: "HN" }, { name: "Hungary", dial_code: "+36", code: "HU" },
+            { name: "Iceland", dial_code: "+354", code: "IS" }, { name: "India", dial_code: "+91", code: "IN" },
+            { name: "Indonesia", dial_code: "+62", code: "ID" }, { name: "Iran", dial_code: "+98", code: "IR" },
+            { name: "Iraq", dial_code: "+964", code: "IQ" }, { name: "Ireland", dial_code: "+353", code: "IE" },
+            { name: "Israel", dial_code: "+972", code: "IL" }, { name: "Italy", dial_code: "+39", code: "IT" },
+            { name: "Jamaica", dial_code: "+1-876", code: "JM" }, { name: "Japan", dial_code: "+81", code: "JP" },
+            { name: "Jordan", dial_code: "+962", code: "JO" }, { name: "Kazakhstan", dial_code: "+7", code: "KZ" },
+            { name: "Kenya", dial_code: "+254", code: "KE" }, { name: "Kiribati", dial_code: "+686", code: "KI" },
+            { name: "Kuwait", dial_code: "+965", code: "KW" }, { name: "Kyrgyzstan", dial_code: "+996", code: "KG" },
+            { name: "Laos", dial_code: "+856", code: "LA" }, { name: "Latvia", dial_code: "+371", code: "LV" },
+            { name: "Lebanon", dial_code: "+961", code: "LB" }, { name: "Lesotho", dial_code: "+266", code: "LS" },
+            { name: "Liberia", dial_code: "+231", code: "LR" }, { name: "Libya", dial_code: "+218", code: "LY" },
+            { name: "Liechtenstein", dial_code: "+423", code: "LI" }, { name: "Lithuania", dial_code: "+370", code: "LT" },
+            { name: "Luxembourg", dial_code: "+352", code: "LU" }, { name: "Madagascar", dial_code: "+261", code: "MG" },
+            { name: "Malawi", dial_code: "+265", code: "MW" }, { name: "Malaysia", dial_code: "+60", code: "MY" },
+            { name: "Maldives", dial_code: "+960", code: "MV" }, { name: "Mali", dial_code: "+223", code: "ML" },
+            { name: "Malta", dial_code: "+356", code: "MT" }, { name: "Marshall Islands", dial_code: "+692", code: "MH" },
+            { name: "Mauritania", dial_code: "+222", code: "MR" }, { name: "Mauritius", dial_code: "+230", code: "MU" },
+            { name: "Mexico", dial_code: "+52", code: "MX" }, { name: "Micronesia", dial_code: "+691", code: "FM" },
+            { name: "Moldova", dial_code: "+373", code: "MD" }, { name: "Monaco", dial_code: "+377", code: "MC" },
+            { name: "Mongolia", dial_code: "+976", code: "MN" }, { name: "Montenegro", dial_code: "+382", code: "ME" },
+            { name: "Morocco", dial_code: "+212", code: "MA" }, { name: "Mozambique", dial_code: "+258", code: "MZ" },
+            { name: "Myanmar", dial_code: "+95", code: "MM" }, { name: "Namibia", dial_code: "+264", code: "NA" },
+            { name: "Nauru", dial_code: "+674", code: "NR" }, { name: "Nepal", dial_code: "+977", code: "NP" },
+            { name: "Netherlands", dial_code: "+31", code: "NL" }, { name: "New Zealand", dial_code: "+64", code: "NZ" },
+            { name: "Nicaragua", dial_code: "+505", code: "NI" }, { name: "Niger", dial_code: "+227", code: "NE" },
+            { name: "Nigeria", dial_code: "+234", code: "NG" }, { name: "North Korea", dial_code: "+850", code: "KP" },
+            { name: "North Macedonia", dial_code: "+389", code: "MK" }, { name: "Norway", dial_code: "+47", code: "NO" },
+            { name: "Oman", dial_code: "+968", code: "OM" }, { name: "Pakistan", dial_code: "+92", code: "PK" },
+            { name: "Palau", dial_code: "+680", code: "PW" }, { name: "Palestine", dial_code: "+970", code: "PS" },
+            { name: "Panama", dial_code: "+507", code: "PA" }, { name: "Papua New Guinea", dial_code: "+675", code: "PG" },
+            { name: "Paraguay", dial_code: "+595", code: "PY" }, { name: "Peru", dial_code: "+51", code: "PE" },
+            { name: "Philippines", dial_code: "+63", code: "PH" }, { name: "Poland", dial_code: "+48", code: "PL" },
+            { name: "Portugal", dial_code: "+351", code: "PT" }, { name: "Qatar", dial_code: "+974", code: "QA" },
+            { name: "Romania", dial_code: "+40", code: "RO" }, { name: "Russia", dial_code: "+7", code: "RU" },
+            { name: "Rwanda", dial_code: "+250", code: "RW" }, { name: "Saint Kitts and Nevis", dial_code: "+1-869", code: "KN" },
+            { name: "Saint Lucia", dial_code: "+1-758", code: "LC" }, { name: "Saint Vincent", dial_code: "+1-784", code: "VC" },
+            { name: "Samoa", dial_code: "+685", code: "WS" }, { name: "San Marino", dial_code: "+378", code: "SM" },
+            { name: "Sao Tome and Principe", dial_code: "+239", code: "ST" }, { name: "Saudi Arabia", dial_code: "+966", code: "SA" },
+            { name: "Senegal", dial_code: "+221", code: "SN" }, { name: "Serbia", dial_code: "+381", code: "RS" },
+            { name: "Seychelles", dial_code: "+248", code: "SC" }, { name: "Sierra Leone", dial_code: "+232", code: "SL" },
+            { name: "Singapore", dial_code: "+65", code: "SG" }, { name: "Slovakia", dial_code: "+421", code: "SK" },
+            { name: "Slovenia", dial_code: "+386", code: "SI" }, { name: "Solomon Islands", dial_code: "+677", code: "SB" },
+            { name: "Somalia", dial_code: "+252", code: "SO" }, { name: "South Africa", dial_code: "+27", code: "ZA" },
+            { name: "South Korea", dial_code: "+82", code: "KR" }, { name: "South Sudan", dial_code: "+211", code: "SS" },
+            { name: "Spain", dial_code: "+34", code: "ES" }, { name: "Sri Lanka", dial_code: "+94", code: "LK" },
+            { name: "Sudan", dial_code: "+249", code: "SD" }, { name: "Suriname", dial_code: "+597", code: "SR" },
+            { name: "Sweden", dial_code: "+46", code: "SE" }, { name: "Switzerland", dial_code: "+41", code: "CH" },
+            { name: "Syria", dial_code: "+963", code: "SY" }, { name: "Taiwan", dial_code: "+886", code: "TW" },
+            { name: "Tajikistan", dial_code: "+992", code: "TJ" }, { name: "Tanzania", dial_code: "+255", code: "TZ" },
+            { name: "Thailand", dial_code: "+66", code: "TH" }, { name: "Timor-Leste", dial_code: "+670", code: "TL" },
+            { name: "Togo", dial_code: "+228", code: "TG" }, { name: "Tonga", dial_code: "+676", code: "TO" },
+            { name: "Trinidad and Tobago", dial_code: "+1-868", code: "TT" }, { name: "Tunisia", dial_code: "+216", code: "TN" },
+            { name: "Turkey", dial_code: "+90", code: "TR" }, { name: "Turkmenistan", dial_code: "+993", code: "TM" },
+            { name: "Tuvalu", dial_code: "+688", code: "TV" }, { name: "Uganda", dial_code: "+256", code: "UG" },
+            { name: "Ukraine", dial_code: "+380", code: "UA" }, { name: "United Arab Emirates", dial_code: "+971", code: "AE" },
+            { name: "United Kingdom", dial_code: "+44", code: "GB" }, { name: "United States", dial_code: "+1", code: "US" },
+            { name: "Uruguay", dial_code: "+598", code: "UY" }, { name: "Uzbekistan", dial_code: "+998", code: "UZ" },
+            { name: "Vanuatu", dial_code: "+678", code: "VU" }, { name: "Vatican City", dial_code: "+379", code: "VA" },
+            { name: "Venezuela", dial_code: "+58", code: "VE" }, { name: "Vietnam", dial_code: "+84", code: "VN" },
+            { name: "Yemen", dial_code: "+967", code: "YE" }, { name: "Zambia", dial_code: "+260", code: "ZM" },
+            { name: "Zimbabwe", dial_code: "+263", code: "ZW" }
+        ];
+
+        function getFlagEmoji(countryCode) {
+            if(!countryCode) return '';
+            return countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397));
+        }
+
+        const selectEl = document.getElementById('country-code');
+        countryCodes.forEach(country => {
+            const option = document.createElement('option');
+            option.value = country.dial_code;
+            option.textContent = `${getFlagEmoji(country.code)} ${country.name} (${country.dial_code})`;
+            if (country.code === 'ZM') option.selected = true; 
+            selectEl.appendChild(option);
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const refCode = urlParams.get('ref') || urlParams.get('referral');
+            if (refCode) {
+                document.getElementById('reg-referral').value = refCode.toUpperCase();
+            }
+        });
+
+        window.togglePassword = () => {
+            const pwdInput = document.getElementById('reg-password');
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+            } else {
+                pwdInput.type = 'password';
+            }
+        };
+
+        window.signInWithGoogle = async () => {
+            if (isSubmitting) return;
+            errorDiv.innerText = "";
+            isSubmitting = true;
+            
+            const googleBtn = document.getElementById('google-btn');
+            const originalHTML = googleBtn.innerHTML;
+            googleBtn.disabled = true;
+            googleBtn.innerHTML = '<span style="opacity:.7">Connecting...</span>';
+
+            const provider = new GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
 
             try {
-                // 1. Create Auth User
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
+                const result = await signInWithPopup(auth, provider);
 
-                await updateProfile(user, { displayName: name });
+                sessionStorage.setItem('signupMethod', 'google');
+                sessionStorage.setItem('signupEmail', (result.user.email || '').toLowerCase());
+                if (result.user.displayName) {
+                    sessionStorage.setItem('signupName', result.user.displayName);
+                }
 
-                // 2. Save to users collection
-                await setDoc(doc(db, 'users', user.uid), {
-                    uid: user.uid, fullName: name, email: email, phone: phone, currency: 'ZMW',
-                    role: 'user', status: 'active', createdAt: serverTimestamp()
-                });
-
-                // 3. Save to wallets collection
-                await setDoc(doc(db, 'wallets', user.uid), {
-                    uid: user.uid, balance: 0, currency: 'ZMW', updatedAt: serverTimestamp()
-                });
-
-                // 🛑 DEBUG ALERT: Proves it wrote to the database
-                alert("SUCCESS! User created in Authentication, Firestore 'users', and 'wallets'.");
-                
-                window.location.replace('login.html');
-
+                window.location.href = 'register2.html';
             } catch (error) {
-                console.error(error);
-                btn.disabled = false; btn.innerText = "CREATE ACCOUNT";
-                
-                // 🛑 DEBUG ALERT: Shows exactly why it failed
-                alert("ERROR CODE: " + error.code + "\n\nMESSAGE: " + error.message);
-                errorDiv.innerText = error.message;
+                console.error('[Google Auth]', error);
+                if (error.code === 'auth/popup-blocked') {
+                    errorDiv.innerText = 'Popup blocked. Please allow popups and try again.';
+                } else if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+                    errorDiv.innerText = 'Sign-in cancelled.';
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    errorDiv.innerText = 'Domain not authorized for Google Sign-In.';
+                } else {
+                    errorDiv.innerText = error.message || 'Google sign-in failed.';
+                }
+                googleBtn.disabled = false;
+                googleBtn.innerHTML = originalHTML;
+                isSubmitting = false;
             }
+        };
+
+        window.handleEmailSubmit = (e) => {
+            e.preventDefault();
+            if (isSubmitting) return;
+            errorDiv.innerText = "";
+
+            const emailInput = document.getElementById('reg-email');
+            const pwdInput = document.getElementById('reg-password');
+            const countryCode = document.getElementById('country-code').value;
+            const phoneInput = document.getElementById('reg-phone');
+            const refInput = document.getElementById('reg-referral');
+
+            const email = emailInput.value.trim().toLowerCase();
+            const password = pwdInput.value;
+            const phone = phoneInput.value.trim().replace(/\D/g, '');
+            const referral = refInput.value.trim().toUpperCase();
+            const fullPhone = countryCode + phone;
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+                errorDiv.innerText = 'Please enter a valid email address.';
+                emailInput.focus();
+                return;
+            }
+
+            if (password.length < 8) {
+                errorDiv.innerText = 'Password must be at least 8 characters.';
+                pwdInput.focus();
+                return;
+            }
+            if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+                errorDiv.innerText = 'Password must contain uppercase, lowercase, and a number.';
+                pwdInput.focus();
+                return;
+            }
+
+            if (phone.length < 6 || phone.length > 15) {
+                errorDiv.innerText = 'Please enter a valid phone number.';
+                phoneInput.focus();
+                return;
+            }
+
+            isSubmitting = true;
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'PLEASE WAIT...';
+
+            sessionStorage.setItem('signupMethod', 'email');
+            sessionStorage.setItem('signupEmail', email);
+            sessionStorage.setItem('signupPassword', password);
+            sessionStorage.setItem('signupPhone', fullPhone);
+            
+            if (referral) {
+                sessionStorage.setItem('signupReferral', referral);
+            } else {
+                sessionStorage.removeItem('signupReferral');
+            }
+
+            setTimeout(() => {
+                window.location.href = 'register2.html';
+            }, 400);
+        };
+        
+        ['reg-email', 'reg-password', 'reg-phone', 'reg-referral'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                errorDiv.innerText = "";
+            });
         });
     </script>
 </body>

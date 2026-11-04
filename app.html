@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JAKIPOT - International Transfer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #040b16; --bg-card: #0f172a; --bg-elevated: #1e293b;
+            --cyan: #00D9FF; --emerald: #10b981; --gold: #fbbf24;
+            --text-white: #ffffff; --text-muted: #8b9bb4; --border-light: rgba(255, 255, 255, 0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg-deep); color: var(--text-white); min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .top-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border-light); position: sticky; top: 0; z-index: 10; }
+        .back-btn { background: transparent; border: none; cursor: pointer; color: var(--cyan); padding: 4px; }
+        .back-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .header-title { font-size: 16px; font-weight: 900; text-transform: uppercase; }
+
+        .content-area { flex: 1; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 50px; }
+        
+        .instruction-note { 
+            background: rgba(56, 189, 248, 0.1); border-left: 3px solid var(--cyan); 
+            padding: 15px; border-radius: 0 8px 8px 0; margin-bottom: 25px; 
+            font-size: 13px; line-height: 1.5; color: #bae6fd; 
+        }
+
+        /* App Store Style Cards */
+        .app-card { 
+            background: var(--bg-card); border: 1px solid var(--border-light); 
+            border-radius: 16px; padding: 15px; margin-bottom: 12px; 
+            display: flex; align-items: center; justify-content: space-between; 
+            text-decoration: none; color: var(--text-white); 
+            transition: transform 0.2s; 
+        }
+        .app-card:active { transform: scale(0.98); }
+        
+        .app-left { display: flex; align-items: center; gap: 15px; }
+        
+        .app-logo { 
+            width: 50px; height: 50px; border-radius: 12px; 
+            object-fit: cover; background: #fff; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        
+        .app-info h4 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+        .app-info p { font-size: 12px; color: var(--text-muted); }
+        
+        .btn-get { 
+            background: rgba(0, 217, 255, 0.1); color: var(--cyan); 
+            padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 900; 
+            border: 1px solid rgba(0, 217, 255, 0.3); 
+            text-decoration: none; transition: 0.2s;
+        }
+        .btn-get:hover { background: rgba(0, 217, 255, 0.2); }
+
+        .btn-next { 
+            width: 100%; padding: 18px; border-radius: 14px; border: none; 
+            background: var(--emerald); color: #fff; font-size: 16px; font-weight: 900; 
+            text-transform: uppercase; cursor: pointer; margin-top: 20px; 
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+        }
+        .btn-next:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+    <header class="top-header">
+        <button class="back-btn" onclick="window.location.href='deposit2.html'"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+        <div class="header-title">International Apps</div>
+        <div style="width:24px;"></div>
+    </header>
+
+    <main class="content-area">
+        <div class="instruction-note">
+            <b>How to Deposit:</b> Download one of the apps below and send your money to our Zambian agents. Once you have sent the money, proceed to the next step to submit your receipt.
+        </div>
+
+        <!-- WorldRemit -->
+        <a href="https://play.google.com/store/apps/details?id=com.worldremit.android" target="_blank" class="app-card">
+            <div class="app-left">
+                <img src="https://logo.clearbit.com/worldremit.com" alt="WorldRemit" class="app-logo" onerror="this.src='https://ui-avatars.com/api/?name=WR&background=ff6b00&color=fff'">
+                <div class="app-info">
+                    <h4>WorldRemit</h4>
+                    <p>Supports MTN & Airtel Zambia</p>
+                </div>
+            </div>
+            <span class="btn-get">GET</span>
+        </a>
+
+        <!-- Remitly -->
+        <a href="https://play.google.com/store/apps/details?id=com.remitly.androidapp" target="_blank" class="app-card">
+            <div class="app-left">
+                <img src="https://logo.clearbit.com/remitly.com" alt="Remitly" class="app-logo" onerror="this.src='https://ui-avatars.com/api/?name=RM&background=2d3e50&color=fff'">
+                <div class="app-info">
+                    <h4>Remitly</h4>
+                    <p>Supports MTN & Airtel Zambia</p>
+                </div>
+            </div>
+            <span class="btn-get">GET</span>
+        </a>
+
+        <!-- Mama Money -->
+        <a href="https://play.google.com/store/apps/details?id=com.ionicframework.mamamoneyfamilyapp600848" target="_blank" class="app-card">
+            <div class="app-left">
+                <img src="https://logo.clearbit.com/mamamoney.co.za" alt="Mama Money" class="app-logo" onerror="this.src='https://ui-avatars.com/api/?name=MM&background=00b0ff&color=fff'">
+                <div class="app-info">
+                    <h4>Mama Money</h4>
+                    <p>Supports MTN & Airtel Zambia</p>
+                </div>
+            </div>
+            <span class="btn-get">GET</span>
+        </a>
+
+        <!-- Western Union -->
+        <a href="https://play.google.com/store/apps/details?id=com.westernunion.moneytransferr3app.co" target="_blank" class="app-card">
+            <div class="app-left">
+                <img src="https://logo.clearbit.com/westernunion.com" alt="Western Union" class="app-logo" onerror="this.src='https://ui-avatars.com/api/?name=WU&background=ffcc00&color=000'">
+                <div class="app-info">
+                    <h4>Western Union</h4>
+                    <p>Supports MTN & Airtel Zambia</p>
+                </div>
+            </div>
+            <span class="btn-get">GET</span>
+        </a>
+
+        <button class="btn-next" onclick="window.location.href='deposit3.html'">I HAVE SENT THE MONEY →</button>
+    </main>
+</body>
+</html>

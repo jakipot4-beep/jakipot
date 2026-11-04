@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JAKIPOT - My Wallet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #040b16; 
+            --bg-card: #0f172a; 
+            --bg-elevated: #1e293b;
+            --cyan: #00D9FF; 
+            --emerald: #10b981; 
+            --danger: #ef4444;
+            --gold: #fbbf24;
+            --text-white: #ffffff; 
+            --text-muted: #8b9bb4; 
+            --border-light: rgba(255, 255, 255, 0.08);
+            --cyan-glow: rgba(0, 217, 255, 0.3);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg-deep); color: var(--text-white); 
+            min-height: 100vh; display: flex; flex-direction: column;
+            background-image: radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.05) 0%, transparent 50%);
+        }
+
+        /* HEADER */
+        .top-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 15px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border-light);
+            position: sticky; top: 0; z-index: 10;
+        }
+        .back-btn { background: transparent; border: none; cursor: pointer; color: var(--cyan); display: flex; align-items: center; padding: 4px; }
+        .back-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .header-title { font-size: 16px; font-weight: 900; color: var(--text-white); letter-spacing: 1.5px; text-transform: uppercase; }
+
+        /* CONTENT AREA */
+        .content-area { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 50px; }
+
+        /* WALLET CARD - PREMIUM DESIGN */
+        .wallet-card {
+            background: linear-gradient(145deg, #0f172a, #1e293b);
+            border-radius: 28px; padding: 35px 20px; text-align: center;
+            position: relative; overflow: hidden;
+            margin-bottom: 35px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Animated Glow Border */
+        .wallet-card::before {
+            content: ''; position: absolute; inset: -2px;
+            background: linear-gradient(45deg, var(--cyan), var(--emerald), var(--gold), var(--cyan));
+            background-size: 300% 300%;
+            z-index: -1; border-radius: 30px;
+            animation: borderGlow 4s ease infinite;
+            opacity: 0.6;
+        }
+
+        /* Inner dark cover to show only border */
+        .wallet-card::after {
+            content: ''; position: absolute; inset: 2px;
+            background: linear-gradient(145deg, #0f172a, #0b1120);
+            border-radius: 26px; z-index: -1;
+        }
+
+        @keyframes borderGlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Decorative Background Circles */
+        .bg-circle-1, .bg-circle-2 {
+            position: absolute; border-radius: 50%; z-index: 0; pointer-events: none;
+        }
+        .bg-circle-1 {
+            width: 150px; height: 150px; top: -50px; right: -50px;
+            background: radial-gradient(circle, rgba(0, 217, 255, 0.15) 0%, transparent 70%);
+        }
+        .bg-circle-2 {
+            width: 200px; height: 200px; bottom: -80px; left: -50px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+        }
+
+        .wallet-icon-wrap {
+            width: 50px; height: 50px; margin: 0 auto 15px auto;
+            background: rgba(0, 217, 255, 0.1); border-radius: 50%;
+            display: grid; place-items: center; position: relative; z-index: 1;
+            border: 1px solid rgba(0, 217, 255, 0.3);
+        }
+        .wallet-icon-wrap svg { width: 24px; height: 24px; fill: var(--cyan); }
+
+        .wallet-label { font-size: 12px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; position: relative; z-index: 1; }
+        
+        .wallet-amount { 
+            font-size: 52px; font-weight: 900; color: var(--text-white); 
+            line-height: 1; position: relative; z-index: 1; 
+            text-shadow: 0 0 25px rgba(0, 217, 255, 0.4); 
+            display: flex; justify-content: center; align-items: flex-start; gap: 5px;
+        }
+        .wallet-amount .currency-symbol {
+            font-size: 24px; font-weight: 800; color: var(--cyan); margin-top: 8px;
+        }
+        
+        .wallet-currency { font-size: 13px; font-weight: 700; color: var(--text-muted); margin-top: 10px; position: relative; z-index: 1; letter-spacing: 1px;}
+
+        /* RECENT TRANSACTIONS */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px;}
+        .section-title { font-size: 14px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .see-all { font-size: 12px; font-weight: 800; color: var(--cyan); text-decoration: none; background: rgba(0, 217, 255, 0.1); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--cyan-glow);}
+        
+        .tx-list { display: flex; flex-direction: column; gap: 10px; }
+        
+        .tx-card {
+            background: var(--bg-card); border: 1px solid var(--border-light);
+            border-radius: 14px; padding: 15px; display: flex; justify-content: space-between; align-items: center;
+            transition: transform 0.2s;
+        }
+        .tx-card:active { transform: scale(0.98); }
+        
+        .tx-left { display: flex; flex-direction: column; gap: 4px; }
+        .tx-title { font-size: 14px; font-weight: 800; color: var(--text-white); }
+        .tx-date { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+        
+        .tx-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+        .tx-amount { font-size: 16px; font-weight: 900; }
+        .tx-amount.positive { color: var(--emerald); }
+        .tx-amount.negative { color: var(--danger); }
+        
+        .tx-status { font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+        .status-completed { background: rgba(16, 185, 129, 0.15); color: var(--emerald); }
+        .status-pending { background: rgba(251, 191, 36, 0.15); color: var(--gold); }
+
+        /* Loader */
+        .loader-wrap { display: flex; justify-content: center; padding: 20px; }
+        .spinner { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--cyan); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <header class="top-header">
+        <button class="back-btn" onclick="window.location.href='home.html'">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </button>
+        <div class="header-title">My Wallet</div>
+        <div style="width: 24px;"></div> <!-- Spacer -->
+    </header>
+
+    <main class="content-area">
+        
+        <!-- Premium Wallet Balance Card -->
+        <div class="wallet-card">
+            <div class="bg-circle-1"></div>
+            <div class="bg-circle-2"></div>
+            
+            <div class="wallet-icon-wrap">
+                <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+            </div>
+
+            <div class="wallet-label">Available Balance</div>
+            
+            <div class="wallet-amount" id="wallet-balance">
+                <span class="currency-symbol" id="currency-symbol">K</span>
+                <span id="balance-value">0.00</span>
+            </div>
+            
+            <div class="wallet-currency" id="wallet-currency">ZMW</div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="section-header">
+            <div class="section-title">Recent Activity</div>
+            <a href="history.html" class="see-all">See All →</a>
+        </div>
+
+        <div class="tx-list" id="recent-tx-list">
+            <div class="loader-wrap"><div class="spinner"></div></div>
+        </div>
+
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, collection, query, where, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
+            measurementId: "G-L1CLB5TDHV"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let currencySymbol = 'K';
+        let currentCurrencyCode = 'ZMW';
+
+        const CURRENCY_MAP = {
+            'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 
+            'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'TZS': 'TSh', 
+            'UGX': 'USh', 'BWP': 'P', 'MWK': 'MK', 'MZN': 'MT', 
+            'NAD': 'N$', 'AOA': 'Kz', 'PHP': '₱', 'IDR': 'Rp', 
+            'PKR': '₨', 'BDT': '৳'
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            currentUser = user;
+
+            // 1. Get User Currency
+            onSnapshot(doc(db, 'users', user.uid), (snap) => {
+                if (snap.exists()) {
+                    currentCurrencyCode = snap.data().currency || 'ZMW';
+                    currencySymbol = CURRENCY_MAP[currentCurrencyCode] || currentCurrencyCode;
+                    
+                    // Update UI instantly
+                    document.getElementById('currency-symbol').innerText = currencySymbol;
+                    document.getElementById('wallet-currency').innerText = currentCurrencyCode;
+                    
+                    loadRecentTransactions(); // Reload transactions to apply new symbol
+                }
+            });
+
+            // 2. Get Wallet Balance
+            onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
+                if (snap.exists()) {
+                    const bal = snap.data().balance || 0;
+                    // Split into symbol and value for the new layout
+                    document.getElementById('balance-value').innerText = bal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                }
+            });
+        });
+
+        let unsubscribeTx = null;
+
+        // 3. Get Recent Transactions (Limit 5)
+        function loadRecentTransactions() {
+            if (!currentUser) return;
+            if (unsubscribeTx) unsubscribeTx();
+
+            const q = query(
+                collection(db, 'transactions'),
+                where('uid', '==', currentUser.uid),
+                orderBy('createdAt', 'desc'),
+                limit(5) // Only get the last 5
+            );
+
+            unsubscribeTx = onSnapshot(q, (snapshot) => {
+                const list = document.getElementById('recent-tx-list');
+                list.innerHTML = '';
+
+                if (snapshot.empty) {
+                    list.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 13px;">No recent activity.</div>`;
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const tx = doc.data();
+                    
+                    const isPositive = tx.amount > 0;
+                    const sign = isPositive ? '+' : '-';
+                    const amountFormatted = `${sign}${currencySymbol}${Math.abs(tx.amount).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                    
+                    let dateStr = 'Just now';
+                    if (tx.createdAt) {
+                        const date = tx.createdAt.toDate();
+                        dateStr = date.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+                    }
+
+                    let title = tx.type.replace(/_/g, ' ').toUpperCase();
+                    if (tx.type === 'game_win') title = 'GAME WIN';
+                    if (tx.type === 'game_bet') title = 'GAME BET';
+
+                    let statusClass = tx.status === 'pending' ? 'status-pending' : 'status-completed';
+
+                    const card = document.createElement('div');
+                    card.className = 'tx-card';
+                    card.innerHTML = `
+                        <div class="tx-left">
+                            <div class="tx-title">${title}</div>
+                            <div class="tx-date">${dateStr}</div>
+                        </div>
+                        <div class="tx-right">
+                            <div class="tx-amount ${isPositive ? 'positive' : 'negative'}">${amountFormatted}</div>
+                            <div class="tx-status ${statusClass}">${tx.status}</div>
+                        </div>
+                    `;
+                    list.appendChild(card);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

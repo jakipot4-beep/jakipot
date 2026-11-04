@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chat - Jakipot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Monochrome Slate Theme (No Blue, No Green) */
+            --bg-deep: #09090b;       
+            --bg-surface: #18181b;    
+            --bg-elevated: #27272a;   
+            
+            --text-primary: #ffffff;   
+            --text-secondary: #a1a1aa; 
+            
+            --border-light: rgba(255, 255, 255, 0.08);
+            --chat-sent: #3f3f46;      
+            --chat-received: #27272a;  
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg-deep); color: var(--text-primary); 
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden; 
+        }
+
+        /* =========================================
+           HEADER
+           ========================================= */
+        .chat-header {
+            display: flex; align-items: center; gap: 15px; padding: 12px 20px;
+            background: var(--bg-surface); border-bottom: 1px solid var(--border-light); height: 70px; z-index: 10;
+        }
+        .back-btn {
+            background: transparent; border: none; cursor: pointer;
+            width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+            transition: background 0.2s;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.05); }
+        .back-btn svg { width: 24px; height: 24px; fill: var(--text-primary); }
+        
+        /* Clickable Profile Area */
+        .chat-title-area { 
+            flex: 1; display: flex; align-items: center; gap: 12px; 
+            cursor: pointer; transition: opacity 0.2s; padding: 5px; border-radius: 10px;
+        }
+        .chat-title-area:hover { background: rgba(255,255,255,0.05); }
+        
+        .chat-avatar-header {
+            width: 42px; height: 42px; border-radius: 50%; 
+            background: var(--bg-elevated); color: var(--text-primary);
+            display: grid; place-items: center; font-weight: 900; font-size: 16px; overflow: hidden;
+            border: 1px solid var(--border-light);
+        }
+        .chat-avatar-header img { width: 100%; height: 100%; object-fit: cover; }
+        .chat-title-text h3 { font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; }
+        .chat-title-text p { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+        
+        .header-actions { display: flex; gap: 10px; }
+        .icon-btn { background: transparent; border: none; cursor: pointer; padding: 8px; border-radius: 50%; transition: 0.2s; }
+        .icon-btn:hover { background: rgba(255,255,255,0.05); }
+        .icon-btn svg { width: 20px; height: 20px; fill: var(--text-primary); }
+
+        /* =========================================
+           CHAT AREA (Soft Background)
+           ========================================= */
+        #chat-screen { flex: 1; display: flex; flex-direction: column; height: calc(100vh - 70px); }
+        
+        .messages-container {
+            flex: 1; overflow-y: auto; padding: 20px;
+            display: flex; flex-direction: column; gap: 12px;
+            /* Soft dark abstract wallpaper */
+            background-image: 
+                linear-gradient(rgba(9, 9, 11, 0.9), rgba(9, 9, 11, 0.9)), 
+                url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
+            background-size: cover; background-position: center; background-attachment: fixed;
+        }
+
+        .message-bubble { max-width: 80%; display: flex; flex-direction: column; }
+        .message-bubble.sent { align-self: flex-end; align-items: flex-end; }
+        .message-bubble.received { align-self: flex-start; align-items: flex-start; }
+        
+        .message-sender { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; margin-left: 4px; font-weight: 600; }
+        
+        .message-text {
+            padding: 12px 16px; font-size: 15px; line-height: 1.4;
+            word-wrap: break-word; color: var(--text-primary);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        /* Message Tails */
+        .message-bubble.sent .message-text { 
+            background: var(--chat-sent); border-radius: 18px 18px 0 18px; 
+        }
+        .message-bubble.received .message-text { 
+            background: var(--chat-received); border-radius: 18px 18px 18px 0; 
+        }
+        
+        .message-image { max-width: 100%; border-radius: 12px; margin-top: 5px; border: 1px solid var(--border-light); }
+        .message-audio { width: 220px; margin-top: 5px; outline: none; border-radius: 20px; }
+        .message-time { font-size: 10px; color: #71717a; margin-top: 4px; margin-right: 4px; margin-left: 4px; }
+
+        /* =========================================
+           INPUT AREA
+           ========================================= */
+        .chat-input-area {
+            padding: 12px 15px; background: var(--bg-surface); border-top: 1px solid var(--border-light);
+            display: flex; align-items: center; gap: 8px; padding-bottom: max(12px, env(safe-area-inset-bottom));
+            z-index: 10;
+        }
+        
+        .chat-input {
+            flex: 1; background: var(--bg-elevated); border: 1px solid var(--border-light);
+            border-radius: 24px; padding: 14px 18px; color: var(--text-primary); font-size: 15px; 
+            outline: none; transition: border-color 0.2s;
+        }
+        .chat-input:focus { border-color: var(--text-secondary); }
+        
+        /* Action Buttons */
+        .action-btn {
+            width: 46px; height: 46px; border-radius: 50%; border: none; 
+            display: grid; place-items: center; cursor: pointer; flex-shrink: 0;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .action-btn:active { transform: scale(0.95); }
+        
+        .attach-btn, .mic-btn { background: var(--bg-elevated); border: 1px solid var(--border-light); }
+        .attach-btn svg, .mic-btn svg { width: 22px; height: 22px; fill: var(--text-secondary); }
+        
+        /* White Send Button with Black Icon */
+        .send-btn { background: #ffffff; }
+        .send-btn svg { width: 20px; height: 20px; fill: #09090b; }
+        
+        .mic-btn.recording { background: var(--danger); animation: pulse 1s infinite; }
+        .mic-btn.recording svg { fill: #ffffff; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    </style>
+</head>
+<body>
+
+    <header class="chat-header">
+        <button class="back-btn" onclick="window.location.href='chat-rooms.html'">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </button>
+        
+        <!-- Clickable Profile Area -->
+        <div class="chat-title-area" id="profile-link" onclick="viewProfile()">
+            <div class="chat-avatar-header" id="header-avatar">💬</div>
+            <div class="chat-title-text">
+                <h3 id="header-name">Chat</h3>
+                <p id="header-status">Online</p>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <button class="icon-btn" onclick="alert('Report user coming soon')">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <section id="chat-screen">
+        <div class="messages-container" id="messages-container">
+            <!-- Messages loaded here -->
+        </div>
+        
+        <div class="chat-input-area">
+            <button class="action-btn attach-btn" onclick="document.getElementById('image-upload').click()">
+                <svg viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
+            </button>
+            <input type="file" id="image-upload" accept="image/*" hidden onchange="uploadImage(this)">
+            
+            <input type="text" id="chat-input" class="chat-input" placeholder="Message..." onkeypress="handleEnter(event)">
+            
+            <button class="action-btn mic-btn" id="mic-btn" onclick="toggleRecording()">
+                <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+            </button>
+            
+            <button class="action-btn send-btn" onclick="sendMessage()">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+        </div>
+    </section>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, collection, doc, getDoc, addDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
+            measurementId: "G-L1CLB5TDHV"
+        };
+
+        const CLOUDINARY = { cloudName: 'c2n8j0v', uploadPreset: 'doravica_unsigned' };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let currentUserData = null;
+        let activeRoomId = null;
+        let otherUid = null; 
+        
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+        // 1. Get URL Parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        activeRoomId = urlParams.get('roomId');
+        const chatName = urlParams.get('name') || 'Chat';
+        const chatAvatar = urlParams.get('avatar');
+
+        if (!activeRoomId) {
+            window.location.replace('chat-rooms.html');
+        }
+
+        // 2. Auth Check & Real-Time Header Setup
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            currentUser = user;
+
+            // Listen to current user's data (in case their name changes)
+            onSnapshot(doc(db, 'users', user.uid), (userDoc) => {
+                if (userDoc.exists()) currentUserData = userDoc.data();
+            });
+
+            // Extract other user's UID
+            if (activeRoomId.startsWith('private_')) {
+                const uids = activeRoomId.replace('private_', '').split('_');
+                otherUid = uids.find(id => id !== currentUser.uid);
+            }
+
+            // Setup Initial Header
+            document.getElementById('header-name').innerText = chatName;
+            document.getElementById('header-avatar').innerText = chatName.charAt(0).toUpperCase();
+            
+            if (activeRoomId === 'global_chat') {
+                document.getElementById('header-status').innerText = 'Global Community';
+                document.getElementById('header-avatar').innerHTML = '🌍';
+            } else if (otherUid) {
+                // THE FIX: Listen to the other user's profile in real-time
+                // This updates the header if they change their picture or name while chatting.
+                onSnapshot(doc(db, 'users', otherUid), (otherDoc) => {
+                    if (otherDoc.exists()) {
+                        const otherData = otherDoc.data();
+                        const headerAvatarEl = document.getElementById('header-avatar');
+                        const headerNameEl = document.getElementById('header-name');
+                        
+                        // Update avatar
+                        if (otherData.profilePicUrl) {
+                            headerAvatarEl.innerHTML = `<img src="${otherData.profilePicUrl}" alt="Avatar">`;
+                        } else {
+                            headerAvatarEl.innerText = (otherData.fullName || chatName).charAt(0).toUpperCase();
+                        }
+                        
+                        // Update name if they changed it
+                        if (otherData.fullName) {
+                            headerNameEl.innerText = otherData.fullName;
+                        }
+                    }
+                });
+            } else if (chatAvatar) {
+                document.getElementById('header-avatar').innerHTML = `<img src="${chatAvatar}">`;
+            }
+
+            loadMessages();
+        });
+
+        // 3. View Profile Function
+        window.viewProfile = () => {
+            if (activeRoomId === 'global_chat') {
+                alert("This is the JAKIPOT International Group.");
+                return;
+            }
+            if (otherUid) {
+                window.location.href = `profile.html?uid=${otherUid}`;
+            } else {
+                alert("User profile not found.");
+            }
+        };
+
+        // 4. Load Messages
+        function loadMessages() {
+            const container = document.getElementById('messages-container');
+            container.innerHTML = '<p style="text-align:center; color:var(--text-secondary); margin-top:20px;">Loading messages...</p>';
+
+            const q = query(
+                collection(db, 'chat_messages'),
+                where('groupId', '==', activeRoomId),
+                orderBy('timestamp', 'asc'),
+                limit(100)
+            );
+
+            onSnapshot(q, (snapshot) => {
+                container.innerHTML = '';
+                if (snapshot.empty) {
+                    container.innerHTML = '<p style="text-align:center; color:var(--text-secondary); margin-top:20px;">No messages yet. Say hello!</p>';
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const msg = docSnap.data();
+                    const isSent = msg.uid === currentUser.uid;
+                    const timeStr = msg.timestamp ? new Date(msg.timestamp.toMillis()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                    
+                    let contentHtml = '';
+                    if (msg.messageType === 'image') {
+                        contentHtml = `<img src="${msg.imageUrl}" class="message-image">`;
+                    } else if (msg.messageType === 'voice') {
+                        contentHtml = `<audio controls src="${msg.voiceNoteUrl}" class="message-audio"></audio>`;
+                    } else {
+                        contentHtml = `<div class="message-text">${msg.textContent}</div>`;
+                    }
+
+                    container.innerHTML += `
+                        <div class="message-bubble ${isSent ? 'sent' : 'received'}">
+                            ${!isSent && activeRoomId === 'global_chat' ? `<div class="message-sender">${msg.senderName}</div>` : ''}
+                            ${contentHtml}
+                            <div class="message-time">${timeStr}</div>
+                        </div>
+                    `;
+                });
+                container.scrollTop = container.scrollHeight;
+            });
+        }
+
+        // 5. Send Text Message
+        window.sendMessage = async () => {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+
+            await addDoc(collection(db, 'chat_messages'), {
+                groupId: activeRoomId,
+                uid: currentUser.uid,
+                senderName: currentUserData?.fullName || 'User',
+                messageType: 'text',
+                textContent: text,
+                timestamp: serverTimestamp()
+            });
+        };
+
+        window.handleEnter = (e) => { if (e.key === 'Enter') sendMessage(); };
+
+        // 6. Upload Image
+        window.uploadImage = async (input) => {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const container = document.getElementById('messages-container');
+            container.innerHTML += `<div class="message-bubble sent"><div class="message-text" style="font-style:italic; opacity:0.7;">Uploading image...</div></div>`;
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY.uploadPreset);
+
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, {
+                    method: 'POST', body: formData
+                });
+                const data = await res.json();
+
+                if (data.secure_url) {
+                    await addDoc(collection(db, 'chat_messages'), {
+                        groupId: activeRoomId,
+                        uid: currentUser.uid,
+                        senderName: currentUserData?.fullName || 'User',
+                        messageType: 'image',
+                        imageUrl: data.secure_url,
+                        timestamp: serverTimestamp()
+                    });
+                }
+            } catch (err) {
+                alert('Image upload failed');
+            }
+            input.value = ''; // Reset
+        };
+
+        // 7. Voice Notes
+        window.toggleRecording = async () => {
+            if (isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                document.getElementById('mic-btn').classList.remove('recording');
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const file = new File([audioBlob], "voice.webm", { type: 'audio/webm' });
+
+                    const container = document.getElementById('messages-container');
+                    container.innerHTML += `<div class="message-bubble sent"><div class="message-text" style="font-style:italic; opacity:0.7;">Uploading voice note...</div></div>`;
+                    container.scrollTop = container.scrollHeight;
+
+                    try {
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        formData.append('upload_preset', CLOUDINARY.uploadPreset);
+
+                        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/video/upload`, {
+                            method: 'POST', body: formData
+                        });
+                        const data = await res.json();
+
+                        if (data.secure_url) {
+                            await addDoc(collection(db, 'chat_messages'), {
+                                groupId: activeRoomId,
+                                uid: currentUser.uid,
+                                senderName: currentUserData?.fullName || 'User',
+                                messageType: 'voice',
+                                voiceNoteUrl: data.secure_url,
+                                timestamp: serverTimestamp()
+                            });
+                        }
+                    } catch (err) {
+                        alert('Voice note upload failed');
+                    }
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                document.getElementById('mic-btn').classList.add('recording');
+            } catch (err) {
+                alert('Microphone access denied. Please allow it in your browser settings.');
+            }
+        };
+    </script>
+</body>
+</html>

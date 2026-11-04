@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Identity Verification - Jakipot</title>
+    <style>
+        :root {
+            --bg-dark: #060b19;
+            --bg-card: #111827;
+            --bg-elevated: #0f172a;
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.3);
+            --light-blue: #38bdf8;
+            --white: #ffffff;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --border-color: #1e293b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { 
+            background: var(--bg-dark); 
+            color: var(--white); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            padding: 20px; 
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.05) 0%, transparent 40%);
+        }
+
+        /* Navigation */
+        .nav-bar {
+            width: 100%; max-width: 500px;
+            display: flex; justify-content: flex-start; align-items: center;
+            margin-top: 10px; margin-bottom: 25px;
+            animation: slideDownFade 0.6s ease;
+        }
+        .back-link {
+            color: var(--text-muted); text-decoration: none; font-size: 14px;
+            display: flex; align-items: center; gap: 5px; transition: color 0.3s;
+        }
+        .back-link:hover { color: var(--emerald); }
+
+        /* Header */
+        .header { text-align: center; margin-bottom: 25px; animation: slideUpFade 0.7s ease; }
+        .header h1 { font-size: 22px; font-weight: 900; letter-spacing: 1px; color: var(--white); }
+        .header p { 
+            font-size: 14px; color: var(--light-blue); margin-top: 8px; 
+            font-weight: 500; max-width: 400px; line-height: 1.4; margin-left: auto; margin-right: auto;
+        }
+
+        /* Trust Banner */
+        .trust-banner {
+            width: 100%; max-width: 500px;
+            background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px; padding: 15px; margin-bottom: 20px;
+            display: flex; gap: 12px; align-items: flex-start;
+            animation: slideUpFade 0.7s ease 0.1s forwards; opacity: 0;
+        }
+        .trust-banner svg { width: 20px; height: 20px; fill: var(--emerald); flex-shrink: 0; margin-top: 2px; }
+        .trust-banner-text { font-size: 13px; color: #d1fae5; line-height: 1.5; }
+        .trust-banner-text b { color: var(--white); }
+
+        /* Why We Ask Box */
+        .why-we-ask {
+            background: var(--bg-elevated); border: 1px solid var(--border-color);
+            border-radius: 14px; padding: 18px; margin-bottom: 20px;
+            animation: slideUpFade 0.7s ease 0.2s forwards; opacity: 0;
+        }
+        .why-title { font-size: 14px; font-weight: 800; color: var(--light-blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .why-text { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+        .why-text b { color: var(--white); }
+
+        /* Card */
+        .card {
+            background: var(--bg-card); padding: 25px 20px; border-radius: 20px;
+            width: 100%; max-width: 500px; box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            border: 1px solid var(--border-color); animation: slideUpFade 0.7s ease 0.3s forwards;
+            opacity: 0; transform: translateY(20px);
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+            color: var(--emerald); margin-bottom: 12px; margin-top: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-title svg { width: 16px; height: 16px; fill: var(--emerald); }
+        .section-title:first-child { margin-top: 0; }
+
+        /* Document Type Selection */
+        .doc-type-grid {
+            display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;
+        }
+        .doc-type-card {
+            padding: 16px 20px; background: var(--bg-elevated);
+            border: 2px solid var(--border-color); border-radius: 12px;
+            text-align: left; font-size: 14px; font-weight: 700; cursor: pointer;
+            transition: all 0.2s; display: flex; justify-content: space-between; align-items: center;
+        }
+        .doc-type-card:hover { border-color: var(--emerald); background: rgba(16,185,129,0.05); }
+        .doc-type-card::after { content: '→'; color: var(--text-muted); font-weight: 900; }
+
+        /* Back to selection link */
+        .change-doc-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: transparent; border: none; color: var(--light-blue);
+            font-size: 12px; font-weight: 700; cursor: pointer;
+            margin-bottom: 15px; padding: 0;
+            text-decoration: underline; text-underline-offset: 2px;
+        }
+
+        /* Upload Boxes */
+        .upload-box {
+            border: 2px dashed #334155; border-radius: 14px; padding: 20px 15px;
+            background: rgba(255,255,255,0.02); cursor: pointer;
+            text-align: center; transition: all 0.25s; position: relative;
+            margin-bottom: 15px; overflow: hidden;
+        }
+        .upload-box:hover:not(.uploading) { border-color: var(--emerald); background: rgba(16,185,129,0.05); }
+        .upload-box.has-file { border-style: solid; border-color: var(--emerald); background: rgba(16,185,129,0.04); padding: 0; }
+        .upload-box.error { border-color: var(--danger); }
+
+        .upload-label {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            color: var(--text-muted); font-size: 13px;
+        }
+        .upload-label b { color: var(--white); font-weight: 700; font-size: 14px; }
+        .upload-icon { width: 32px; height: 32px; fill: var(--emerald); margin-bottom: 4px; }
+
+        .upload-preview {
+            position: relative; width: 100%; aspect-ratio: 16/10;
+            background: #000; overflow: hidden; border-radius: 12px;
+        }
+        .upload-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .preview-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 30%, transparent 60%, rgba(0,0,0,0.8) 100%);
+            display: flex; align-items: flex-end; justify-content: space-between; padding: 10px;
+        }
+        .preview-actions { display: flex; gap: 8px; margin-left: auto; }
+        .preview-btn {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2);
+            display: grid; place-items: center; cursor: pointer; transition: background 0.2s;
+        }
+        .preview-btn:hover { background: rgba(0,0,0,0.85); }
+        .preview-btn svg { width: 15px; height: 15px; fill: var(--white); }
+        .preview-btn.danger:hover { background: rgba(239,68,68,0.85); }
+
+        /* Selfie Section */
+        .selfie-instructions {
+            background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.2);
+            border-radius: 10px; padding: 12px 14px; margin-bottom: 15px;
+            font-size: 12px; color: #bae6fd; line-height: 1.5;
+            display: flex; gap: 10px; align-items: flex-start;
+        }
+        .selfie-instructions svg { width: 16px; height: 16px; fill: var(--light-blue); flex-shrink: 0; margin-top: 2px; }
+
+        .selfie-preview {
+            position: relative; width: 100%; aspect-ratio: 1/1;
+            background: #000; border-radius: 50%; overflow: hidden;
+            max-width: 200px; margin: 0 auto 15px auto;
+            border: 3px solid var(--emerald); display: none;
+            box-shadow: 0 0 30px rgba(16,185,129,0.3);
+        }
+        .selfie-preview.show { display: block; }
+        .selfie-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+        .selfie-actions { display: flex; gap: 10px; margin-bottom: 15px; }
+        .selfie-btn {
+            flex: 1; padding: 13px; border-radius: 12px;
+            background: rgba(56,189,248,0.08); color: var(--light-blue);
+            border: 1.5px solid rgba(56,189,248,0.3);
+            font-size: 13px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;
+        }
+        .selfie-btn:hover { background: rgba(56,189,248,0.15); border-color: var(--light-blue); }
+        .selfie-btn svg { width: 18px; height: 18px; fill: var(--light-blue); }
+
+        /* Submit Button */
+        .btn-continue {
+            width: 100%; padding: 16px; background: var(--emerald); color: var(--white);
+            border: none; border-radius: 12px; font-size: 16px; font-weight: 800;
+            cursor: pointer; margin-top: 10px; transition: background 0.3s, transform 0.2s;
+            box-shadow: 0 4px 15px var(--emerald-glow); display: flex; justify-content: center; align-items: center;
+        }
+        .btn-continue:hover:not(:disabled) { background: #059669; transform: translateY(-2px); }
+        .btn-continue:active:not(:disabled) { transform: scale(0.98); }
+        .btn-continue:disabled { opacity: 0.6; cursor: not-allowed; background: #334155; box-shadow: none; }
+
+        /* Privacy Footer */
+        .privacy-footer {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            margin-top: 20px; font-size: 11px; color: var(--text-muted); text-align: center;
+        }
+        .privacy-footer svg { width: 14px; height: 14px; fill: var(--text-muted); }
+
+        /* Error */
+        .error { color: var(--danger); margin-top: 12px; font-size: 13px; text-align: center; min-height: 18px; font-weight: 500; }
+
+        /* Camera Modal & Loading Overlays (Unchanged) */
+        #camera-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 200;
+            flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+        }
+        #camera-modal.show { display: flex; }
+        #camera-video { width: 100%; max-width: 400px; border-radius: 20px; border: 2px solid var(--emerald); background: #000; }
+        .camera-controls { display: flex; gap: 15px; margin-top: 20px; }
+        .camera-btn { width: 65px; height: 65px; border-radius: 50%; background: var(--white); border: 5px solid rgba(255,255,255,0.3); cursor: pointer; transition: transform 0.15s; display: grid; place-items: center; }
+        .camera-btn:active { transform: scale(0.92); }
+        .camera-btn.close { background: rgba(239,68,68,0.85); width: 50px; height: 50px; border-color: rgba(255,255,255,0.2); }
+        .camera-btn svg { width: 28px; height: 28px; }
+        .camera-btn.close svg { fill: var(--white); width: 20px; height: 20px; }
+
+        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(6,11,25,0.98); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        #loading-overlay.show { display: flex; }
+        .bird-container { position: relative; width: 100%; height: 100px; overflow: hidden; margin-bottom: 20px; }
+        .flying-bird { position: absolute; font-size: 60px; top: 50%; left: -20%; transform: translateY(-50%); animation: flyAcross 2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .loading-title { color: var(--white); font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+        .loading-text { color: var(--light-blue); font-size: 14px; font-weight: 600; animation: blink 1.5s infinite; text-align: center; padding: 0 20px; }
+        .progress-bar-bg { width: 250px; height: 4px; background: #1e293b; border-radius: 2px; margin-top: 20px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--emerald), var(--light-blue)); border-radius: 2px; transition: width 0.4s ease; }
+
+        #success-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(6,11,25,0.98); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(8px); text-align: center; padding: 20px; }
+        #success-overlay.show { display: flex; }
+        .success-check { width: 80px; height: 80px; margin-bottom: 15px; }
+        .success-check circle { stroke: var(--emerald); stroke-width: 3; fill: rgba(16,185,129,0.1); stroke-dasharray: 151; stroke-dashoffset: 151; animation: drawCircle 0.8s cubic-bezier(0.65,0,0.45,1) forwards; }
+        .success-check path { stroke: var(--emerald); stroke-width: 4; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 36; stroke-dashoffset: 36; animation: drawCheck 0.5s cubic-bezier(0.65,0,0.45,1) 0.6s forwards; }
+        .success-title { color: var(--white); font-size: 20px; font-weight: 900; margin-bottom: 8px; }
+        .success-text { color: var(--text-muted); font-size: 14px; line-height: 1.5; max-width: 300px; }
+
+        /* AI Widget */
+        .ai-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: var(--bg-card); display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 1000; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); border: 2px solid var(--emerald); transition: transform 0.2s, box-shadow 0.2s; }
+        .ai-fab:hover { transform: scale(1.05); box-shadow: 0 6px 25px rgba(16, 185, 129, 0.6); }
+        .ai-fab:active { transform: scale(0.92); }
+        .ai-ring { width: 36px; height: 36px; border-radius: 50%; background: conic-gradient(from 0deg, transparent, var(--emerald), var(--light-blue), var(--emerald), transparent); animation: spin 3s linear infinite; position: relative; }
+        .ai-ring::after { content: ''; position: absolute; inset: 4px; background: var(--bg-card); border-radius: 50%; }
+        .ai-bubble { position: fixed; bottom: 95px; right: 25px; max-width: 280px; background: var(--bg-card); color: var(--white); padding: 14px 18px; border-radius: 18px 18px 0 18px; font-size: 13.5px; line-height: 1.5; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(16, 185, 129, 0.3); z-index: 999; opacity: 0; transform: translateY(10px); transition: opacity 0.3s, transform 0.3s; pointer-events: none; }
+        .ai-bubble.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .ai-bubble::before { content: ''; position: absolute; bottom: -8px; right: 20px; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid var(--bg-card); }
+
+        /* Animations */
+        @keyframes slideUpFade { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDownFade { 0% { opacity: 0; transform: translateY(-10px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes flyAcross { 0% { left: -20%; transform: translateY(-50%) scale(0.8) rotate(10deg); } 50% { transform: translateY(-60%) scale(1.1) rotate(-5deg); } 100% { left: 120%; transform: translateY(-50%) scale(0.8) rotate(10deg); } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes drawCircle { to { stroke-dashoffset: 0; } }
+        @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="nav-bar">
+        <a href="register2.html" class="back-link">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+            Back
+        </a>
+    </div>
+
+    <div class="header">
+        <h1>IDENTITY VERIFICATION</h1>
+        <p>To comply with international financial regulations and protect our community, we need to verify your identity.</p>
+    </div>
+
+    <!-- NEW: Trust Banner -->
+    <div class="trust-banner">
+        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+        <div class="trust-banner-text">
+            <b>Bank-Grade Security:</b> Your documents are encrypted and stored securely. They are only accessible by our authorized verification team.
+        </div>
+    </div>
+
+    <div class="card">
+
+        <!-- NEW: Why We Ask Section -->
+        <div class="why-we-ask">
+            <div class="why-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--light-blue)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                Why do we ask for your NRC / Passport?
+            </div>
+            <div class="why-text">
+                JAKIPOT is a regulated financial platform. To prevent fraud, money laundering, and to comply with <b>Anti-Money Laundering (AML) laws</b>, we are required to verify the identity of every user. Your data is <b>never shared</b> with third-party advertisers.
+            </div>
+        </div>
+
+        <!-- DOCUMENT TYPE SELECTION -->
+        <div id="doc-type-selection">
+            <div class="section-title">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg>
+                Select Document Type
+            </div>
+            
+            <div class="doc-type-grid">
+                <div class="doc-type-card" onclick="selectDocType('nrc')">NRC Card</div>
+                <div class="doc-type-card" onclick="selectDocType('passport')">Passport</div>
+                <div class="doc-type-card" onclick="selectDocType('drivers')">Driver's License</div>
+                <div class="doc-type-card" onclick="selectDocType('other')">Other</div>
+            </div>
+        </div>
+
+        <!-- UPLOAD CONTAINER (Hidden by default until a type is selected) -->
+        <div id="upload-container" style="display: none;">
+            
+            <!-- Change document type button -->
+            <button class="change-doc-btn" onclick="resetDocType()">
+                <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                Change Document Type
+            </button>
+
+            <!-- FRONT UPLOAD -->
+            <div class="section-title" id="front-title">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg>
+                <span id="front-title-text">Front Side</span>
+            </div>
+            <div class="upload-box" id="nrc-front-box" onclick="triggerUpload('nrcFront')">
+                <input type="file" id="nrc-front-input" accept="image/jpeg,image/jpg,image/png" hidden>
+                <div class="upload-label" id="nrc-front-label">
+                    <svg class="upload-icon" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+                    <b>Upload Image</b>
+                    <span>Tap to select image</span>
+                </div>
+                <div class="upload-preview" id="nrc-front-preview" style="display:none;">
+                    <img id="nrc-front-img" alt="Document Front">
+                    <div class="preview-overlay">
+                        <div class="preview-actions">
+                            <button type="button" class="preview-btn" onclick="triggerUpload('nrcFront'); event.stopPropagation();" title="Replace">
+                                <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                            </button>
+                            <button type="button" class="preview-btn danger" onclick="removeFile('nrcFront'); event.stopPropagation();" title="Remove">
+                                <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BACK UPLOAD (Hidden for Passport) -->
+            <div id="back-section">
+                <div class="section-title" id="back-title">
+                    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg>
+                    <span id="back-title-text">Back Side</span>
+                </div>
+                <div class="upload-box" id="nrc-back-box" onclick="triggerUpload('nrcBack')">
+                    <input type="file" id="nrc-back-input" accept="image/jpeg,image/jpg,image/png" hidden>
+                    <div class="upload-label" id="nrc-back-label">
+                        <svg class="upload-icon" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+                        <b>Upload Image</b>
+                        <span>Tap to select image</span>
+                    </div>
+                    <div class="upload-preview" id="nrc-back-preview" style="display:none;">
+                        <img id="nrc-back-img" alt="Document Back">
+                        <div class="preview-overlay">
+                            <div class="preview-actions">
+                                <button type="button" class="preview-btn" onclick="triggerUpload('nrcBack'); event.stopPropagation();" title="Replace">
+                                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                                </button>
+                                <button type="button" class="preview-btn danger" onclick="removeFile('nrcBack'); event.stopPropagation();" title="Remove">
+                                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SELFIE -->
+            <div class="section-title">
+                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                Your Selfie
+            </div>
+            
+            <div class="selfie-instructions">
+                <svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                <span>Please make sure your face is clearly visible, the lighting is good, and your photo is not blurry.</span>
+            </div>
+
+            <div class="selfie-preview" id="selfie-preview">
+                <img id="selfie-img" alt="Selfie">
+            </div>
+
+            <div class="selfie-actions" id="selfie-actions">
+                <button type="button" class="selfie-btn" onclick="openCamera()">
+                    <svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                    Take Selfie
+                </button>
+                <button type="button" class="selfie-btn" onclick="triggerUpload('selfie')">
+                    <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    Upload Photo
+                </button>
+            </div>
+
+            <div class="selfie-actions" id="selfie-replace-actions" style="display:none;">
+                <button type="button" class="selfie-btn" onclick="openCamera()">
+                    <svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                    Retake Selfie
+                </button>
+                <button type="button" class="selfie-btn" style="color: var(--danger); border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.08);" onclick="removeFile('selfie')">
+                    <svg viewBox="0 0 24 24" style="fill: var(--danger);"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                    Remove
+                </button>
+            </div>
+
+            <input type="file" id="selfie-input" accept="image/jpeg,image/jpg,image/png" capture="user" hidden>
+
+            <button class="btn-continue" id="submit-btn" onclick="submitVerification()" disabled>
+                SUBMIT VERIFICATION →
+            </button>
+            
+            <div id="error-msg" class="error"></div>
+
+        </div> <!-- End upload-container -->
+
+    </div>
+
+    <!-- NEW: Privacy Footer -->
+    <div class="privacy-footer">
+        <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+        Protected under the Data Protection Act.
+    </div>
+
+    <!-- Camera Modal -->
+    <div id="camera-modal">
+        <video id="camera-video" autoplay playsinline muted></video>
+        <div class="camera-controls">
+            <button type="button" class="camera-btn close" onclick="closeCamera()">
+                <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+            <button type="button" class="camera-btn" onclick="captureSelfie()">
+                <svg viewBox="0 0 24 24" fill="#060b19"><circle cx="12" cy="12" r="8"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="bird-container">
+            <div class="flying-bird">🐦</div>
+        </div>
+        <div class="loading-title">Securing your documents</div>
+        <div class="loading-text" id="loading-text">Preparing upload…</div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="loading-progress-bar"></div>
+        </div>
+    </div>
+
+    <!-- Success Overlay -->
+    <div id="success-overlay">
+        <svg class="success-check" viewBox="0 0 52 52">
+            <circle cx="26" cy="26" r="24"/>
+            <path d="M14 27l8 8 16-16"/>
+        </svg>
+        <div class="success-title">Verification Submitted</div>
+        <div class="success-text">Your documents are now under review. Preparing the next step…</div>
+    </div>
+
+    <!-- META-STYLE AI WIDGET -->
+    <div id="ai-fab" class="ai-fab" onclick="toggleAI()">
+        <div class="ai-ring"></div>
+    </div>
+    <div id="ai-bubble" class="ai-bubble">
+        Hello 👋 friend, select a document type to begin verification.
+    </div>
+
+    <!-- Firebase & Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
+        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app-check.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        // 1. Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
+            measurementId: "G-L1CLB5TDHV"
+        };
+
+        const CLOUDINARY = {
+            cloudName: 'c2n8j0v',
+            uploadPreset: 'doravica_unsigned',
+            folder: 'jakipot/kyc',
+            maxBytes: 5 * 1024 * 1024,
+            allowedTypes: ['image/jpeg', 'image/jpg', 'image/png']
+        };
+
+        const app = initializeApp(firebaseConfig);
+        try { getAnalytics(app); } catch (e) { console.warn('[Analytics]', e?.message); }
+
+        const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        if (isLocal) self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+        try {
+            initializeAppCheck(app, {
+                provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'),
+                isTokenAutoRefreshEnabled: true
+            });
+        } catch (e) { console.warn('[AppCheck]', e?.message); }
+
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // 2. State Management
+        const state = {
+            user: null,
+            docType: null, 
+            files: { nrcFront: null, nrcBack: null, selfie: null },
+            previews: { nrcFront: null, nrcBack: null, selfie: null },
+            uploaded: { nrcFront: null, nrcBack: null, selfie: null },
+            cameraStream: null,
+            uploading: false,
+            uploadAttempts: 0
+        };
+
+        const errorDiv = document.getElementById('error-msg');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // ==========================================
+        // AI WIDGET LOGIC
+        // ==========================================
+        const aiBubble = document.getElementById('ai-bubble');
+        let aiTimeout;
+
+        window.addEventListener('load', () => {
+            setTimeout(() => { aiBubble.classList.add('show'); }, 1500);
+            setTimeout(() => { aiBubble.classList.remove('show'); }, 8000);
+        });
+
+        window.toggleAI = () => {
+            aiBubble.classList.toggle('show');
+            if(aiBubble.classList.contains('show')) {
+                aiBubble.innerHTML = "I am Jakipot AI. I am here to help you register safely!";
+            }
+        };
+
+        function aiSpeak(message) {
+            clearTimeout(aiTimeout);
+            aiBubble.innerHTML = message;
+            aiBubble.classList.add('show');
+            aiTimeout = setTimeout(() => {
+                aiBubble.classList.remove('show');
+            }, 4000);
+        }
+
+        // ==========================================
+        // DOCUMENT TYPE SELECTION LOGIC
+        // ==========================================
+        window.selectDocType = (type) => {
+            if (state.uploading) return;
+            state.docType = type;
+            errorDiv.innerText = "";
+
+            document.getElementById('doc-type-selection').style.display = 'none';
+            document.getElementById('upload-container').style.display = 'block';
+
+            const frontTitle = document.getElementById('front-title-text');
+            const backTitle = document.getElementById('back-title-text');
+            const backSection = document.getElementById('back-section');
+
+            if (type === 'nrc') {
+                frontTitle.innerText = 'NRC Front Side';
+                backTitle.innerText = 'NRC Back Side';
+                backSection.style.display = 'block';
+                aiSpeak("NRC Card selected. Please upload clear photos of both sides.");
+            } else if (type === 'passport') {
+                frontTitle.innerText = 'Passport Photo Page';
+                backSection.style.display = 'none';
+                if (state.files.nrcBack) removeFile('nrcBack');
+                aiSpeak("Passport selected. Please upload the photo page.");
+            } else if (type === 'drivers') {
+                frontTitle.innerText = "Driver's License Front";
+                backTitle.innerText = "Driver's License Back";
+                backSection.style.display = 'block';
+                aiSpeak("Driver's License selected. Please upload both sides.");
+            } else {
+                frontTitle.innerText = 'Document Front';
+                backTitle.innerText = 'Document Back';
+                backSection.style.display = 'block';
+                aiSpeak("Please upload the front and back of your document.");
+            }
+
+            updateSubmitState();
+        };
+
+        window.resetDocType = () => {
+            if (state.uploading) return;
+            state.docType = null;
+            document.getElementById('doc-type-selection').style.display = 'block';
+            document.getElementById('upload-container').style.display = 'none';
+            updateSubmitState();
+        };
+
+        // ==========================================
+        // REGISTRATION & AUTH GUARD
+        // ==========================================
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.replace('login.html');
+                return;
+            }
+            state.user = user;
+            
+            try {
+                const kycDoc = await getDoc(doc(db, 'kyc_documents', user.uid));
+                if (kycDoc.exists()) {
+                    const status = kycDoc.data().status;
+                    if (status === 'pending_review' || status === 'approved') {
+                        window.location.replace('password-set-up.html');
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not check KYC status", e);
+            }
+        });
+
+        // 4. File Handling & UI
+        window.triggerUpload = (slot) => {
+            if (state.uploading) return;
+            document.getElementById(`${slot === 'nrcFront' ? 'nrc-front' : slot === 'nrcBack' ? 'nrc-back' : 'selfie'}-input`).click();
+        };
+
+        function validateAndSetFile(slot, file) {
+            errorDiv.innerText = "";
+            
+            if (!CLOUDINARY.allowedTypes.includes(file.type)) {
+                errorDiv.innerText = 'Only JPG, JPEG, or PNG images are accepted.';
+                logGuardianEvent('kyc_file_rejected', { slot, reason: 'bad_type' });
+                return;
+            }
+            if (file.size > CLOUDINARY.maxBytes) {
+                errorDiv.innerText = 'File is too large. Maximum size is 5MB.';
+                logGuardianEvent('kyc_file_rejected', { slot, reason: 'too_large' });
+                return;
+            }
+
+            state.files[slot] = file;
+            state.uploaded[slot] = null; 
+
+            if (state.previews[slot]) URL.revokeObjectURL(state.previews[slot]);
+            const url = URL.createObjectURL(file);
+            state.previews[slot] = url;
+
+            if (slot === 'selfie') {
+                document.getElementById('selfie-img').src = url;
+                document.getElementById('selfie-preview').classList.add('show');
+                document.getElementById('selfie-actions').style.display = 'none';
+                document.getElementById('selfie-replace-actions').style.display = 'flex';
+            } else {
+                const prefix = slot === 'nrcFront' ? 'nrc-front' : 'nrc-back';
+                document.getElementById(`${prefix}-img`).src = url;
+                document.getElementById(`${prefix}-label`).style.display = 'none';
+                document.getElementById(`${prefix}-preview`).style.display = 'block';
+                document.getElementById(`${prefix}-box`).classList.add('has-file');
+            }
+
+            updateSubmitState();
+        }
+
+        window.removeFile = (slot) => {
+            if (state.uploading) return;
+            state.files[slot] = null;
+            state.uploaded[slot] = null;
+            if (state.previews[slot]) {
+                URL.revokeObjectURL(state.previews[slot]);
+                state.previews[slot] = null;
+            }
+
+            if (slot === 'selfie') {
+                document.getElementById('selfie-preview').classList.remove('show');
+                document.getElementById('selfie-img').src = '';
+                document.getElementById('selfie-actions').style.display = 'flex';
+                document.getElementById('selfie-replace-actions').style.display = 'none';
+            } else {
+                const prefix = slot === 'nrcFront' ? 'nrc-front' : 'nrc-back';
+                document.getElementById(`${prefix}-box`).classList.remove('has-file');
+                document.getElementById(`${prefix}-label`).style.display = 'flex';
+                document.getElementById(`${prefix}-preview`).style.display = 'none';
+            }
+            updateSubmitState();
+        };
+
+        document.getElementById('nrc-front-input').addEventListener('change', (e) => {
+            if (e.target.files[0]) validateAndSetFile('nrcFront', e.target.files[0]);
+            e.target.value = '';
+        });
+        document.getElementById('nrc-back-input').addEventListener('change', (e) => {
+            if (e.target.files[0]) validateAndSetFile('nrcBack', e.target.files[0]);
+            e.target.value = '';
+        });
+        document.getElementById('selfie-input').addEventListener('change', (e) => {
+            if (e.target.files[0]) validateAndSetFile('selfie', e.target.files[0]);
+            e.target.value = '';
+        });
+
+        function updateSubmitState() {
+            let ready = false;
+            if (state.docType) {
+                const hasFront = !!state.files.nrcFront;
+                const hasBack = state.docType === 'passport' ? true : !!state.files.nrcBack;
+                const hasSelfie = !!state.files.selfie;
+                ready = hasFront && hasBack && hasSelfie && !state.uploading;
+            }
+            submitBtn.disabled = !ready;
+        }
+
+        // 5. Camera Logic
+        window.openCamera = async () => {
+            if (state.uploading) return;
+            errorDiv.innerText = "";
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 720 } },
+                    audio: false
+                });
+                state.cameraStream = stream;
+                const video = document.getElementById('camera-video');
+                video.srcObject = stream;
+                await video.play();
+                document.getElementById('camera-modal').classList.add('show');
+            } catch (err) {
+                console.warn('[Camera]', err);
+                errorDiv.innerText = 'Could not access camera. Please upload a photo instead.';
+            }
+        };
+
+        window.closeCamera = () => {
+            if (state.cameraStream) {
+                state.cameraStream.getTracks().forEach(t => t.stop());
+                state.cameraStream = null;
+            }
+            document.getElementById('camera-modal').classList.remove('show');
+            document.getElementById('camera-video').srcObject = null;
+        };
+
+        window.captureSelfie = () => {
+            const video = document.getElementById('camera-video');
+            if (!video.videoWidth) return;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0);
+
+            canvas.toBlob((blob) => {
+                if (!blob) return;
+                const file = new File([blob], `selfie_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                closeCamera();
+                validateAndSetFile('selfie', file);
+            }, 'image/jpeg', 0.92);
+        };
+
+        // 6. Guardian AI Logging
+        async function logGuardianEvent(event, details = {}) {
+            try {
+                await addDoc(collection(db, 'security_logs'), {
+                    event,
+                    uid: state.user?.uid,
+                    timestamp: serverTimestamp(),
+                    ...details
+                });
+            } catch (e) { console.warn('Guardian log failed', e); }
+        }
+
+        // 7. Cloudinary Upload
+        function uploadToCloudinary(file, slot, onProgress) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`);
+
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+                };
+
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        const data = JSON.parse(xhr.responseText);
+                        resolve({
+                            publicId: data.public_id,
+                            format: data.format,
+                            bytes: data.bytes
+                        });
+                    } else {
+                        let msg = 'Upload failed';
+                        try { msg = JSON.parse(xhr.responseText).error?.message || msg; } catch (_) {}
+                        reject(new Error(msg));
+                    }
+                };
+
+                xhr.onerror = () => reject(new Error('Network error during upload'));
+                xhr.timeout = 60000;
+
+                const fd = new FormData();
+                fd.append('file', file);
+                fd.append('upload_preset', CLOUDINARY.uploadPreset);
+                fd.append('folder', `${CLOUDINARY.folder}/${state.user.uid}`);
+                fd.append('context', `slot=${slot}|uid=${state.user.uid}`);
+                fd.append('access_mode', 'authenticated'); 
+                
+                xhr.send(fd);
+            });
+        }
+
+        // 8. Submit Flow
+        window.submitVerification = async () => {
+            if (state.uploading) return;
+            errorDiv.innerText = "";
+
+            if (!state.docType) {
+                errorDiv.innerText = 'Please select a document type.';
+                return;
+            }
+
+            if (!state.files.nrcFront || !state.files.selfie || (state.docType !== 'passport' && !state.files.nrcBack)) {
+                errorDiv.innerText = 'Please provide all required images.';
+                return;
+            }
+
+            state.uploadAttempts++;
+            if (state.uploadAttempts >= 3) {
+                logGuardianEvent('kyc_multiple_attempts', { attempts: state.uploadAttempts });
+            }
+
+            state.uploading = true;
+            updateSubmitState();
+            document.getElementById('loading-overlay').classList.add('show');
+            document.getElementById('loading-text').innerText = 'Preparing upload…';
+            document.getElementById('loading-progress-bar').style.width = '5%';
+
+            const setProgress = (percent, text) => {
+                document.getElementById('loading-progress-bar').style.width = `${percent}%`;
+                if (text) document.getElementById('loading-text').innerText = text;
+            };
+
+            try {
+                if (!state.uploaded.nrcFront) {
+                    setProgress(15, 'Uploading Document Front…');
+                    state.uploaded.nrcFront = await uploadToCloudinary(
+                        state.files.nrcFront, 'nrcFront',
+                        (p) => setProgress(15 + p * 0.25, `Uploading Document Front… ${p}%`)
+                    );
+                }
+
+                if (state.docType !== 'passport' && !state.uploaded.nrcBack) {
+                    setProgress(40, 'Uploading Document Back…');
+                    state.uploaded.nrcBack = await uploadToCloudinary(
+                        state.files.nrcBack, 'nrcBack',
+                        (p) => setProgress(40 + p * 0.25, `Uploading Document Back… ${p}%`)
+                    );
+                }
+
+                if (!state.uploaded.selfie) {
+                    setProgress(65, 'Uploading Selfie…');
+                    state.uploaded.selfie = await uploadToCloudinary(
+                        state.files.selfie, 'selfie',
+                        (p) => setProgress(65 + p * 0.25, `Uploading Selfie… ${p}%`)
+                    );
+                }
+
+                setProgress(92, 'Saving securely…');
+
+                const kycDoc = {
+                    uid: state.user.uid,
+                    email: state.user.email || sessionStorage.getItem('signupEmail'),
+                    docType: state.docType,
+                    status: 'pending_review',
+                    submittedAt: serverTimestamp(),
+                    nrcFront: { ...state.uploaded.nrcFront, uploadedAt: serverTimestamp() },
+                    nrcBack: state.docType !== 'passport' ? { ...state.uploaded.nrcBack, uploadedAt: serverTimestamp() } : null,
+                    selfie: { ...state.uploaded.selfie, uploadedAt: serverTimestamp() },
+                    storage: 'cloudinary',
+                    accessMode: 'authenticated',
+                };
+
+                await setDoc(doc(db, 'kyc_documents', state.user.uid), kycDoc, { merge: true });
+
+                await setDoc(doc(db, 'users', state.user.uid), {
+                    kycStatus: 'pending',
+                    signupStage: 'password_setup',
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+
+                logGuardianEvent('kyc_upload_completed', { 
+                    docType: state.docType,
+                    publicIds: Object.values(state.uploaded).filter(u => u !== null).map(u => u.publicId) 
+                });
+
+                setProgress(100, 'Done');
+                document.getElementById('loading-overlay').classList.remove('show');
+                document.getElementById('success-overlay').classList.add('show');
+
+                setTimeout(() => {
+                    window.location.replace('password-set-up.html');
+                }, 2500);
+
+            } catch (err) {
+                console.error('[Verification Error]', err);
+                document.getElementById('loading-overlay').classList.remove('show');
+                state.uploading = false;
+                updateSubmitState();
+                errorDiv.innerText = err.message || 'Upload failed. Please check your connection and try again.';
+                logGuardianEvent('kyc_upload_failed', { reason: err.message });
+            }
+        };
+
+    </script>
+</body>
+</html>

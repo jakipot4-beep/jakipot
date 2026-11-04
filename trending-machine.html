@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JAKIPOT - Trending Machine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #040b16; --bg-card: #0f172a; --bg-elevated: #1e293b;
+            --cyan: #00D9FF; --cyan-glow: rgba(0, 217, 255, 0.3);
+            --emerald: #10b981; --danger: #ef4444; --text-white: #ffffff;
+            --text-muted: #8b9bb4; --border-light: rgba(255, 255, 255, 0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg-deep); color: var(--text-white); min-height: 100vh; display: flex; flex-direction: column; background-image: radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.1) 0%, transparent 50%); }
+        
+        .top-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border-light); position: sticky; top: 0; z-index: 10; }
+        .back-btn { background: transparent; border: none; cursor: pointer; color: var(--cyan); display: flex; align-items: center; padding: 4px; }
+        .back-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .header-title { font-size: 16px; font-weight: 900; color: var(--white); letter-spacing: 1.5px; text-transform: uppercase; }
+        .wallet-balance { font-size: 14px; font-weight: 800; color: var(--gold); background: var(--bg-elevated); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(251,191,36,0.3); }
+        
+        .content-area { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 180px; }
+        .section-label { font-size: 12px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; margin-top: 10px; }
+        
+        .country-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+        .country-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px; padding: 15px; display: flex; flex-direction: column; position: relative; overflow: hidden; transition: all 0.2s ease; }
+        .country-card.available { cursor: pointer; }
+        .country-card.available:active { transform: scale(0.97); }
+        .country-card.selected { border-color: var(--cyan); background: rgba(0, 217, 255, 0.05); box-shadow: 0 0 20px var(--cyan-glow); }
+        .country-card.unavailable { opacity: 0.5; cursor: not-allowed; filter: grayscale(100%); }
+        
+        .flag-wrap { width: 40px; height: 28px; border-radius: 4px; overflow: hidden; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1); }
+        .flag-wrap svg { width: 100%; height: 100%; object-fit: cover; }
+        .c-name { font-size: 15px; font-weight: 800; color: var(--white); margin-bottom: 4px; text-transform: capitalize; }
+        .c-duration { font-size: 11px; font-weight: 700; color: var(--cyan); display: flex; align-items: center; gap: 4px; }
+        
+        .status-pill { position: absolute; top: 12px; right: 12px; font-size: 9px; font-weight: 900; padding: 3px 6px; border-radius: 4px; text-transform: uppercase; }
+        .status-open { background: rgba(16, 185, 129, 0.15); color: var(--emerald); }
+        .status-closed { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+        .btn-view { width: 100%; padding: 8px; margin-top: 10px; background: var(--emerald); color: #fff; border: none; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
+        
+        /* Amount Panel */
+        .amount-panel { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 20px; padding: 20px; margin-top: 10px; }
+        .amount-label { font-size: 12px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 15px; text-align: center; }
+        .input-row { display: flex; align-items: center; justify-content: space-between; background: var(--bg-elevated); border-radius: 12px; padding: 8px; margin-bottom: 15px; }
+        .adj-btn { background: transparent; border: none; color: var(--cyan); font-size: 24px; font-weight: 900; width: 40px; height: 40px; cursor: pointer; display: grid; place-items: center; }
+        .adj-btn:disabled { color: #475569; }
+        .amount-input-wrap { display: flex; align-items: center; gap: 5px; }
+        .currency-symbol { font-size: 18px; font-weight: 800; color: var(--gold); }
+        .amount-input { background: transparent; border: none; color: var(--white); font-size: 24px; font-weight: 900; width: 120px; text-align: center; outline: none; }
+        .quick-bets { display: flex; gap: 8px; }
+        .q-btn { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border-light); color: var(--text-muted); padding: 8px 0; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+        
+        .bottom-action-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg-card); border-top: 1px solid var(--border-light); padding: 15px 20px 25px 20px; z-index: 20; }
+        .btn-trend { width: 100%; padding: 18px; border-radius: 14px; border: none; background: var(--cyan); color: #000; font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 20px var(--cyan-glow); }
+        .btn-trend:disabled { background: var(--bg-elevated); color: var(--text-muted); cursor: not-allowed; box-shadow: none; border: 1px solid var(--border-light); }
+    </style>
+</head>
+<body>
+    <header class="top-header">
+        <button class="back-btn" onclick="window.location.href='home.html'"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+        <div class="header-title">Trending Machine</div>
+        <div class="wallet-balance" id="wallet-balance">Loading...</div>
+    </header>
+    
+    <main class="content-area">
+        <div class="section-label">Available Markets</div>
+        <div class="country-grid" id="country-grid"></div>
+        
+        <!-- Panel visible only when a machine is selected and user doesn't have an active one -->
+        <div class="amount-panel" id="amount-panel" style="display: none;">
+            <div class="amount-label" id="amount-label">Select a country first</div>
+            <div class="input-row">
+                <button class="adj-btn" id="btn-minus" onclick="adjustAmount(-100)" disabled>−</button>
+                <div class="amount-input-wrap"><span class="currency-symbol" id="currency-symbol">K</span><input type="number" id="amount-input" class="amount-input" value="100" readonly></div>
+                <button class="adj-btn" id="btn-plus" onclick="adjustAmount(100)" disabled>+</button>
+            </div>
+            <div class="quick-bets">
+                <button class="q-btn" onclick="setAmount(100)" disabled>100</button>
+                <button class="q-btn" onclick="setAmount(500)" disabled>500</button>
+                <button class="q-btn" onclick="setAmount(1000)" disabled>1K</button>
+                <button class="q-btn" onclick="setAmount(5000)" disabled>5K</button>
+            </div>
+        </div>
+    </main>
+    
+    <div class="bottom-action-bar" id="bottom-bar" style="display: none;">
+        <button class="btn-trend" id="btn-trend" onclick="startTrend()" disabled>SELECT PLAN TO CONTINUE</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, addDoc, collection, serverTimestamp, increment, writeBatch, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
+            measurementId: "G-L1CLB5TDHV"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let userBalance = 0;
+        let userCurrency = 'ZMW';
+        let currencySymbol = 'K';
+        
+        let selectedCountry = null;
+        let currentAmount = 100;
+        let machines = [];
+        
+        // Tracks user's active investments { machineId: investmentId }
+        let activeInvestmentsMap = {}; 
+
+        // --- EXTENSIVE COUNTRY FLAG MAP ---
+        // Admin just types "Zambia" -> code finds "zm" -> draws flag
+        const COUNTRY_FLAGS = {
+            "zambia": "zm", "nigeria": "ng", "usa": "us", "united states": "us", "uk": "uk", "united kingdom": "uk",
+            "japan": "jp", "brazil": "br", "south africa": "za", "kenya": "ke", "ghana": "gh", "india": "in",
+            "canada": "ca", "australia": "au", "germany": "de", "france": "fr", "china": "cn", "russia": "ru",
+            "italy": "it", "spain": "es", "mexico": "mx", "argentina": "ar", "egypt": "eg", "saudi arabia": "sa",
+            "uae": "ae", "turkey": "tr", "indonesia": "id", "pakistan": "pk", "bangladesh": "bd", "philippines": "ph"
+        };
+
+        function getFlagSVG(input) {
+            // Look up the country name in the map, default to a globe icon if not found
+            let code = COUNTRY_FLAGS[input.toLowerCase().trim()] || "un";
+            
+            switch(code) {
+                case 'zm': return `<svg viewBox="0 0 60 40"><rect fill="#198a00" width="60" height="40"/><rect fill="#de2010" x="40" y="20" width="15" height="10"/><rect fill="#000" x="40" y="30" width="15" height="10"/><rect fill="#ef7d00" x="40" y="10" width="15" height="10"/></svg>`;
+                case 'ng': return `<svg viewBox="0 0 60 40"><rect fill="#008751" width="60" height="40"/><rect fill="#fff" x="20" width="20" height="40"/></svg>`;
+                case 'us': return `<svg viewBox="0 0 60 40"><rect fill="#B22234" width="60" height="40"/><rect fill="#fff" y="3" width="60" height="3"/><rect fill="#fff" y="9" width="60" height="3"/><rect fill="#fff" y="15" width="60" height="3"/><rect fill="#fff" y="21" width="60" height="3"/><rect fill="#fff" y="27" width="60" height="3"/><rect fill="#fff" y="33" width="60" height="3"/><rect fill="#3C3B6E" width="24" height="22"/></svg>`;
+                case 'uk': return `<svg viewBox="0 0 60 40"><rect fill="#012169" width="60" height="40"/><path d="M0,0 L60,40 M60,0 L0,40" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,40 M60,0 L0,40" stroke="#C8102E" stroke-width="4"/><path d="M30,0 L30,40 M0,20 L60,20" stroke="#fff" stroke-width="10"/><path d="M30,0 L30,40 M0,20 L60,20" stroke="#C8102E" stroke-width="6"/></svg>`;
+                case 'jp': return `<svg viewBox="0 0 60 40"><rect fill="#fff" width="60" height="40"/><circle cx="30" cy="20" r="12" fill="#bc002d"/></svg>`;
+                case 'br': return `<svg viewBox="0 0 60 40"><rect fill="#009c3b" width="60" height="40"/><polygon points="30,5 55,20 30,35 5,20" fill="#ffdf00"/><circle cx="30" cy="20" r="8" fill="#002776"/></svg>`;
+                case 'za': return `<svg viewBox="0 0 60 40"><rect fill="#002395" width="60" height="20"/><rect fill="#DE3831" y="20" width="60" height="20"/><path d="M0,0 L25,20 L0,40" fill="#007A4D"/><path d="M0,10 L20,20 L0,30" fill="#FFB612"/><path d="M0,15 L15,20 L0,25" fill="#000"/></svg>`;
+                case 'ke': return `<svg viewBox="0 0 60 40"><rect fill="#000" width="60" height="40"/><rect fill="#fff" y="10" width="60" height="5"/><rect fill="#BB0000" y="15" width="60" height="10"/><rect fill="#fff" y="25" width="60" height="5"/><rect fill="#006600" y="30" width="60" height="10"/></svg>`;
+                case 'gh': return `<svg viewBox="0 0 60 40"><rect fill="#006b3f" width="60" height="40"/><rect fill="#fcd116" y="13" width="60" height="13"/><rect fill="#ce1126" y="26" width="60" height="14"/><polygon points="30,15 33,22 40,22 35,26 37,33 30,29 23,33 25,26 20,22 27,22" fill="#000"/></svg>`;
+                case 'in': return `<svg viewBox="0 0 60 40"><rect fill="#FF9933" width="60" height="13.33"/><rect fill="#fff" y="13.33" width="60" height="13.33"/><rect fill="#138808" y="26.66" width="60" height="13.33"/><circle cx="30" cy="20" r="4" fill="none" stroke="#000080" stroke-width="1"/></svg>`;
+                case 'ca': return `<svg viewBox="0 0 60 40"><rect fill="#fff" width="60" height="40"/><rect fill="#FF0000" width="15" height="40"/><rect fill="#FF0000" x="45" width="15" height="40"/><path d="M30,10 L32,18 L38,15 L35,22 L30,28 L25,22 L22,15 L28,18 Z" fill="#FF0000"/></svg>`;
+                case 'au': return `<svg viewBox="0 0 60 40"><rect fill="#00008B" width="60" height="40"/><path d="M0,0 L30,20 L0,40" stroke="#fff" stroke-width="2"/><path d="M0,20 L15,20 M7.5,10 L7.5,30" stroke="#fff" stroke-width="2"/><circle cx="45" cy="10" r="2" fill="#fff"/><circle cx="50" cy="20" r="2" fill="#fff"/><circle cx="40" cy="30" r="2" fill="#fff"/><circle cx="55" cy="30" r="2" fill="#fff"/></svg>`;
+                case 'de': return `<svg viewBox="0 0 60 40"><rect fill="#000" width="60" height="13.33"/><rect fill="#DD0000" y="13.33" width="60" height="13.33"/><rect fill="#FFCE00" y="26.66" width="60" height="13.33"/></svg>`;
+                case 'fr': return `<svg viewBox="0 0 60 40"><rect fill="#002395" width="20" height="40"/><rect fill="#fff" x="20" width="20" height="40"/><rect fill="#ED2939" x="40" width="20" height="40"/></svg>`;
+                case 'cn': return `<svg viewBox="0 0 60 40"><rect fill="#DE2910" width="60" height="40"/><polygon points="10,8 13,18 23,18 15,24 18,34 10,28 2,34 5,24 -3,18 7,18" fill="#FFDE00"/></svg>`;
+                default: return `<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="18" fill="#334155"/><path d="M15,15 Q30,5 45,15 M15,25 Q30,35 45,25" stroke="#fff" stroke-width="2" fill="none"/></svg>`; // Generic Globe
+            }
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            currentUser = user;
+
+            // Listen to User Profile (Currency)
+            onSnapshot(doc(db, 'users', user.uid), (snap) => {
+                if (snap.exists()) {
+                    userCurrency = snap.data().currency || 'ZMW';
+                    currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
+                    updateCurrencyUI();
+                }
+            });
+
+            // Listen to Wallet
+            onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
+                if (snap.exists()) {
+                    userBalance = snap.data().balance || 0;
+                    updateCurrencyUI();
+                }
+            });
+
+            // Listen to Machines
+            const q = query(collection(db, 'trending_machines'), where('isActive', '==', true));
+            onSnapshot(q, (snap) => {
+                machines = [];
+                snap.forEach(d => machines.push({ id: d.id, ...d.data() }));
+                renderMachines();
+            });
+
+            // Listen to User's Active Investments
+            const invQ = query(collection(db, 'user_trending_investments'), where('uid', '==', user.uid), where('status', '==', 'active'));
+            onSnapshot(invQ, (snap) => {
+                activeInvestmentsMap = {};
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    activeInvestmentsMap[data.machineId] = doc.id;
+                });
+                renderMachines(); // Re-render to show "View" buttons
+            });
+        });
+
+        function updateCurrencyUI() {
+            document.getElementById('currency-symbol').innerText = currencySymbol;
+            document.getElementById('wallet-balance').innerText = `${currencySymbol}${userBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            
+            document.querySelectorAll('.q-btn').forEach((btn, index) => {
+                const amounts = [100, 500, 1000, 5000];
+                if (amounts[index]) {
+                    const displayAmt = amounts[index] >= 1000 ? (amounts[index]/1000) + 'K' : amounts[index];
+                    btn.innerText = `${currencySymbol}${displayAmt}`;
+                }
+            });
+
+            if (selectedCountry) {
+                document.getElementById('amount-label').innerText = `Amount for ${selectedCountry.countryName} (${currencySymbol}${selectedCountry.minAmount} - ${currencySymbol}${selectedCountry.maxAmount})`;
+            }
+            updateTrendButton();
+        }
+
+        function renderMachines() {
+            const grid = document.getElementById('country-grid');
+            grid.innerHTML = '';
+            
+            if (machines.length === 0) {
+                grid.innerHTML = `<div style="color: var(--text-muted); font-size: 13px; grid-column: span 2; text-align: center; padding: 20px;">No active markets right now. Check back later.</div>`;
+                return;
+            }
+
+            machines.forEach(m => {
+                const hasActiveInv = activeInvestmentsMap[m.id];
+                const card = document.createElement('div');
+                card.className = `country-card ${hasActiveInv ? 'has-active' : 'available'}`;
+                if (selectedCountry && selectedCountry.id === m.id && !hasActiveInv) card.classList.add('selected');
+                
+                let actionHtml = '';
+                if (hasActiveInv) {
+                    actionHtml = `<button class="btn-view" onclick="event.stopPropagation(); window.location.href='machine.html?id=${hasActiveInv}'">VIEW ACTIVE TREND</button>`;
+                } else {
+                    actionHtml = `<div class="c-duration">${m.durationDays} Days</div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="status-pill ${hasActiveInv ? 'status-open' : (m.isActive ? 'status-open' : 'status-closed')}">${hasActiveInv ? 'Active' : (m.isActive ? 'Available' : 'Closed')}</div>
+                    <div class="flag-wrap">${getFlagSVG(m.countryName)}</div>
+                    <div class="c-name">${m.countryName}</div>
+                    ${actionHtml}
+                `;
+                
+                if (m.isActive && !hasActiveInv) {
+                    card.onclick = () => selectCountry(m);
+                }
+                grid.appendChild(card);
+            });
+        }
+
+        function selectCountry(machine) {
+            selectedCountry = machine;
+            renderMachines();
+            
+            // Show panels
+            document.getElementById('amount-panel').style.display = 'block';
+            document.getElementById('bottom-bar').style.display = 'block';
+            
+            document.getElementById('btn-minus').disabled = false;
+            document.getElementById('btn-plus').disabled = false;
+            document.querySelectorAll('.q-btn').forEach(b => b.disabled = false);
+            
+            if (currentAmount < machine.minAmount) { currentAmount = machine.minAmount; }
+            else if (currentAmount > machine.maxAmount) { currentAmount = machine.maxAmount; }
+            document.getElementById('amount-input').value = currentAmount;
+            updateCurrencyUI();
+        }
+
+        function adjustAmount(val) {
+            if (!selectedCountry) return;
+            let newVal = currentAmount + val;
+            if (newVal < selectedCountry.minAmount) newVal = selectedCountry.minAmount;
+            if (newVal > selectedCountry.maxAmount) newVal = selectedCountry.maxAmount;
+            setAmount(newVal);
+        }
+
+        function setAmount(val) {
+            if (!selectedCountry) return;
+            if (val < selectedCountry.minAmount || val > selectedCountry.maxAmount) return;
+            currentAmount = val;
+            document.getElementById('amount-input').value = currentAmount;
+            updateTrendButton();
+        }
+
+        function updateTrendButton() {
+            const btn = document.getElementById('btn-trend');
+            if (selectedCountry && currentAmount >= selectedCountry.minAmount && currentAmount <= selectedCountry.maxAmount) {
+                btn.disabled = false;
+                btn.innerText = `TREND ${selectedCountry.countryName.toUpperCase()} - ${currencySymbol}${currentAmount}`;
+            } else {
+                btn.disabled = true;
+                btn.innerText = "SELECT PLAN TO CONTINUE";
+            }
+        }
+
+        window.startTrend = async () => {
+            if (!selectedCountry || !currentUser) return;
+            if (currentAmount > userBalance) { alert("Insufficient wallet balance."); return; }
+
+            const btn = document.getElementById('btn-trend');
+            btn.disabled = true;
+            btn.innerText = "PROCESSING...";
+
+            try {
+                const batch = writeBatch(db);
+                
+                // 1. Deduct Wallet
+                const walletRef = doc(db, 'wallets', currentUser.uid);
+                const txRef = doc(collection(db, 'transactions'));
+                batch.update(walletRef, { balance: increment(-currentAmount), lastTxId: txRef.id });
+
+                // 2. Create Ledger
+                batch.set(txRef, { uid: currentUser.uid, type: 'investment', amount: -currentAmount, status: 'completed', createdAt: serverTimestamp() });
+
+                // 3. Create Investment Document
+                const endDate = new Date();
+                endDate.setDate(endDate.getDate() + selectedCountry.durationDays);
+                
+                const totalClaimable = currentAmount * selectedCountry.payoutMultiplier;
+
+                const invRef = doc(collection(db, 'user_trending_investments'));
+                batch.set(invRef, {
+                    uid: currentUser.uid,
+                    machineId: selectedCountry.id,
+                    countryName: selectedCountry.countryName,
+                    countryCode: selectedCountry.countryCode || 'un', // Fallback if admin didn't provide
+                    amountInvested: currentAmount,
+                    totalClaimable: totalClaimable,
+                    durationDays: selectedCountry.durationDays,
+                    status: 'active',
+                    startTime: serverTimestamp(),
+                    endDate: endDate
+                });
+
+                await batch.commit();
+
+                // Pass ID to the active trend page
+                window.location.href = `machine.html?id=${invRef.id}`;
+
+            } catch (e) {
+                console.error(e);
+                alert("Investment failed. Please try again.");
+                btn.disabled = false;
+                btn.innerText = `TREND ${selectedCountry.countryName.toUpperCase()} - ${currencySymbol}${currentAmount}`;
+            }
+        };
+    </script>
+</body>
+</html>

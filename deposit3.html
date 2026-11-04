@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JAKIPOT - Agent Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #040b16; --bg-card: #0f172a; --bg-elevated: #1e293b;
+            --cyan: #00D9FF; --emerald: #10b981; --gold: #fbbf24; --danger: #ef4444;
+            --text-white: #ffffff; --text-muted: #8b9bb4; --border-light: rgba(255, 255, 255, 0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg-deep); color: var(--text-white); min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .top-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border-light); }
+        .back-btn { background: transparent; border: none; cursor: pointer; color: var(--cyan); padding: 4px; }
+        .back-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .header-title { font-size: 16px; font-weight: 900; text-transform: uppercase; }
+
+        .content-area { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding-bottom: 50px; }
+        
+        .summary-box { background: var(--bg-elevated); border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; border: 1px solid var(--border-light); }
+        .summary-item { display: flex; flex-direction: column; gap: 4px; }
+        .s-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+        .s-value { font-size: 16px; font-weight: 900; color: var(--white); }
+
+        .agent-card { background: var(--bg-card); border: 2px solid var(--cyan); border-radius: 16px; padding: 20px; margin-top: 10px; box-shadow: 0 0 20px rgba(0, 217, 255, 0.15); }
+        .agent-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .agent-network { font-size: 14px; font-weight: 900; color: var(--cyan); text-transform: uppercase; }
+        .agent-name { font-size: 16px; font-weight: 800; margin-bottom: 5px; }
+        .agent-number { font-size: 24px; font-weight: 900; color: var(--gold); letter-spacing: 2px; }
+        
+        .copy-btn { background: rgba(0, 217, 255, 0.1); border: 1px solid var(--cyan); color: var(--cyan); padding: 8px 16px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .copy-btn:active { transform: scale(0.95); }
+
+        .upload-box { border: 2px dashed #334155; border-radius: 14px; padding: 20px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); margin-top: 10px; }
+        .upload-box.has-file { border-style: solid; border-color: var(--emerald); padding: 0; overflow: hidden; }
+        .upload-label { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-muted); }
+        .upload-label svg { width: 32px; height: 32px; fill: var(--emerald); }
+        .preview-img { width: 100%; height: auto; display: none; }
+
+        .textarea-field { width: 100%; padding: 15px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-light); color: var(--white); font-size: 14px; resize: vertical; min-height: 100px; outline: none; margin-top: 10px; }
+        .textarea-field:focus { border-color: var(--cyan); }
+
+        .btn-submit { width: 100%; padding: 18px; border-radius: 14px; border: none; background: var(--emerald); color: #fff; font-size: 16px; font-weight: 900; text-transform: uppercase; cursor: pointer; margin-top: auto; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3); }
+        .btn-submit:disabled { background: #334155; color: var(--text-muted); box-shadow: none; cursor: not-allowed; }
+
+        /* Loader Overlay */
+        #loading-overlay { display: none; position: fixed; inset: 0; background: rgba(4,11,22,0.95); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        #loading-overlay.show { display: flex; }
+        .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--cyan); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <header class="top-header">
+        <button class="back-btn" onclick="window.location.href='deposit2.html'"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+        <div class="header-title">Payment Proof</div>
+        <div style="width:24px;"></div>
+    </header>
+
+    <main class="content-area">
+        
+        <!-- Summary -->
+        <div class="summary-box">
+            <div class="summary-item">
+                <span class="s-label">Amount</span>
+                <span class="s-value" id="sum-amount">K0.00</span>
+            </div>
+            <div class="summary-item" style="text-align: right;">
+                <span class="s-label">Method</span>
+                <span class="s-value" id="sum-method">MTN</span>
+            </div>
+        </div>
+
+        <!-- Agent Info -->
+        <div class="agent-card">
+            <div class="agent-header">
+                <div class="agent-network" id="agent-network">MTN MOMO</div>
+                <button class="copy-btn" onclick="copyNumber()">COPY NUMBER</button>
+            </div>
+            <div class="agent-name" id="agent-name">JOHN KABWE</div>
+            <div class="agent-number" id="agent-number">0963070992</div>
+        </div>
+
+        <!-- Proof Upload -->
+        <div style="font-size: 13px; font-weight: 800; color: var(--text-muted); margin-top: 10px; text-transform: uppercase;">1. Paste Confirmation SMS</div>
+        <textarea id="sms-text" class="textarea-field" placeholder="Paste the SMS you received from MTN/Airtel here..."></textarea>
+
+        <div style="font-size: 13px; font-weight: 800; color: var(--text-muted); margin-top: 10px; text-transform: uppercase;">2. Upload Screenshot</div>
+        <div class="upload-box" id="upload-box" onclick="document.getElementById('file-input').click()">
+            <input type="file" id="file-input" accept="image/*" hidden>
+            <div class="upload-label" id="upload-label">
+                <svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+                <b>Tap to select image</b>
+            </div>
+            <img id="preview-img" class="preview-img">
+        </div>
+
+        <button class="btn-submit" id="btn-submit" onclick="submitDeposit()" disabled>SUBMIT PROOF</button>
+    </main>
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div style="margin-top: 15px; font-weight: 800; color: var(--cyan);">Uploading...</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", authDomain: "jakipot.firebaseapp.com", projectId: "jakipot", storageBucket: "jakipot.firebasestorage.app", messagingSenderId: "396191754293", appId: "1:396191754293:web:5b11a11d82e773d19ee97c" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const CLOUDINARY = { cloudName: 'c2n8j0v', uploadPreset: 'doravica_unsigned', folder: 'jakipot/deposits' };
+
+        let currentUser = null;
+        let uploadedImageUrl = null;
+        let selectedAgent = null;
+
+        const amount = sessionStorage.getItem('dep_amount');
+        const method = sessionStorage.getItem('dep_method');
+        const symbol = sessionStorage.getItem('dep_currency') || 'K';
+
+        // Set Summary
+        document.getElementById('sum-amount').innerText = `${symbol}${parseFloat(amount).toFixed(2)}`;
+        document.getElementById('sum-method').innerText = method;
+
+        // Set Agent Details
+        if (method === 'MTN') {
+            selectedAgent = { name: 'JOHN KABWE', number: '0963070992' };
+            document.getElementById('agent-network').innerText = 'MTN MOMO';
+        } else if (method === 'Airtel') {
+            selectedAgent = { name: 'AIRTEL ACCOUNT', number: '0571518417' };
+            document.getElementById('agent-network').innerText = 'AIRTEL MONEY';
+        } else {
+            // Default to MTN for international
+            selectedAgent = { name: 'JOHN KABWE', number: '0963070992' };
+            document.getElementById('agent-network').innerText = 'MTN MOMO (ZAMBIA)';
+        }
+
+        document.getElementById('agent-name').innerText = selectedAgent.name;
+        document.getElementById('agent-number').innerText = selectedAgent.number;
+
+        window.copyNumber = () => {
+            navigator.clipboard.writeText(selectedAgent.number).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.innerText = 'COPIED! ✓';
+                setTimeout(() => btn.innerText = 'COPY NUMBER', 2000);
+            });
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            currentUser = user;
+        });
+
+        // File Upload Logic
+        document.getElementById('file-input').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            document.getElementById('preview-img').src = URL.createObjectURL(file);
+            document.getElementById('preview-img').style.display = 'block';
+            document.getElementById('upload-label').style.display = 'none';
+            document.getElementById('upload-box').classList.add('has-file');
+            
+            checkFormReady();
+        });
+
+        document.getElementById('sms-text').addEventListener('input', checkFormReady);
+
+        function checkFormReady() {
+            const sms = document.getElementById('sms-text').value.trim();
+            const hasFile = document.getElementById('file-input').files.length > 0;
+            document.getElementById('btn-submit').disabled = !(sms && hasFile);
+        }
+
+        // Submit Logic
+        window.submitDeposit = async () => {
+            if (!currentUser) return;
+            const smsText = document.getElementById('sms-text').value.trim();
+            const file = document.getElementById('file-input').files[0];
+            if (!smsText || !file) return;
+
+            document.getElementById('loading-overlay').classList.add('show');
+            document.getElementById('btn-submit').disabled = true;
+
+            try {
+                // 1. Upload Image to Cloudinary
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY.uploadPreset);
+                formData.append('folder', `${CLOUDINARY.folder}/${currentUser.uid}`);
+
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, { method: 'POST', body: formData });
+                const data = await res.json();
+                uploadedImageUrl = data.secure_url;
+
+                if (!uploadedImageUrl) throw new Error("Image upload failed");
+
+                // 2. Save Deposit to Firestore
+                await addDoc(collection(db, 'deposits'), {
+                    uid: currentUser.uid,
+                    amount: parseFloat(amount),
+                    currency: sessionStorage.getItem('dep_currency') || 'ZMW',
+                    phone: sessionStorage.getItem('dep_phone'),
+                    method: method,
+                    agentName: selectedAgent.name,
+                    agentNumber: selectedAgent.number,
+                    smsText: smsText,
+                    screenshotUrl: uploadedImageUrl,
+                    status: 'pending',
+                    createdAt: serverTimestamp()
+                });
+
+                // 3. Also create a pending transaction so it shows in history instantly
+                await addDoc(collection(db, 'transactions'), {
+                    uid: currentUser.uid,
+                    type: 'deposit',
+                    amount: parseFloat(amount),
+                    status: 'pending',
+                    description: `${method} Deposit`,
+                    createdAt: serverTimestamp()
+                });
+
+                // Clear Session
+                sessionStorage.removeItem('dep_amount');
+                sessionStorage.removeItem('dep_phone');
+                sessionStorage.removeItem('dep_method');
+                sessionStorage.removeItem('dep_currency');
+
+                // Redirect to History
+                window.location.href = 'history.html';
+
+            } catch (err) {
+                console.error(err);
+                alert("Error submitting deposit. Please try again.");
+                document.getElementById('loading-overlay').classList.remove('show');
+                document.getElementById('btn-submit').disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>

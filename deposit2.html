@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JAKIPOT - Payment Method</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #040b16; --bg-card: #0f172a; --bg-elevated: #1e293b;
+            --cyan: #00D9FF; --emerald: #10b981; --gold: #fbbf24;
+            --text-white: #ffffff; --text-muted: #8b9bb4; --border-light: rgba(255, 255, 255, 0.08);
+            --mtn-yellow: #ffcc00; --airtel-red: #e31b23;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg-deep); color: var(--text-white); min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .top-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border-light); }
+        .back-btn { background: transparent; border: none; cursor: pointer; color: var(--cyan); padding: 4px; }
+        .back-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .header-title { font-size: 16px; font-weight: 900; text-transform: uppercase; }
+
+        .content-area { flex: 1; padding: 20px; display: flex; flex-direction: column; }
+        .section-label { font-size: 14px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; }
+        
+        .method-card { background: var(--bg-card); border: 2px solid var(--border-light); border-radius: 16px; padding: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; }
+        .method-card:hover, .method-card:active { border-color: var(--cyan); background: rgba(0, 217, 255, 0.05); }
+        
+        .method-icon { width: 50px; height: 50px; border-radius: 12px; display: grid; place-items: center; font-weight: 900; font-size: 12px; }
+        .mtn-bg { background: var(--mtn-yellow); color: #000; }
+        .airtel-bg { background: var(--airtel-red); color: #fff; }
+        .other-bg { background: var(--bg-elevated); color: var(--cyan); border: 1px solid var(--cyan); }
+
+        .method-info h4 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+        .method-info p { font-size: 12px; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+    <header class="top-header">
+        <button class="back-btn" onclick="window.location.href='deposit.html'"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+        <div class="header-title">Payment Method</div>
+        <div style="width:24px;"></div>
+    </header>
+
+    <main class="content-area">
+        <div class="section-label">Choose how you want to pay</div>
+        
+        <div class="method-card" onclick="selectMethod('MTN')">
+            <div class="method-icon mtn-bg">MTN</div>
+            <div class="method-info">
+                <h4>MTN Mobile Money</h4>
+                <p>Send directly to our MTN Agent</p>
+            </div>
+        </div>
+
+        <div class="method-card" onclick="selectMethod('Airtel')">
+            <div class="method-icon airtel-bg">Airtel</div>
+            <div class="method-info">
+                <h4>Airtel Money</h4>
+                <p>Send directly to our Airtel Agent</p>
+            </div>
+        </div>
+
+        <div class="method-card" onclick="selectMethod('Other Country')">
+            <div class="method-icon other-bg">🌍</div>
+            <div class="method-info">
+                <h4>Other Country / International</h4>
+                <p>Use Remitly, WorldRemit, or Western Union</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        window.selectMethod = (method) => {
+            sessionStorage.setItem('dep_method', method);
+            
+            if (method === 'Other Country') {
+                window.location.href = 'app.html';
+            } else {
+                window.location.href = 'deposit3.html';
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Complete Profile - Jakipot</title>
+    <style>
+        :root {
+            --bg-dark: #060b19; --bg-card: #111827; --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.3); --light-blue: #38bdf8;
+            --white: #ffffff; --text-muted: #94a3b8; --danger: #ef4444;
+            --border-color: #1e293b; --input-bg: #0f172a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg-dark); color: var(--white); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-x: hidden; background-image: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.05) 0%, transparent 40%); }
+        .nav-bar { width: 100%; max-width: 450px; display: flex; justify-content: flex-start; align-items: center; margin-top: 10px; margin-bottom: 30px; animation: slideDownFade 0.6s ease; }
+        .back-link { color: var(--text-muted); text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 5px; transition: color 0.3s; }
+        .back-link:hover { color: var(--emerald); }
+        .header { text-align: center; margin-bottom: 30px; animation: slideUpFade 0.7s ease; }
+        .logo-svg { width: 70px; height: 70px; filter: drop-shadow(0 0 15px var(--emerald-glow)); margin-bottom: 15px; }
+        .header h1 { font-size: 22px; font-weight: 900; letter-spacing: 1px; color: var(--white); }
+        .header p { font-size: 14px; color: var(--light-blue); margin-top: 8px; font-weight: 500; max-width: 300px; line-height: 1.4; margin-left: auto; margin-right: auto; }
+        .card { background: var(--bg-card); padding: 30px 25px; border-radius: 20px; width: 100%; max-width: 450px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid var(--border-color); animation: slideUpFade 0.7s ease 0.1s forwards; opacity: 0; transform: translateY(20px); }
+        .input-group { position: relative; margin-bottom: 18px; }
+        .input-field { width: 100%; padding: 15px; border-radius: 12px; border: 1.5px solid #334155; background: var(--input-bg); color: var(--white); font-size: 15px; transition: border-color 0.3s, background 0.3s, box-shadow 0.3s; }
+        .input-field:focus { outline: none; border-color: var(--emerald); background: rgba(6, 11, 25, 0.8); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+        .input-field::placeholder { color: #64748b; }
+        .name-row { display: flex; gap: 12px; }
+        .name-row .input-group { flex: 1; margin-bottom: 18px; }
+        .select-wrapper { position: relative; margin-bottom: 18px; }
+        .select-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; fill: var(--text-muted); pointer-events: none; z-index: 2; transition: fill 0.3s; }
+        .custom-select { width: 100%; padding: 15px 40px 15px 45px; border-radius: 12px; border: 1.5px solid #334155; background: var(--input-bg); color: var(--white); font-size: 15px; appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 15px top 50%; background-size: 12px auto; cursor: pointer; transition: border-color 0.3s, background-color 0.3s; }
+        .custom-select:focus { outline: none; border-color: var(--emerald); background-color: rgba(6, 11, 25, 0.8); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+        .select-wrapper:focus-within .select-icon { fill: var(--emerald); }
+        .btn-continue { width: 100%; padding: 16px; background: var(--emerald); color: var(--white); border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 10px; transition: background 0.3s, transform 0.2s; box-shadow: 0 4px 15px var(--emerald-glow); display: flex; justify-content: center; align-items: center; }
+        .btn-continue:hover:not(:disabled) { background: #059669; transform: translateY(-2px); }
+        .btn-continue:disabled { opacity: 0.6; cursor: not-allowed; }
+        .error { color: var(--danger); margin-top: 12px; font-size: 13px; text-align: center; min-height: 18px; font-weight: 500; }
+        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(6, 11, 25, 0.98); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        #loading-overlay.show { display: flex; }
+        .bird-container { position: relative; width: 100%; height: 100px; overflow: hidden; margin-bottom: 30px; }
+        .flying-bird { position: absolute; font-size: 60px; top: 50%; left: -20%; transform: translateY(-50%); animation: flyAcross 2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .loading-text { color: var(--light-blue); font-size: 16px; font-weight: 600; animation: blink 1.5s infinite; text-align: center; padding: 0 20px; }
+        
+        /* =========================================
+           META-STYLE AI WIDGET
+           ========================================= */
+        .ai-fab {
+            position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px;
+            border-radius: 50%; background: var(--bg-card); display: flex; justify-content: center; align-items: center;
+            cursor: pointer; z-index: 1000; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+            border: 2px solid var(--emerald); transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .ai-fab:hover { transform: scale(1.05); box-shadow: 0 6px 25px rgba(16, 185, 129, 0.6); }
+        .ai-fab:active { transform: scale(0.92); }
+        .ai-ring { width: 36px; height: 36px; border-radius: 50%; background: conic-gradient(from 0deg, transparent, var(--emerald), var(--light-blue), var(--emerald), transparent); animation: spin 3s linear infinite; position: relative; }
+        .ai-ring::after { content: ''; position: absolute; inset: 4px; background: var(--bg-card); border-radius: 50%; }
+        .ai-bubble {
+            position: fixed; bottom: 95px; right: 25px; max-width: 280px; background: var(--bg-card);
+            color: var(--white); padding: 14px 18px; border-radius: 18px 18px 0 18px; font-size: 13.5px;
+            line-height: 1.5; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(16, 185, 129, 0.3);
+            z-index: 999; opacity: 0; transform: translateY(10px); transition: opacity 0.3s, transform 0.3s; pointer-events: none;
+        }
+        .ai-bubble.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .ai-bubble::before { content: ''; position: absolute; bottom: -8px; right: 20px; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid var(--bg-card); }
+
+        @keyframes slideUpFade { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDownFade { 0% { opacity: 0; transform: translateY(-10px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes flyAcross { 0% { left: -20%; transform: translateY(-50%) scale(0.8) rotate(10deg); } 50% { transform: translateY(-60%) scale(1.1) rotate(-5deg); } 100% { left: 120%; transform: translateY(-50%) scale(0.8) rotate(10deg); } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="register.html" class="back-link">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+            Back
+        </a>
+    </div>
+    <div class="header">
+        <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 80 L20 30 L40 50 L50 15 L60 50 L80 30 L90 80 Z" fill="none" stroke="#10b981" stroke-width="6" stroke-linejoin="round"/><circle cx="20" cy="25" r="5" fill="#38bdf8"/><circle cx="50" cy="10" r="5" fill="#38bdf8"/><circle cx="80" cy="25" r="5" fill="#38bdf8"/><line x1="10" y1="85" x2="90" y2="85" stroke="#38bdf8" stroke-width="6" stroke-linecap="round"/></svg>
+        <h1>PERSONAL INFORMATION</h1>
+        <p>Please enter your real details as they appear on your official documents.</p>
+    </div>
+    <div class="card">
+        <form id="profile-form" onsubmit="handleFormSubmit(event)">
+            <div class="name-row">
+                <div class="input-group"><input type="text" id="first-name" class="input-field" placeholder="Enter your real first name" required autocomplete="given-name"></div>
+                <div class="input-group"><input type="text" id="last-name" class="input-field" placeholder="Enter your real last name" required autocomplete="family-name"></div>
+            </div>
+            <div class="select-wrapper">
+                <svg class="select-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                <select id="country-select" class="custom-select" required></select>
+            </div>
+            <div class="select-wrapper">
+                <svg class="select-icon" viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                <select id="currency-select" class="custom-select" required></select>
+            </div>
+            <button type="submit" id="submit-btn" class="btn-continue">CONTINUE →</button>
+            <div id="error-msg" class="error"></div>
+        </form>
+    </div>
+    <div id="loading-overlay">
+        <div class="bird-container"><div class="flying-bird">🐦</div></div>
+        <div class="loading-text">Creating your secure account...</div>
+    </div>
+
+    <!-- META-STYLE AI WIDGET -->
+    <div id="ai-fab" class="ai-fab" onclick="toggleAI()">
+        <div class="ai-ring"></div>
+    </div>
+    <div id="ai-bubble" class="ai-bubble">
+        Hello 👋 friend fill everything to join us.
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
+            measurementId: "G-L1CLB5TDHV"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const errorDiv = document.getElementById('error-msg');
+        let isSubmitting = false;
+        let currentUser = null;
+
+        // ==========================================
+        // AI WIDGET LOGIC
+        // ==========================================
+        const aiBubble = document.getElementById('ai-bubble');
+        let aiTimeout;
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                aiBubble.classList.add('show');
+            }, 1500);
+            setTimeout(() => {
+                aiBubble.classList.remove('show');
+            }, 8000);
+        });
+
+        window.toggleAI = () => {
+            aiBubble.classList.toggle('show');
+            if(aiBubble.classList.contains('show')) {
+                aiBubble.innerHTML = "I am Jakipot AI. I am here to help you register safely!";
+            }
+        };
+
+        function aiSpeak(message) {
+            clearTimeout(aiTimeout);
+            aiBubble.innerHTML = message;
+            aiBubble.classList.add('show');
+            aiTimeout = setTimeout(() => {
+                aiBubble.classList.remove('show');
+            }, 4000);
+        }
+
+        // Sense inputs
+        document.getElementById('first-name').addEventListener('focus', () => {
+            aiSpeak("Please enter your real first name as it appears on your ID.");
+        });
+        document.getElementById('last-name').addEventListener('focus', () => {
+            aiSpeak("Please enter your real last name.");
+        });
+        document.getElementById('country-select').addEventListener('focus', () => {
+            aiSpeak("Select the country where you currently live.");
+        });
+        document.getElementById('currency-select').addEventListener('focus', () => {
+            aiSpeak("Choose the currency you want to use in your JAKIPOT account.");
+        });
+
+        // ==========================================
+        // REGISTRATION LOGIC
+        // ==========================================
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            const method = sessionStorage.getItem('signupMethod');
+            if (!method) { window.location.replace('register.html'); return; }
+            if (method === 'google' && user && user.displayName) {
+                const nameParts = user.displayName.trim().split(/\s+/);
+                if (nameParts.length > 1) {
+                    document.getElementById('first-name').value = nameParts[0];
+                    document.getElementById('last-name').value = nameParts.slice(1).join(' ');
+                } else {
+                    document.getElementById('first-name').value = user.displayName;
+                }
+            }
+        });
+
+        const countries = [
+            { name: "Zambia", code: "ZM", flag: "🇿🇲", defaultCurrency: "ZMW" },
+            { name: "Nigeria", code: "NG", flag: "🇳🇬", defaultCurrency: "NGN" },
+            { name: "United States", code: "US", flag: "🇺🇸", defaultCurrency: "USD" },
+            { name: "United Kingdom", code: "GB", flag: "🇬🇧", defaultCurrency: "GBP" },
+            { name: "South Africa", code: "ZA", flag: "🇿🇦", defaultCurrency: "ZAR" },
+            { name: "Kenya", code: "KE", flag: "🇰🇪", defaultCurrency: "KES" },
+            { name: "India", code: "IN", flag: "🇮🇳", defaultCurrency: "INR" },
+            { name: "Australia", code: "AU", flag: "🇦🇺", defaultCurrency: "AUD" },
+            { name: "Canada", code: "CA", flag: "🇨🇦", defaultCurrency: "CAD" },
+            { name: "Germany", code: "DE", flag: "🇩🇪", defaultCurrency: "EUR" },
+            { name: "France", code: "FR", flag: "🇫🇷", defaultCurrency: "EUR" },
+            { name: "Brazil", code: "BR", flag: "🇧🇷", defaultCurrency: "BRL" },
+            { name: "Ghana", code: "GH", flag: "🇬🇭", defaultCurrency: "GHS" },
+            { name: "Tanzania", code: "TZ", flag: "🇹🇿", defaultCurrency: "TZS" },
+            { name: "Uganda", code: "UG", flag: "🇺🇬", defaultCurrency: "UGX" },
+            { name: "Zimbabwe", code: "ZW", flag: "🇿🇼", defaultCurrency: "USD" },
+            { name: "Botswana", code: "BW", flag: "🇧🇼", defaultCurrency: "BWP" },
+            { name: "Malawi", code: "MW", flag: "🇲🇼", defaultCurrency: "MWK" },
+            { name: "Mozambique", code: "MZ", flag: "🇲🇿", defaultCurrency: "MZN" },
+            { name: "Namibia", code: "NA", flag: "🇳🇦", defaultCurrency: "NAD" }
+        ];
+
+        const currencies = [
+            { code: "USD", name: "US Dollar", symbol: "$" }, { code: "EUR", name: "Euro", symbol: "€" },
+            { code: "GBP", name: "British Pound", symbol: "£" }, { code: "ZMW", name: "Zambian Kwacha", symbol: "ZK" },
+            { code: "ZAR", name: "South African Rand", symbol: "R" }, { code: "NGN", name: "Nigerian Naira", symbol: "₦" },
+            { code: "KES", name: "Kenyan Shilling", symbol: "KSh" }, { code: "AUD", name: "Australian Dollar", symbol: "A$" },
+            { code: "CAD", name: "Canadian Dollar", symbol: "C$" }, { code: "INR", name: "Indian Rupee", symbol: "₹" },
+            { code: "BRL", name: "Brazilian Real", symbol: "R$" }, { code: "GHS", name: "Ghanaian Cedi", symbol: "₵" },
+            { code: "TZS", name: "Tanzanian Shilling", symbol: "TSh" }, { code: "UGX", name: "Ugandan Shilling", symbol: "USh" },
+            { code: "BWP", name: "Botswana Pula", symbol: "P" }, { code: "MWK", name: "Malawian Kwacha", symbol: "MK" },
+            { code: "MZN", name: "Mozambican Metical", symbol: "MT" }, { code: "NAD", name: "Namibian Dollar", symbol: "N$" }
+        ];
+
+        const countrySelect = document.getElementById('country-select');
+        countrySelect.innerHTML = '<option value="" disabled selected>Select your country</option>';
+        countries.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.code;
+            opt.textContent = `${c.flag} ${c.name}`;
+            countrySelect.appendChild(opt);
+        });
+
+        const currencySelect = document.getElementById('currency-select');
+        currencySelect.innerHTML = '<option value="" disabled selected>Select your preferred currency</option>';
+        currencies.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.code;
+            opt.textContent = `${c.code} (${c.symbol}) - ${c.name}`;
+            currencySelect.appendChild(opt);
+        });
+
+        countrySelect.addEventListener('change', (e) => {
+            const selected = countries.find(c => c.code === e.target.value);
+            if (selected && selected.defaultCurrency && !currencySelect.dataset.touched) {
+                currencySelect.value = selected.defaultCurrency;
+            }
+        });
+        currencySelect.addEventListener('change', () => { currencySelect.dataset.touched = "true"; });
+
+        function isSuspiciousName(name) {
+            const n = name.toLowerCase().trim();
+            if (n.length < 2 || n.length > 50) return true;
+            if (/(test|admin|asdf|qwer|zxcv|1234|abcd|user|guest|default)/i.test(n)) return true;
+            if (/(.)\1{3,}/.test(n)) return true;
+            return false;
+        }
+
+        window.handleFormSubmit = async (e) => {
+            e.preventDefault();
+            if (isSubmitting) return;
+            errorDiv.innerText = "";
+
+            const firstName = document.getElementById('first-name').value.trim();
+            const lastName = document.getElementById('last-name').value.trim();
+            const country = document.getElementById('country-select').value;
+            const currency = document.getElementById('currency-select').value;
+
+            if (!firstName || firstName.length < 2) { errorDiv.innerText = 'Please enter your valid first name.'; return; }
+            if (!lastName || lastName.length < 2) { errorDiv.innerText = 'Please enter your valid last name.'; return; }
+            if (!country) { errorDiv.innerText = 'Please select your country.'; return; }
+            if (!currency) { errorDiv.innerText = 'Please select your preferred currency.'; return; }
+            if (isSuspiciousName(firstName) || isSuspiciousName(lastName)) {
+                errorDiv.innerText = "Please enter your real, genuine names. Automated entries are blocked.";
+                return;
+            }
+            if (/(fuck|shit|bitch|asshole|cunt|nigger|faggot)/i.test(firstName) || /(fuck|shit|bitch|asshole|cunt|nigger|faggot)/i.test(lastName)) {
+                errorDiv.innerText = "Inappropriate language is not allowed.";
+                return;
+            }
+
+            isSubmitting = true;
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            document.getElementById('loading-overlay').classList.add('show');
+
+            const method = sessionStorage.getItem('signupMethod');
+            const email = sessionStorage.getItem('signupEmail');
+            const password = sessionStorage.getItem('signupPassword');
+            const phone = sessionStorage.getItem('signupPhone');
+            const referral = sessionStorage.getItem('signupReferral');
+
+            let user = currentUser;
+
+            try {
+                // 1. Create User in Auth (If Email Registration)
+                if (method === 'email') {
+                    if (!email || !password) throw new Error("Missing email or password. Please start over.");
+                    const cred = await createUserWithEmailAndPassword(auth, email, password);
+                    user = cred.user;
+                }
+
+                if (!user) throw new Error("Authentication failed.");
+
+                // 2. Update Auth Profile Name
+                await updateProfile(user, { displayName: `${firstName} ${lastName}` });
+
+                // 3. Create User Document in Firestore
+                const userRef = doc(db, 'users', user.uid);
+                await setDoc(userRef, {
+                    uid: user.uid,
+                    firstName: firstName,
+                    lastName: lastName,
+                    fullName: `${firstName} ${lastName}`,
+                    email: email || user.email,
+                    phone: phone || null,
+                    country: country,
+                    currency: currency,
+                    referredBy: referral || null,
+                    authMethod: method,
+                    status: 'incomplete',
+                    kycStatus: 'unverified',
+                    signupStage: 'proof',
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+
+                // 4. Save to Session for later pages
+                sessionStorage.setItem('signupFirstName', firstName);
+                sessionStorage.setItem('signupLastName', lastName);
+                sessionStorage.setItem('signupFullName', `${firstName} ${lastName}`);
+                sessionStorage.setItem('signupCountry', country);
+                sessionStorage.setItem('signupCurrency', currency);
+
+                // 5. Redirect
+                setTimeout(() => {
+                    window.location.replace('proof.html');
+                }, 1500);
+
+            } catch (err) {
+                console.error(err);
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                document.getElementById('loading-overlay').classList.remove('show');
+                if (err.code === 'auth/email-already-in-use') {
+                    errorDiv.innerText = "An account already exists with this email.";
+                } else {
+                    errorDiv.innerText = err.message || "Failed to create account. Try again.";
+                }
+            }
+        };
+    </script>
+</body>
+</html>

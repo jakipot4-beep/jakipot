@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JAKIPOT Chat - Inbox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* PURE MONOCHROME THEME */
+            --bg-deep: #09090b;
+            --bg-surface: #18181b;
+            --bg-elevated: #27272a;
+            
+            --text-primary: #ffffff; 
+            --text-secondary: #a1a1aa; 
+            
+            --border-light: rgba(255, 255, 255, 0.08);
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg-deep); color: var(--text-primary); 
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* =========================================
+           HEADER
+           ========================================= */
+        .top-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px; background: var(--bg-surface); border-bottom: 1px solid var(--border-light);
+            height: 70px; z-index: 10;
+        }
+        .header-title { font-size: 20px; font-weight: 900; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
+        
+        .header-actions { display: flex; align-items: center; gap: 15px; }
+        .icon-btn { background: transparent; border: none; cursor: pointer; display: grid; place-items: center; padding: 5px; }
+        .icon-btn svg { width: 22px; height: 22px; fill: var(--text-primary); }
+        
+        /* Dropdown Menu */
+        .menu-dropdown {
+            position: absolute; top: 60px; right: 20px; background: var(--bg-elevated);
+            border: 1px solid var(--border-light); border-radius: 12px; padding: 8px;
+            display: none; flex-direction: column; gap: 4px; z-index: 20;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); min-width: 180px;
+        }
+        .menu-dropdown.active { display: flex; }
+        .menu-item { padding: 10px 15px; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-primary); text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .menu-item:hover { background: rgba(255,255,255,0.05); }
+
+        /* =========================================
+           SEARCH BAR
+           ========================================= */
+        .search-container { padding: 15px 20px; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); }
+        .search-box {
+            display: flex; align-items: center; gap: 10px; background: var(--bg-deep);
+            border: 1px solid var(--border-light); border-radius: 12px; padding: 10px 15px;
+        }
+        .search-box svg { width: 18px; height: 18px; fill: var(--text-secondary); }
+        .search-box input {
+            flex: 1; background: transparent; border: none; color: var(--text-primary);
+            font-size: 14px; outline: none;
+        }
+        .search-box input::placeholder { color: var(--text-secondary); }
+
+        /* =========================================
+           CHAT LIST
+           ========================================= */
+        .chat-list { flex: 1; overflow-y: auto; padding: 10px 0; }
+        
+        .chat-row {
+            display: flex; align-items: center; gap: 15px; padding: 12px 20px;
+            cursor: pointer; transition: background 0.2s; text-decoration: none;
+        }
+        .chat-row:hover { background: rgba(255,255,255,0.03); }
+        
+        .avatar-wrapper { position: relative; flex-shrink: 0; }
+        .avatar {
+            width: 52px; height: 52px; border-radius: 50%;
+            background: var(--bg-elevated); 
+            display: grid; place-items: center; font-weight: 900; font-size: 18px; color: var(--text-primary);
+            overflow: hidden; border: 1px solid var(--border-light);
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .online-dot {
+            position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px;
+            background: #ffffff; border-radius: 50%; border: 2px solid var(--bg-deep);
+        }
+        
+        .chat-info { flex: 1; overflow: hidden; }
+        .chat-name-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .chat-name { 
+            font-size: 16px; font-weight: 700; color: var(--text-primary); 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px; 
+        }
+        .chat-time { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+        
+        .chat-msg-row { display: flex; justify-content: space-between; align-items: center; }
+        .chat-preview { font-size: 14px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85%; }
+        
+        .unread-badge {
+            background: #ffffff; color: #09090b; font-size: 11px; font-weight: 800;
+            padding: 2px 7px; border-radius: 10px; min-width: 20px; text-align: center;
+        }
+
+        .verified-badge { width: 16px; height: 16px; fill: #ffffff; }
+        .group-header { padding: 15px 20px 5px; font-size: 12px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+        
+        .admin-row { background: rgba(255, 255, 255, 0.03); border-left: 3px solid #ffffff; }
+        .admin-row:hover { background: rgba(255, 255, 255, 0.06); }
+
+        .empty-search { padding: 20px; color: var(--text-secondary); font-size: 13px; text-align: center; display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="top-header">
+        <div class="header-title">JAKIPOT Chat</div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="document.getElementById('search-input').focus()">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </button>
+            <button class="icon-btn" onclick="toggleMenu()">
+                <svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- DROPDOWN MENU -->
+    <div class="menu-dropdown" id="header-menu">
+        <a href="chat-settings.html" class="menu-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+            Chat Settings
+        </a>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-container">
+        <div class="search-box">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" id="search-input" placeholder="Search users or groups..." oninput="filterChats()">
+        </div>
+    </div>
+
+    <!-- CHAT LIST -->
+    <main class="chat-list" id="chat-list">
+        
+        <!-- ADMIN SECTION -->
+        <div id="admin-section"></div>
+
+        <div class="group-header" id="global-header">Global Community</div>
+        
+        <a href="global-chat.html" class="chat-row" id="global-chat-row" data-name="jakipot international global community">
+            <div class="avatar-wrapper">
+                <div class="avatar">
+                    <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=200&auto=format&fit=crop" alt="Global">
+                </div>
+            </div>
+            <div class="chat-info">
+                <div class="chat-name-row">
+                    <span class="chat-name">JAKIPOT International</span>
+                    <span class="chat-time">Just now</span>
+                </div>
+                <div class="chat-msg-row">
+                    <span class="chat-preview">Welcome to the official community group!</span>
+                    <span class="unread-badge">3</span>
+                </div>
+            </div>
+        </a>
+
+        <div class="group-header" id="recent-header">Recent Chats</div>
+        <div id="private-chats-container">
+            <p style="padding: 20px; color: var(--text-secondary); font-size: 13px;">Loading users...</p>
+        </div>
+        <div class="empty-search" id="empty-search">No users found.</div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, collection, doc, query, where, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
+            measurementId: "G-L1CLB5TDHV"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        // Global arrays to store fetched data for searching
+        let allUsers = [];
+        let adminUser = null;
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            currentUser = user;
+            
+            findAdmin();
+            loadUsers();
+        });
+
+        window.toggleMenu = () => {
+            document.getElementById('header-menu').classList.toggle('active');
+        };
+
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('header-menu');
+            const btn = document.querySelector('.header-actions .icon-btn:last-child');
+            if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.classList.remove('active');
+            }
+        });
+
+        // 1. FIND ADMIN
+        function findAdmin() {
+            const q = query(collection(db, 'users'), where('role', '==', 'admin'), limit(1));
+            
+            onSnapshot(q, (snapshot) => {
+                const adminSection = document.getElementById('admin-section');
+                adminSection.innerHTML = '';
+                adminUser = null; // Reset
+
+                if (snapshot.empty) return;
+
+                const adminDoc = snapshot.docs[0];
+                const admin = adminDoc.data();
+                if (adminDoc.id === currentUser.uid) return;
+
+                adminUser = admin;
+
+                const initial = admin.fullName ? admin.fullName.charAt(0).toUpperCase() : 'A';
+                const avatarHtml = admin.profilePicUrl ? `<img src="${admin.profilePicUrl}">` : initial;
+                const roomId = `private_${[currentUser.uid, adminDoc.id].sort().join('_')}`;
+
+                adminSection.innerHTML = `
+                    <div class="group-header" id="support-header">Official Support</div>
+                    <a href="chat.html?roomId=${roomId}&name=${encodeURIComponent(admin.fullName || 'Admin')}&avatar=${admin.profilePicUrl || ''}" 
+                       class="chat-row admin-row" 
+                       data-name="${(admin.fullName || 'admin support').toLowerCase()}">
+                        <div class="avatar-wrapper">
+                            <!-- FIXED: Removed hardcoded white background -->
+                            <div class="avatar">${avatarHtml}</div>
+                            <div class="online-dot"></div>
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-name-row">
+                                <span class="chat-name">
+                                    ${admin.fullName || 'Jakipot Admin'} 
+                                    <svg class="verified-badge" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.4-1.4 3.6 3.6 7.6-7.6L19 8l-9 9z"/></svg>
+                                </span>
+                                <span class="chat-time">Online</span>
+                            </div>
+                            <div class="chat-msg-row">
+                                <span class="chat-preview" style="font-weight: 600; color: var(--text-primary);">Tap to message support directly</span>
+                            </div>
+                        </div>
+                    </a>
+                `;
+                filterChats(); // Apply current search filter to new admin row
+            });
+        }
+
+        // 2. LOAD USERS
+        function loadUsers() {
+            const container = document.getElementById('private-chats-container');
+            const q = query(collection(db, 'users'), limit(100));
+
+            onSnapshot(q, (snapshot) => {
+                allUsers = []; // Reset array
+                container.innerHTML = '';
+                
+                snapshot.forEach(docSnap => {
+                    if (docSnap.id === currentUser.uid) return;
+                    const user = docSnap.data();
+                    if (!user.fullName || user.role === 'admin') return;
+
+                    allUsers.push({ id: docSnap.id, ...user });
+                });
+
+                renderUsers();
+            });
+        }
+
+        // 3. RENDER USERS (Called when data loads or search happens)
+        function renderUsers() {
+            const container = document.getElementById('private-chats-container');
+            container.innerHTML = '';
+
+            allUsers.forEach(user => {
+                const initial = user.fullName.charAt(0).toUpperCase();
+                const avatarHtml = user.profilePicUrl ? `<img src="${user.profilePicUrl}">` : initial;
+                const roomId = `private_${[currentUser.uid, user.id].sort().join('_')}`;
+
+                container.innerHTML += `
+                    <a href="chat.html?roomId=${roomId}&name=${encodeURIComponent(user.fullName)}&avatar=${user.profilePicUrl || ''}" 
+                       class="chat-row user-chat-row" 
+                       data-name="${user.fullName.toLowerCase()}">
+                        <div class="avatar-wrapper">
+                            <div class="avatar">${avatarHtml}</div>
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-name-row">
+                                <span class="chat-name">${user.fullName}</span>
+                                <span class="chat-time">${Math.floor(Math.random() * 12) + 1}:00 PM</span>
+                            </div>
+                            <div class="chat-msg-row">
+                                <span class="chat-preview">Tap to open conversation</span>
+                            </div>
+                        </div>
+                    </a>
+                `;
+            });
+
+            if (allUsers.length === 0) {
+                container.innerHTML = '<p style="padding: 20px; color: var(--text-secondary); font-size: 13px;">No other users found yet.</p>';
+            }
+
+            filterChats(); // Apply current search filter to new user rows
+        }
+
+        // 4. FUNCTIONAL SEARCH
+        function filterChats() {
+            const searchText = document.getElementById('search-input').value.toLowerCase();
+            
+            // Filter Global Group
+            const globalRow = document.getElementById('global-chat-row');
+            const globalHeader = document.getElementById('global-header');
+            if (globalRow.dataset.name.includes(searchText)) {
+                globalRow.style.display = 'flex';
+                globalHeader.style.display = 'block';
+            } else {
+                globalRow.style.display = 'none';
+                globalHeader.style.display = 'none';
+            }
+
+            // Filter Admin Row
+            const adminRow = document.querySelector('.admin-row');
+            const supportHeader = document.getElementById('support-header');
+            if (adminRow) {
+                if (adminRow.dataset.name.includes(searchText)) {
+                    adminRow.style.display = 'flex';
+                    if (supportHeader) supportHeader.style.display = 'block';
+                } else {
+                    adminRow.style.display = 'none';
+                    if (supportHeader) supportHeader.style.display = 'none';
+                }
+            }
+
+            // Filter Users
+            let visibleUsers = 0;
+            document.querySelectorAll('.user-chat-row').forEach(row => {
+                if (row.dataset.name.includes(searchText)) {
+                    row.style.display = 'flex';
+                    visibleUsers++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Handle Empty State for Users
+            const recentHeader = document.getElementById('recent-header');
+            const emptyState = document.getElementById('empty-search');
+            
+            if (visibleUsers === 0 && searchText !== '') {
+                emptyState.style.display = 'block';
+                recentHeader.style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                if (allUsers.length > 0) recentHeader.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

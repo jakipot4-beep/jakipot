@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JAKIPOT - Locked Plans</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #040b16; 
+            --bg-card: #0f172a; 
+            --bg-elevated: #1e293b;
+            --cyan: #00D9FF; 
+            --cyan-glow: rgba(0, 217, 255, 0.3);
+            --emerald: #10b981; 
+            --gold: #fbbf24;
+            --text-white: #ffffff; 
+            --text-muted: #8b9bb4; 
+            --border-light: rgba(255, 255, 255, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg-deep); color: var(--text-white); 
+            min-height: 100vh; display: flex; flex-direction: column;
+            background-image: radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.05) 0%, transparent 50%);
+        }
+
+        /* HEADER */
+        .top-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 15px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border-light);
+            position: sticky; top: 0; z-index: 10;
+        }
+        .back-btn { background: transparent; border: none; cursor: pointer; color: var(--cyan); display: flex; align-items: center; padding: 4px; }
+        .back-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .header-title { font-size: 16px; font-weight: 900; color: var(--white); letter-spacing: 1.5px; text-transform: uppercase; }
+        .wallet-balance { font-size: 14px; font-weight: 800; color: var(--gold); background: var(--bg-elevated); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(251,191,36,0.3); }
+
+        /* CONTENT AREA */
+        .content-area { flex: 1; padding: 15px; overflow-y: auto; padding-bottom: 50px; }
+        .section-title { font-size: 14px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; padding-left: 5px; }
+
+        /* 2x2 MARKETPLACE GRID */
+        .plans-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 12px; 
+        }
+
+        .plan-card {
+            background: var(--bg-card); border: 1px solid var(--border-light);
+            border-radius: 16px; display: flex; flex-direction: column;
+            position: relative; overflow: hidden; transition: transform 0.2s;
+        }
+        .plan-card:active { transform: scale(0.97); }
+        
+        .plan-card.invested {
+            border-color: var(--emerald);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+        }
+
+        /* Image Header */
+        .plan-image-wrap {
+            width: 100%; height: 85px; position: relative; background: #000;
+        }
+        .plan-image {
+            width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: opacity 0.3s;
+        }
+        .plan-card:active .plan-image { opacity: 1; }
+        .image-overlay {
+            position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 0%, var(--bg-card) 100%);
+        }
+
+        /* Plan Content Area */
+        .plan-content { padding: 0 12px 12px 12px; display: flex; flex-direction: column; flex: 1; }
+        .plan-name { font-size: 13px; font-weight: 900; color: var(--white); margin-bottom: 8px; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .info-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .info-label { font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+        .info-value { font-size: 11px; font-weight: 800; color: var(--white); }
+        .info-value.gold { color: var(--gold); }
+        .info-value.highlight { color: var(--emerald); }
+
+        /* Total Income Bar */
+        .total-income-bar {
+            background: rgba(0, 217, 255, 0.05); border: 1px solid rgba(0, 217, 255, 0.15);
+            border-radius: 8px; padding: 6px; margin-top: auto; margin-bottom: 10px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .ti-label { font-size: 8px; font-weight: 800; color: var(--cyan); text-transform: uppercase; margin-bottom: 2px; }
+        .ti-value { font-size: 13px; font-weight: 900; color: var(--cyan); text-shadow: 0 0 10px var(--cyan-glow); }
+
+        /* Invest Button */
+        .btn-invest {
+            width: 100%; padding: 9px; border-radius: 8px; border: none;
+            background: var(--cyan); color: #000; font-size: 11px; font-weight: 900; 
+            text-transform: uppercase; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 4px 10px var(--cyan-glow);
+        }
+        .btn-invest:active { transform: scale(0.95); }
+        .btn-invest.invested {
+            background: rgba(16, 185, 129, 0.15); color: var(--emerald);
+            border: 1px solid var(--emerald); cursor: not-allowed; box-shadow: none;
+        }
+        .btn-invest:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* Loader */
+        .loader-wrap { display: flex; justify-content: center; padding: 40px; grid-column: span 2; }
+        .spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--cyan); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* SUCCESS OVERLAY & FIREWORKS */
+        #fireworks-canvas { position: fixed; inset: 0; z-index: 9998; pointer-events: none; display: none; }
+
+        .success-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(4, 11, 22, 0.9); backdrop-filter: blur(10px);
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .success-overlay.active { opacity: 1; pointer-events: auto; }
+
+        .success-card {
+            background: var(--bg-card); border: 1px solid var(--emerald);
+            border-radius: 24px; padding: 30px 20px; width: 90%; max-width: 380px;
+            text-align: center; box-shadow: 0 0 40px rgba(16, 185, 129, 0.2);
+            transform: translateY(20px) scale(0.9); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .success-overlay.active .success-card { transform: translateY(0) scale(1); }
+
+        .success-icon { font-size: 60px; margin-bottom: 15px; animation: bounce 1s infinite alternate; }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+
+        .success-title { font-size: 22px; font-weight: 900; color: var(--emerald); margin-bottom: 10px; }
+        .success-text { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+        
+        .receipt-box { background: var(--bg-elevated); border-radius: 12px; padding: 15px; text-align: left; margin-bottom: 10px; }
+        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+        .receipt-row:last-child { margin-bottom: 0; border-top: 1px dashed var(--border-light); padding-top: 8px; margin-top: 8px; }
+        .r-label { color: var(--text-muted); }
+        .r-val { color: var(--white); font-weight: 700; }
+        .r-val.highlight { color: var(--emerald); font-size: 15px; }
+
+        .redirect-text { font-size: 12px; font-weight: 700; color: var(--cyan); animation: pulse-opacity 1.5s infinite; margin-top: 15px; }
+        @keyframes pulse-opacity { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+
+    <canvas id="fireworks-canvas"></canvas>
+
+    <header class="top-header">
+        <button class="back-btn" onclick="window.location.href='home.html'">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </button>
+        <div class="header-title">Locked Plans</div>
+        <div class="wallet-balance" id="wallet-balance">Loading...</div>
+    </header>
+
+    <main class="content-area">
+        <div class="section-title">Available Investment Plans</div>
+        <div class="plans-grid" id="plans-grid">
+            <div class="loader-wrap"><div class="spinner"></div></div>
+        </div>
+    </main>
+
+    <!-- SUCCESS OVERLAY -->
+    <div class="success-overlay" id="success-overlay">
+        <div class="success-card">
+            <div class="success-icon">🎇</div>
+            <div class="success-title">Investment Successful!</div>
+            <div class="success-text">You have successfully locked your funds. Your daily returns will begin shortly.</div>
+            
+            <div class="receipt-box">
+                <div class="receipt-row"><span class="r-label">Plan</span><span class="r-val" id="success-plan-name">Bronze Starter</span></div>
+                <div class="receipt-row"><span class="r-label">Invested</span><span class="r-val" id="success-invested">K 500</span></div>
+                <div class="receipt-row"><span class="r-label">Duration</span><span class="r-val" id="success-duration">10 Days</span></div>
+                <div class="receipt-row"><span class="r-label">Total Return</span><span class="r-val highlight" id="success-total">K 600</span></div>
+            </div>
+
+            <div class="redirect-text">Redirecting to your orders...</div>
+        </div>
+    </div>
+
+    <!-- FIREBASE LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, collection, query, where, onSnapshot, writeBatch, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
+            measurementId: "G-L1CLB5TDHV"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let userBalance = 0;
+        let userCurrency = 'ZMW';
+        let currencySymbol = 'K';
+        let availablePlans = [];
+        let investedPlanIds = new Set(); // Tracks which plans the user already bought
+        let isProcessing = false;
+
+        const CURRENCY_MAP = {
+            'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 
+            'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'TZS': 'TSh', 
+            'UGX': 'USh', 'BWP': 'P', 'MWK': 'MK', 'MZN': 'MT', 
+            'NAD': 'N$', 'AOA': 'Kz', 'PHP': '₱', 'IDR': 'Rp', 
+            'PKR': '₨', 'BDT': '৳'
+        };
+
+        // 1. Auth & Real-time Listeners
+        onAuthStateChanged(auth, (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            currentUser = user;
+
+            // Listen to User Profile (For Currency)
+            onSnapshot(doc(db, 'users', user.uid), (snap) => {
+                if (snap.exists()) {
+                    userCurrency = snap.data().currency || 'ZMW';
+                    currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
+                    updateUI();
+                }
+            });
+
+            // Listen to Wallet Balance
+            onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
+                if (snap.exists()) {
+                    userBalance = snap.data().balance || 0;
+                    updateUI();
+                }
+            });
+
+            // Listen to User's Existing Investments (to disable "Invest" button if already bought)
+            const invQ = query(collection(db, 'user_investments'), where('uid', '==', user.uid), where('status', '==', 'active'));
+            onSnapshot(invQ, (snap) => {
+                investedPlanIds.clear();
+                snap.forEach(doc => investedPlanIds.add(doc.data().planId));
+                renderPlans();
+            });
+
+            // Listen to Available Plans
+            const plansQ = query(collection(db, 'plans'), where('isActive', '==', true));
+            onSnapshot(plansQ, (snap) => {
+                availablePlans = [];
+                snap.forEach(doc => availablePlans.push({ id: doc.id, ...doc.data() }));
+                renderPlans();
+            });
+        });
+
+        function updateUI() {
+            document.getElementById('wallet-balance').innerText = `${currencySymbol}${userBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            renderPlans();
+        }
+
+        // 2. Render Plans
+        function renderPlans() {
+            const grid = document.getElementById('plans-grid');
+            
+            if (availablePlans.length === 0) {
+                grid.innerHTML = `<div style="grid-column: span 2; text-align: center; color: var(--text-muted); padding: 20px;">No active plans available right now.</div>`;
+                return;
+            }
+
+            grid.innerHTML = '';
+            const fallbackImage = 'https://images.unsplash.com/photo-1621504450181-5d356f61d307?w=400&q=80';
+
+            availablePlans.forEach(plan => {
+                const totalIncome = plan.dailyIncome * plan.durationDays;
+                const isInvested = investedPlanIds.has(plan.id);
+                
+                const card = document.createElement('div');
+                card.className = `plan-card ${isInvested ? 'invested' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="plan-image-wrap">
+                        <img src="${plan.imageUrl || fallbackImage}" onerror="this.src='${fallbackImage}'" class="plan-image" alt="${plan.name}">
+                        <div class="image-overlay"></div>
+                    </div>
+                    
+                    <div class="plan-content">
+                        <div class="plan-name">${plan.name}</div>
+                        
+                        <div class="info-item">
+                            <span class="info-label">Invest</span>
+                            <span class="info-value gold">${currencySymbol}${plan.investAmount.toLocaleString()}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Daily</span>
+                            <span class="info-value highlight">${currencySymbol}${plan.dailyIncome.toLocaleString()}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Duration</span>
+                            <span class="info-value">${plan.durationDays} Days</span>
+                        </div>
+
+                        <div class="total-income-bar">
+                            <span class="ti-label">Total Income</span>
+                            <span class="ti-value">${currencySymbol}${totalIncome.toLocaleString()}</span>
+                        </div>
+
+                        <button class="btn-invest ${isInvested ? 'invested' : ''}" onclick="investInPlan('${plan.id}')" ${isInvested || isProcessing ? 'disabled' : ''}>
+                            ${isInvested ? 'INVESTED ✓' : 'INVEST NOW'}
+                        </button>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // 3. Secure Investment Transaction
+        window.investInPlan = async (planId) => {
+            if (!currentUser || isProcessing) return;
+
+            const plan = availablePlans.find(p => p.id === planId);
+            if (!plan) return;
+
+            if (userBalance < plan.investAmount) {
+                alert("Insufficient wallet balance to invest in this plan.");
+                return;
+            }
+
+            isProcessing = true;
+            renderPlans(); // Disables buttons
+
+            try {
+                const batch = writeBatch(db);
+
+                // 1. Deduct Wallet
+                const walletRef = doc(db, 'wallets', currentUser.uid);
+                const txRef = doc(collection(db, 'transactions'));
+                
+                batch.update(walletRef, { 
+                    balance: increment(-plan.investAmount),
+                    lastTxId: txRef.id 
+                });
+
+                // 2. Create Ledger Receipt
+                batch.set(txRef, {
+                    uid: currentUser.uid, 
+                    type: 'investment', 
+                    amount: -plan.investAmount, 
+                    status: 'completed', 
+                    createdAt: serverTimestamp()
+                });
+
+                // 3. Create User Investment Document (Order)
+                const startDate = new Date();
+                const endDate = new Date();
+                endDate.setDate(startDate.getDate() + plan.durationDays);
+
+                const invRef = doc(collection(db, 'user_investments'));
+                batch.set(invRef, {
+                    uid: currentUser.uid,
+                    planId: plan.id,
+                    planName: plan.name,
+                    investAmount: plan.investAmount,
+                    dailyIncome: plan.dailyIncome,
+                    durationDays: plan.durationDays,
+                    totalReturn: plan.dailyIncome * plan.durationDays,
+                    status: 'active',
+                    startDate: serverTimestamp(),
+                    endDate: endDate
+                });
+
+                await batch.commit();
+
+                // Success!
+                showSuccessModal(plan);
+
+            } catch (e) {
+                console.error(e);
+                alert("Investment failed. Please try again.");
+                isProcessing = false;
+                renderPlans();
+            }
+        };
+
+        // 4. Success Modal & Fireworks
+        function showSuccessModal(plan) {
+            const totalIncome = plan.dailyIncome * plan.durationDays;
+            
+            document.getElementById('success-plan-name').innerText = plan.name;
+            document.getElementById('success-invested').innerText = `${currencySymbol} ${plan.investAmount.toLocaleString()}`;
+            document.getElementById('success-duration').innerText = `${plan.durationDays} Days`;
+            document.getElementById('success-total').innerText = `${currencySymbol} ${totalIncome.toLocaleString()}`;
+
+            const overlay = document.getElementById('success-overlay');
+            overlay.classList.add('active');
+
+            startFireworks();
+
+            setTimeout(() => {
+                window.location.href = 'orders.html';
+            }, 4000);
+        }
+
+        // --- FIREWORKS ENGINE ---
+        const canvas = document.getElementById('fireworks-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationFrame = null;
+        let isFireworksRunning = false;
+
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function startFireworks() {
+            canvas.style.display = 'block';
+            isFireworksRunning = true;
+            particles = [];
+            
+            for(let i=0; i<3; i++) {
+                setTimeout(() => {
+                    createBurst(canvas.width * (0.2 + Math.random() * 0.6), canvas.height * (0.2 + Math.random() * 0.4));
+                }, i * 300);
+            }
+            
+            setTimeout(() => {
+                isFireworksRunning = false;
+                setTimeout(() => { canvas.style.display = 'none'; particles = []; }, 2000);
+            }, 4000);
+
+            if (!animationFrame) animateFireworks();
+        }
+
+        function createBurst(x, y) {
+            const colors = ['#00D9FF', '#10b981', '#fbbf24', '#ef4444', '#a855f7', '#ffffff'];
+            const numParticles = 50 + Math.random() * 30;
+            for (let i = 0; i < numParticles; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 2;
+                particles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 1, decay: Math.random() * 0.02 + 0.015, color: colors[Math.floor(Math.random() * colors.length)], size: Math.random() * 3 + 1 });
+            }
+        }
+
+        function animateFireworks() {
+            ctx.fillStyle = 'rgba(4, 11, 22, 0.15)'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.vx *= 0.98; p.vy *= 0.98; p.life -= p.decay;
+                if (p.life <= 0) { particles.splice(i, 1); continue; }
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = p.color; ctx.globalAlpha = p.life; ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            if (isFireworksRunning || particles.length > 0) {
+                animationFrame = requestAnimationFrame(animateFireworks);
+            } else {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
+        }
+    </script>
+</body>
+</html>
