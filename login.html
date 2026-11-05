@@ -49,7 +49,6 @@
         .loading-text { color: var(--light-blue); font-size: 14px; font-weight: 600; }
         @keyframes flyAcross { 0% { transform: translateX(-100px); } 100% { transform: translateX(100px); } }
 
-        /* Lockout Banner */
         .lockout-banner {
             background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger);
             border-radius: 10px; padding: 12px; margin-bottom: 15px;
@@ -111,7 +110,6 @@
     </div>
 
     <script type="module">
-        // LOCKED TO 13.1.0
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app-check.js";
         import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
@@ -128,7 +126,6 @@
 
         const app = initializeApp(firebaseConfig);
         
-        // App Check with localhost debug
         const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
         if (isLocal) self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
         try {
@@ -146,11 +143,10 @@
         const googleBtn = document.getElementById('google-btn');
         const lockoutBanner = document.getElementById('lockout-banner');
 
-        // 🐕 WATCHDOG: Spam login protection
         let failedAttempts = 0;
         let lockoutUntil = 0;
         const MAX_ATTEMPTS = 5;
-        const LOCKOUT_DURATION = 60000; // 60 seconds
+        const LOCKOUT_DURATION = 60000;
 
         function checkLockout() {
             const now = Date.now();
@@ -163,7 +159,6 @@
                 return true;
             }
             
-            // Lockout expired
             if (lockoutUntil > 0) {
                 lockoutUntil = 0;
                 failedAttempts = 0;
@@ -179,25 +174,15 @@
             if (failedAttempts >= MAX_ATTEMPTS) {
                 lockoutUntil = Date.now() + LOCKOUT_DURATION;
                 checkLockout();
-                
-                // Auto-clear lockout display
-                setInterval(() => {
-                    if (!checkLockout()) {
-                        // Stop checking once lockout clears
-                    }
-                }, 1000);
+                setInterval(() => { checkLockout(); }, 1000);
             }
         }
 
-        // ==========================================
-        // 🎯 SMART ROUTING (based on user status)
-        // ==========================================
         async function routeUser(user) {
             try {
                 const docRef = doc(db, 'users', user.uid);
                 const docSnap = await getDoc(docRef);
 
-                // New user with no profile → send to complete registration
                 if (!docSnap.exists()) {
                     showError("No account profile found. Redirecting to signup...");
                     setTimeout(() => window.location.replace('register.html'), 1500);
@@ -206,7 +191,6 @@
 
                 const data = docSnap.data();
 
-                // Block suspended users
                 if (data.status === 'suspended') {
                     await signOut(auth);
                     showError("Your account has been suspended. Please contact support.");
@@ -214,42 +198,31 @@
                     return;
                 }
 
-                // 📊 Update lastActive for admin tracking (silent fail OK)
                 try {
                     await updateDoc(docRef, { lastActive: serverTimestamp() });
-                } catch (e) {
-                    console.warn('Could not update lastActive:', e.message);
-                }
+                } catch (e) { console.warn('Could not update lastActive:', e.message); }
 
-                // 👑 Admin routing (FIXED: admin.html not admin-dashboard.html)
+                // 👑 ADMIN ROUTING (UPDATED TO admin-dashboard.html)
                 if (data.role === 'admin') {
-                    window.location.replace('admin.html');
+                    window.location.replace('admin-dashboard.html');
                     return;
                 }
 
-                // 🎯 Route by user state
                 if (data.status === 'activated') {
                     window.location.replace('home.html');
                 } else if (data.status === 'pending_review') {
-                    // Waiting for admin to review activation payment
                     window.location.replace('pay.html');
                 } else if (data.status === 'approved') {
-                    // Approved but hasn't entered verification code yet
                     window.location.replace('pay.html');
                 } else if (data.signupStage === 'proof' || data.signupStage === 'kyc') {
-                    // Abandoned signup at KYC step
                     window.location.replace('proof.html');
                 } else if (data.signupStage === 'password_setup') {
-                    // Abandoned signup at PIN setup
                     window.location.replace('password-set-up.html');
                 } else if (data.signupStage === 'payment' || data.signupStage === 'payment_submitted') {
-                    // Abandoned signup at payment step
                     window.location.replace('pay.html');
                 } else if (data.signupStage === 'verified' || data.status === 'incomplete') {
-                    // Incomplete profile → continue from register2
                     window.location.replace('register2.html');
                 } else {
-                    // Fallback: go to home
                     window.location.replace('home.html');
                 }
             } catch (err) {
@@ -262,9 +235,6 @@
             }
         }
 
-        // ==========================================
-        // UI ACTIONS
-        // ==========================================
         window.togglePassword = () => {
             const pwdInput = document.getElementById('login-password');
             pwdInput.type = pwdInput.type === 'password' ? 'text' : 'password';
@@ -272,10 +242,7 @@
 
         window.loginWithGoogle = async () => {
             if (checkLockout()) return;
-            
-            msgBox.className = 'message-box'; 
-            msgBox.innerText = "";
-            
+            msgBox.className = 'message-box'; msgBox.innerText = "";
             googleBtn.disabled = true;
             const originalHTML = googleBtn.innerHTML;
             googleBtn.innerHTML = '<span style="opacity:0.6">Connecting...</span>';
@@ -290,7 +257,6 @@
             } catch (error) {
                 googleBtn.disabled = false;
                 googleBtn.innerHTML = originalHTML;
-                
                 if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
                     showError('Sign-in cancelled.');
                 } else if (error.code === 'auth/popup-blocked') {
@@ -304,24 +270,19 @@
         window.handleEmailLogin = async (e) => {
             e.preventDefault();
             if (checkLockout()) return;
-            
-            msgBox.className = 'message-box'; 
-            msgBox.innerText = "";
+            msgBox.className = 'message-box'; msgBox.innerText = "";
             
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
 
-            if (!email || !password) { 
-                showError('Please fill in all fields.'); 
-                return; 
-            }
+            if (!email || !password) { showError('Please fill in all fields.'); return; }
 
             submitBtn.disabled = true; 
             submitBtn.innerText = 'LOGGING IN...';
 
             try {
                 const result = await signInWithEmailAndPassword(auth, email, password);
-                failedAttempts = 0; // Reset on success
+                failedAttempts = 0;
                 document.getElementById('loading-overlay').classList.add('show');
                 await routeUser(result.user);
             } catch (error) {
@@ -341,14 +302,9 @@
 
         window.forgotPassword = async (e) => {
             e.preventDefault();
-            msgBox.className = 'message-box'; 
-            msgBox.innerText = "";
-            
+            msgBox.className = 'message-box'; msgBox.innerText = "";
             const email = document.getElementById('login-email').value.trim();
-            if (!email) { 
-                showError('Please enter your email address first.'); 
-                return; 
-            }
+            if (!email) { showError('Please enter your email address first.'); return; }
             
             try {
                 await sendPasswordResetEmail(auth, email);
@@ -364,11 +320,8 @@
             msgBox.innerText = msg; 
         }
 
-        // Clear error on input
         ['login-email', 'login-password'].forEach(id => {
-            document.getElementById(id).addEventListener('input', () => { 
-                msgBox.innerText = ""; 
-            });
+            document.getElementById(id).addEventListener('input', () => { msgBox.innerText = ""; });
         });
     </script>
 </body>

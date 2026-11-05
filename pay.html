@@ -243,7 +243,7 @@
         import { getFirestore, doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", authDomain: "jakipot.firebaseapp.com", projectId: "jakipot", storageBucket: "jakipot.firebasestorage.app", messagingSenderId: "396191754293", appId: "1:396191754293:web:5b11a11d82e773d19ee97c", measurementId: "G-L1CLB5TDHV" };
-        const CLOUDINARY = { cloudName: 'c2n8j0v', uploadPreset: 'doravica_unsigned', folder: 'jakipot/payments', maxBytes: 5 * 1024 * 1024, allowedTypes: ['image/jpeg', 'image/jpg', 'image/png'] };
+        const CLOUDINARY = { cloudName: 'jakipot', uploadPreset: 'jakipot_unsigned', folder: 'jakipot/payments', maxBytes: 5 * 1024 * 1024, allowedTypes: ['image/jpeg', 'image/jpg', 'image/png'] };
 
         const app = initializeApp(firebaseConfig);
         try { getAnalytics(app); } catch (e) { }
@@ -433,7 +433,8 @@
                 };
                 xhr.onerror = () => reject(new Error('Network error')); xhr.timeout = 60000;
                 const fd = new FormData();
-                fd.append('file', file); fd.append('upload_preset', CLOUDINARY.uploadPreset); fd.append('folder', `${CLOUDINARY.folder}/${currentUser.uid}`); fd.append('access_mode', 'authenticated');
+                fd.append('file', file); fd.append('upload_preset', CLOUDINARY.uploadPreset); fd.append('folder', `${CLOUDINARY.folder}/${currentUser.uid}`);
+                // access_mode parameter removed for unsigned upload compatibility
                 xhr.send(fd);
             });
         }

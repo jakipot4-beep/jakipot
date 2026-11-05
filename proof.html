@@ -768,8 +768,7 @@
                 fd.append('upload_preset', CLOUDINARY.uploadPreset);
                 fd.append('folder', `${CLOUDINARY.folder}/${state.user.uid}`);
                 fd.append('context', `slot=${slot}|uid=${state.user.uid}`);
-                fd.append('access_mode', 'authenticated'); 
-                
+                // access_mode removed for unsigned upload compatibility
                 xhr.send(fd);
             });
         }
@@ -836,7 +835,6 @@
                     nrcBack: state.docType !== 'passport' ? { ...state.uploaded.nrcBack, uploadedAt: serverTimestamp() } : null,
                     selfie: { ...state.uploaded.selfie, uploadedAt: serverTimestamp() },
                     storage: 'cloudinary',
-                    accessMode: 'authenticated',
                 };
 
                 // SAVE KYC
