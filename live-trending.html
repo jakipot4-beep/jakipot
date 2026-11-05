@@ -20,186 +20,86 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        body { 
-            background: var(--bg-deep); color: var(--text-white); 
-            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
-        }
+        body { background: var(--bg-deep); color: var(--text-white); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* --- HEADER --- */
-        .top-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 20px; background: var(--bg-panel); backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-glow); z-index: 10; flex-shrink: 0;
-        }
+        .top-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: var(--bg-panel); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-glow); z-index: 10; flex-shrink: 0; }
         .back-btn { background: transparent; border: none; cursor: pointer; color: var(--text-white); padding: 4px; }
         .header-logo { display: flex; align-items: center; gap: 8px; }
         .header-logo svg { width: 22px; height: 22px; fill: var(--neon-cyan); filter: drop-shadow(0 0 8px var(--neon-cyan)); }
-        .header-title { 
-            font-size: 14px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; 
-            display: flex; align-items: center; gap: 8px;
-        }
+        .header-title { font-size: 14px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
         
-        .live-badge {
-            background: var(--danger); color: white; font-size: 10px; font-weight: 900;
-            padding: 2px 6px; border-radius: 4px; letter-spacing: 1px;
-            animation: pulse-red 1.5s infinite; box-shadow: 0 0 10px rgba(255, 51, 102, 0.6);
-        }
-        
-        @keyframes pulse-red {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.05); }
-        }
+        .live-badge { background: var(--danger); color: white; font-size: 10px; font-weight: 900; padding: 2px 6px; border-radius: 4px; letter-spacing: 1px; animation: pulse-red 1.5s infinite; box-shadow: 0 0 10px rgba(255, 51, 102, 0.6); }
+        @keyframes pulse-red { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
         
         .header-right { display: flex; align-items: center; gap: 10px; }
-        
-        .header-avatar {
-            width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--neon-cyan);
-            object-fit: cover; background: #1e293b; display: flex; align-items: center; justify-content: center;
-            font-size: 14px; font-weight: 900; color: var(--neon-cyan); box-shadow: 0 0 10px rgba(0,229,255,0.3);
-        }
-
-        .wallet-pill { 
-            display: flex; align-items: center; gap: 6px; background: rgba(251, 191, 36, 0.1); 
-            padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(251, 191, 36, 0.3);
-        }
+        .header-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--neon-cyan); object-fit: cover; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; color: var(--neon-cyan); box-shadow: 0 0 10px rgba(0,229,255,0.3); }
+        .wallet-pill { display: flex; align-items: center; gap: 6px; background: rgba(251, 191, 36, 0.1); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(251, 191, 36, 0.3); }
         .wallet-pill svg { width: 16px; height: 16px; fill: var(--gold); }
         .wallet-balance { font-size: 13px; font-weight: 800; color: var(--gold); }
 
-        /* --- MAIN LAYOUT --- */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* --- GRAPH AREA --- */
         .graph-area { flex: 1; position: relative; overflow: hidden; min-height: 250px; background: #060d1a; }
         #graph-canvas { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
 
-        .market-info {
-            position: absolute; top: 15px; left: 20px; z-index: 5;
-            display: flex; align-items: center; gap: 10px;
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
-            padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
-        }
+        .market-info { position: absolute; top: 15px; left: 20px; z-index: 5; display: flex; align-items: center; gap: 10px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
         .flag-container { width: 24px; height: 16px; border-radius: 2px; overflow: hidden; display: flex; border: 1px solid rgba(255,255,255,0.2); }
         .flag-container svg { width: 100%; height: 100%; object-fit: cover; }
         .country-text { font-size: 12px; font-weight: 800; color: var(--text-white); text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .center-overlay {
-            position: absolute; inset: 0; z-index: 4; pointer-events: none;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
-        .multi-value { 
-            font-size: 80px; font-weight: 900; line-height: 1; color: var(--text-white); 
-            text-shadow: 0 0 40px rgba(0, 229, 255, 0.4); transition: color 0.2s, text-shadow 0.2s;
-        }
-        .multi-status { 
-            font-size: 11px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase; 
-            letter-spacing: 2px; margin-top: 10px; background: rgba(0, 229, 255, 0.1); 
-            padding: 4px 12px; border-radius: 12px; border: 1px solid var(--border-glow); 
-        }
+        .center-overlay { position: absolute; inset: 0; z-index: 4; pointer-events: none; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .multi-value { font-size: 80px; font-weight: 900; line-height: 1; color: var(--text-white); text-shadow: 0 0 40px rgba(0, 229, 255, 0.4); transition: color 0.2s, text-shadow 0.2s; }
+        .multi-status { font-size: 11px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 2px; margin-top: 10px; background: rgba(0, 229, 255, 0.1); padding: 4px 12px; border-radius: 12px; border: 1px solid var(--border-glow); }
 
-        /* --- LIVE TRENDERS SECTION --- */
-        .trenders-section {
-            flex: 0.9; display: flex; flex-direction: column;
-            background: var(--bg-panel); border-top: 1px solid var(--border-glow);
-            overflow: hidden;
-        }
-        .trenders-header {
-            display: flex; padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.05);
-            background: rgba(0,0,0,0.2); flex-shrink: 0;
-        }
+        .trenders-section { flex: 0.9; display: flex; flex-direction: column; background: var(--bg-panel); border-top: 1px solid var(--border-glow); overflow: hidden; }
+        .trenders-header { display: flex; padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); flex-shrink: 0; }
         .col-header { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .col-user { flex: 2; }
         .col-bet { flex: 1; text-align: right; }
         .col-mult { flex: 1; text-align: right; }
         .col-win { flex: 1; text-align: right; }
         
-        .trenders-list { 
-            flex: 1; overflow-y: auto; padding: 0 20px; 
-            scrollbar-width: thin; scrollbar-color: rgba(0, 229, 255, 0.3) transparent;
-        }
+        .trenders-list { flex: 1; overflow-y: auto; padding: 0 20px; scrollbar-width: thin; scrollbar-color: rgba(0, 229, 255, 0.3) transparent; }
         .trenders-list::-webkit-scrollbar { width: 4px; }
         .trenders-list::-webkit-scrollbar-track { background: transparent; }
         .trenders-list::-webkit-scrollbar-thumb { background: rgba(0, 229, 255, 0.3); border-radius: 4px; }
 
-        .player-row {
-            display: flex; align-items: center; padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.03); transition: background 0.2s;
-        }
-        .player-row.is-you { 
-            background: rgba(16, 185, 129, 0.08); 
-            border-left: 3px solid var(--emerald); 
-            border-radius: 4px; 
-            padding-left: 10px; 
-        }
+        .player-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03); transition: background 0.2s; }
+        .player-row.is-you { background: rgba(16, 185, 129, 0.08); border-left: 3px solid var(--emerald); border-radius: 4px; padding-left: 10px; }
         
         .user-info { flex: 2; display: flex; align-items: center; gap: 8px; }
-        
-        .avatar-wrap {
-            width: 28px; height: 28px; border-radius: 50%; padding: 2px;
-            display: flex; justify-content: center; align-items: center;
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            overflow: hidden;
-        }
-        .is-you .avatar-wrap { 
-            border-color: var(--emerald); 
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); 
-        }
+        .avatar-wrap { width: 28px; height: 28px; border-radius: 50%; padding: 2px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
+        .is-you .avatar-wrap { border-color: var(--emerald); box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
         .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
         .avatar-svg { width: 100%; height: 100%; border-radius: 50%; }
-        
         .username { font-size: 12px; font-weight: 700; color: var(--text-white); max-width: 70px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .is-you .username { color: var(--emerald); }
         
         .row-bet { flex: 1; text-align: right; font-size: 12px; font-weight: 700; color: var(--text-muted); }
         .row-mult { flex: 1; text-align: right; font-size: 12px; font-weight: 800; }
         .row-win { flex: 1; text-align: right; font-size: 12px; font-weight: 800; color: var(--emerald); }
-
         .mult-active { color: var(--neon-cyan); }
         .mult-won { color: var(--emerald); }
         .mult-lost { color: var(--danger); }
 
-        /* --- BOTTOM CONTROLS --- */
-        .controls-panel {
-            background: var(--bg-panel); padding: 12px 20px 18px;
-            border-top: 1px solid var(--border-glow); flex-shrink: 0;
-            display: flex; flex-direction: column; gap: 10px;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
-        }
-
+        .controls-panel { background: var(--bg-panel); padding: 12px 20px 18px; border-top: 1px solid var(--border-glow); flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); }
         .control-row { display: flex; gap: 10px; align-items: center; }
-        
-        .amount-box {
-            flex: 1; display: flex; align-items: center; justify-content: space-between;
-            background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px; padding: 6px;
-        }
+        .amount-box { flex: 1; display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 6px; }
         .adj-btn { background: transparent; border: none; color: var(--text-muted); font-size: 22px; font-weight: 900; width: 36px; height: 36px; cursor: pointer; }
         .input-wrap { display: flex; align-items: center; gap: 4px; }
         .currency-symbol { color: var(--gold); font-weight: 900; font-size: 14px; }
         .bet-input { background: transparent; border: none; color: var(--text-white); font-size: 18px; font-weight: 800; width: 70px; text-align: center; outline: none; }
-        
         .quick-bets { display: flex; gap: 6px; }
         .quick-btn { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 6px 0; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
         .quick-btn:hover { background: rgba(0, 229, 255, 0.1); color: var(--neon-cyan); }
 
-        .action-btn { 
-            width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 900; 
-            cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px;
-            background: linear-gradient(90deg, #0052d4, #4364f7, #6fb1fc); color: var(--text-white);
-            box-shadow: 0 4px 15px rgba(67, 100, 247, 0.4);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-        }
+        .action-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 900; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px; background: linear-gradient(90deg, #0052d4, #4364f7, #6fb1fc); color: var(--text-white); box-shadow: 0 4px 15px rgba(67, 100, 247, 0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
         .action-btn .btn-main-text { font-size: 15px; }
         .action-btn .btn-sub-text { font-size: 13px; opacity: 0.8; font-weight: 700; }
-        
         .action-btn.stop { background: linear-gradient(90deg, #ff3366, #ff6b6b); box-shadow: 0 4px 15px rgba(255, 51, 102, 0.4); }
         .action-btn:disabled { background: rgba(255,255,255,0.1); color: var(--text-muted); cursor: not-allowed; box-shadow: none; }
 
-        /* --- TIMEOUT OVERLAY --- */
-        .timeout-overlay {
-            position: absolute; inset: 0; background: rgba(4, 11, 22, 0.95); z-index: 50;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity 0.3s;
-        }
+        .timeout-overlay { position: absolute; inset: 0; background: rgba(4, 11, 22, 0.95); z-index: 50; display: flex; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .timeout-overlay.active { opacity: 1; pointer-events: auto; }
         .timeout-title { font-size: 20px; font-weight: 900; color: var(--text-white); letter-spacing: 2px; margin-bottom: 8px; text-align: center; }
         .timeout-sub { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
@@ -208,15 +108,12 @@
 </head>
 <body>
 
-    <!-- HEADER -->
     <header class="top-header">
         <button class="back-btn" onclick="window.location.href='home.html'">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
         </button>
         <div class="header-logo">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21.5 4.5C20.5 3.5 18.5 3.5 17 5L14 8L9 5L6 8L8 11L4 13L10 15L9 18L12 19L14 16L17 17L19 14L22 15L21 11L23 8L21.5 4.5ZM16 10C15.4 10 15 9.6 15 9C15 8.4 15.4 8 16 8C16.6 8 17 8.4 17 9C17 9.6 16.6 10 16 10Z"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M21.5 4.5C20.5 3.5 18.5 3.5 17 5L14 8L9 5L6 8L8 11L4 13L10 15L9 18L12 19L14 16L17 17L19 14L22 15L21 11L23 8L21.5 4.5ZM16 10C15.4 10 15 9.6 15 9C15 8.4 15.4 8 16 8C16.6 8 17 8.4 17 9C17 9.6 16.6 10 16 10Z"/></svg>
             <div class="header-title">Live Trending <span class="live-badge">LIVE</span></div>
         </div>
         
@@ -229,10 +126,8 @@
         </div>
     </header>
 
-    <!-- MAIN CONTENT -->
     <div class="main-content">
         
-        <!-- GRAPH AREA -->
         <div class="graph-area">
             <canvas id="graph-canvas"></canvas>
             
@@ -253,7 +148,6 @@
             </div>
         </div>
 
-        <!-- LIVE TRENDERS TABLE -->
         <div class="trenders-section">
             <div class="trenders-header">
                 <div class="col-header col-user">Trader</div>
@@ -261,14 +155,11 @@
                 <div class="col-header col-mult">Mult</div>
                 <div class="col-header col-win">Profit</div>
             </div>
-            <div class="trenders-list" id="trenders-list">
-                <!-- Real-time rows injected via JS -->
-            </div>
+            <div class="trenders-list" id="trenders-list"></div>
         </div>
 
     </div>
 
-    <!-- BOTTOM CONTROLS -->
     <div class="controls-panel">
         <div class="control-row">
             <div class="amount-box">
@@ -294,12 +185,11 @@
         </button>
     </div>
 
-    <!-- FIREBASE & GAME LOGIC -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        // 🛑 FIXED: Added getDoc and setDoc to the imports
-        import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, collection, query, orderBy, limit, onSnapshot, serverTimestamp, increment, where, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // 🔒 LOCKED TO 13.1.0
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, collection, query, orderBy, limit, onSnapshot, serverTimestamp, increment, where, writeBatch, getDocs, runTransaction, deleteDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
@@ -321,7 +211,6 @@
         let userFullName = 'You';
         let userBalance = 0;
         
-        // CURRENCY STATE
         let userCurrency = 'ZMW';
         let currencySymbol = 'K';
         const CURRENCY_MAP = {
@@ -333,7 +222,7 @@
         };
 
         let currentRoundId = null;
-        let gameStatus = 'waiting'; 
+        let gameStatus = 'waiting'; // waiting | running | crashed
         let currentMultiplier = 1.00;
         let lastTickMultiplier = 1.00;
         let myBetId = null; 
@@ -341,23 +230,21 @@
         let isPlaying = false;
         let hasBetThisRound = false;
         
-        // Graph Engine
         let points = [];
         let animationFrame = null;
         let roundStartTime = 0;
         let crashPoint = 5.00; 
         const timeToStart = 15; 
         
-        // Canvas
         const canvas = document.getElementById('graph-canvas');
         const ctx = canvas.getContext('2d');
         
-        // Real Players
         let activePlayers = [];
         let unsubscribeLiveBets = null;
+        let countdownOverlayInterval = null;
 
         // ==========================================
-        // HIGH-QUALITY SOUND ENGINE (Web Audio API)
+        // SOUND ENGINE
         // ==========================================
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
@@ -368,7 +255,7 @@
                 if (!audioCtx) {
                     audioCtx = new AudioContext();
                     masterGain = audioCtx.createGain();
-                    masterGain.gain.value = 0.5; // Master volume
+                    masterGain.gain.value = 0.5;
                     masterGain.connect(audioCtx.destination);
                 }
                 if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -411,7 +298,7 @@
             if (!audioCtx) return;
             try {
                 const now = audioCtx.currentTime;
-                const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+                const notes = [523.25, 659.25, 783.99];
                 notes.forEach((freq, index) => {
                     const startTime = now + (index * 0.1);
                     const osc = audioCtx.createOscillator();
@@ -439,18 +326,6 @@
                 gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
                 osc.connect(gain); gain.connect(masterGain);
                 osc.start(now); osc.stop(now + 0.6);
-
-                const bufferSize = audioCtx.sampleRate * 0.3;
-                const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-                const noiseData = noiseBuffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) { noiseData[i] = Math.random() * 2 - 1; }
-                const noise = audioCtx.createBufferSource();
-                noise.buffer = noiseBuffer;
-                const noiseGain = audioCtx.createGain();
-                noiseGain.gain.setValueAtTime(0.2, now);
-                noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                noise.connect(noiseGain); noiseGain.connect(masterGain);
-                noise.start(now);
             } catch(e) {}
         }
 
@@ -469,11 +344,9 @@
             } catch(e) {}
         }
 
-        // --- FLAGS ---
-        const countries = [
-            { name: 'USA', code: 'us' }, { name: 'UK', code: 'uk' }, { name: 'Japan', code: 'jp' },
-            { name: 'Brazil', code: 'br' }, { name: 'Nigeria', code: 'ng' }, { name: 'Zambia', code: 'zm' }, { name: 'S. Africa', code: 'za' }
-        ];
+        // ==========================================
+        // FLAGS
+        // ==========================================
         function getFlagSVG(code) {
             switch(code) {
                 case 'us': return `<svg viewBox="0 0 60 40"><rect fill="#B22234" width="60" height="40"/><rect fill="#fff" y="3" width="60" height="3"/><rect fill="#fff" y="9" width="60" height="3"/><rect fill="#fff" y="15" width="60" height="3"/><rect fill="#fff" y="21" width="60" height="3"/><rect fill="#fff" y="27" width="60" height="3"/><rect fill="#fff" y="33" width="60" height="3"/><rect fill="#3C3B6E" width="24" height="22"/></svg>`;
@@ -483,11 +356,13 @@
                 case 'ng': return `<svg viewBox="0 0 60 40"><rect fill="#008751" width="60" height="40"/><rect fill="#fff" x="20" width="20" height="40"/></svg>`;
                 case 'zm': return `<svg viewBox="0 0 60 40"><rect fill="#198a00" width="60" height="40"/><rect fill="#de2010" x="40" y="20" width="15" height="10"/><rect fill="#000" x="40" y="30" width="15" height="10"/><rect fill="#ef7d00" x="40" y="10" width="15" height="10"/></svg>`;
                 case 'za': return `<svg viewBox="0 0 60 40"><rect fill="#002395" width="60" height="20"/><rect fill="#DE3831" y="20" width="60" height="20"/><path d="M0,0 L25,20 L0,40" fill="#007A4D"/><path d="M0,10 L20,20 L0,30" fill="#FFB612"/><path d="M0,15 L15,20 L0,25" fill="#000"/></svg>`;
-                default: return '';
+                default: return `<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="18" fill="#334155"/></svg>`;
             }
         }
 
-        // --- INITIALIZATION ---
+        // ==========================================
+        // INIT
+        // ==========================================
         window.addEventListener('load', () => {
             setTimeout(() => {
                 resizeCanvas();
@@ -500,7 +375,7 @@
                     onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
                         if (snap.exists()) {
                             userBalance = snap.data().balance || 0;
-                            document.getElementById('header-balance').innerText = `${currencySymbol}${userBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                            updateCurrencyUI();
                         }
                     });
 
@@ -529,7 +404,6 @@
             }, 100);
         });
 
-        // --- CURRENCY UI ENGINE ---
         function updateCurrencyUI() {
             document.getElementById('header-balance').innerText = `${currencySymbol}${userBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             document.getElementById('currency-symbol-input').innerText = currencySymbol;
@@ -559,7 +433,9 @@
             }
         }
 
-        // --- UI CONTROLS ---
+        // ==========================================
+        // CONTROLS
+        // ==========================================
         window.adjustBet = (amount) => {
             initAudio();
             playClick();
@@ -585,43 +461,143 @@
             }
         }
 
-        // --- REAL-TIME GAME STATE SYNC ---
+        // ==========================================
+        // ⚡ ATOMIC ROUND CREATION (Transaction Lock)
+        // ==========================================
+        async function createNewRoundAtomic() {
+            const stateRef = doc(db, 'settings', 'game_counter');
+            let nextCrashPoint = 2.0;
+            let shouldCreate = false;
+            
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const stateSnap = await transaction.get(stateRef);
+                    const state = stateSnap.exists() ? stateSnap.data() : {};
+                    const now = Date.now();
+                    const lastCreatedAt = state.lastCreatedAt?.toMillis() || 0;
+                    
+                    // Cooldown - prevent multiple rounds
+                    if (now - lastCreatedAt < 4000) {
+                        return;
+                    }
+                    
+                    // Read crash sequence within transaction
+                    const seqRef = doc(db, 'settings', 'crash_sequence');
+                    const seqSnap = await transaction.get(seqRef);
+                    
+                    let sequence = seqSnap.exists() ? seqSnap.data().rounds : [];
+                    if (!Array.isArray(sequence) || sequence.length < 20) {
+                        sequence = Array(20).fill(2.0);
+                    } else {
+                        sequence = [...sequence];
+                    }
+                    
+                    let currentIndex = state.index || 0;
+                    
+                    // SHUFFLE WHEN ALL 20 ROUNDS ARE DONE
+                    if (currentIndex >= 20) {
+                        // Fisher-Yates Shuffle
+                        for (let i = sequence.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [sequence[i], sequence[j]] = [sequence[j], sequence[i]];
+                        }
+                        currentIndex = 0;
+                        transaction.set(seqRef, { rounds: sequence });
+                    }
+                    
+                    nextCrashPoint = sequence[currentIndex] || 2.0;
+                    
+                    // Atomically update counter + lock timestamp
+                    transaction.set(stateRef, {
+                        index: currentIndex + 1,
+                        lastCreatedAt: serverTimestamp()
+                    }, { merge: true });
+                    
+                    shouldCreate = true;
+                });
+            } catch(e) {
+                console.warn("Round lock transaction failed:", e);
+                return;
+            }
+            
+            if (!shouldCreate) return;
+            
+            // Winner creates the round
+            try {
+                const newRoundRef = await addDoc(collection(db, 'live_trends'), {
+                    status: 'waiting',
+                    startTime: serverTimestamp(),
+                    roundNumber: Date.now(),
+                    crashPoint: nextCrashPoint,
+                    createdAt: serverTimestamp()
+                });
+                
+                // Also update user counter so shuffle happens every 20
+                await updateDoc(stateRef, { index: nextCrashPoint >= 0 ? (await getDoc(stateRef)).data().index : 0 });
+                
+            } catch(e) {
+                console.warn("Failed to create round doc:", e);
+            }
+        }
+
+        // ==========================================
+        // GAME STATE LISTENER
+        // ==========================================
         function listenToGameState() {
             const q = query(collection(db, 'live_trends'), orderBy('createdAt', 'desc'), limit(1));
             
             onSnapshot(q, (snapshot) => {
                 if (snapshot.empty) {
-                    createNewRound();
+                    // No rounds exist - create one (transaction lock ensures only 1 client wins)
+                    createNewRoundAtomic();
                     return;
                 }
 
                 const roundDoc = snapshot.docs[0];
                 const data = roundDoc.data();
+                const startTimeMs = data.startTime.toMillis();
+                const runStartTimeMs = startTimeMs + (timeToStart * 1000);
+                const now = Date.now();
                 
+                // New round detected
                 if (currentRoundId !== roundDoc.id) {
                     currentRoundId = roundDoc.id;
                     crashPoint = data.crashPoint;
                     myBetId = null;
                     isPlaying = false;
                     hasBetThisRound = false;
+                    points = [];
+                    currentMultiplier = 1.00;
+                    lastTickMultiplier = 1.00;
+                    
+                    if (unsubscribeLiveBets) unsubscribeLiveBets();
                     subscribeToLiveBets(currentRoundId);
                 }
-
-                if (data.status === 'waiting' && gameStatus !== 'waiting') {
-                    startCountdown(data.startTime.toMillis());
-                }
-
-                if (data.status === 'running' && gameStatus !== 'running') {
-                    startRound(data.startTime.toMillis() + (timeToStart * 1000));
-                }
-
-                if (data.status === 'crashed' && gameStatus !== 'crashed') {
-                    triggerCrashUI(data.crashPoint);
+                
+                // Handle status from DB
+                if (data.status === 'crashed') {
+                    if (gameStatus !== 'crashed') {
+                        gameStatus = 'crashed';
+                        cancelAnimationFrame(animationFrame);
+                        triggerCrashUI(data.crashPoint);
+                    }
+                } else if (now >= runStartTimeMs) {
+                    // Late joiner: round already running in DB
+                    if (gameStatus === 'waiting' || gameStatus === 'idle' || gameStatus === 'crashed') {
+                        startRound(runStartTimeMs);
+                    }
+                } else if (now >= startTimeMs) {
+                    // In waiting/countdown phase
+                    if (gameStatus === 'idle' || (gameStatus === 'crashed' && currentRoundId === roundDoc.id)) {
+                        startCountdown(startTimeMs);
+                    }
                 }
             });
         }
 
-        // --- REAL-TIME PLAYERS LISTENER ---
+        // ==========================================
+        // LIVE PLAYERS
+        // ==========================================
         function subscribeToLiveBets(roundId) {
             if (unsubscribeLiveBets) unsubscribeLiveBets();
             
@@ -639,15 +615,13 @@
                         cashedOutAt: data.cashOutMultiplier,
                         payout: data.payout,
                         profilePic: data.profilePic || null,
-                        isSelf: data.uid === currentUser.uid,
-                        color: '#10b981'
+                        isSelf: data.uid === currentUser.uid
                     });
                     
                     if (data.uid === currentUser.uid && data.status === 'active') {
                         myBetId = doc.id;
                         isPlaying = true;
                         hasBetThisRound = true;
-                        updateUIState(); 
                     }
                 });
                 
@@ -656,65 +630,12 @@
             });
         }
 
-        // 🛑 THE NEW SHUFFLED SEQUENCE LOGIC 🛑
-        async function createNewRound() {
-            // 1. Fetch the Admin's sequence
-            const seqDoc = await getDoc(doc(db, 'settings', 'crash_sequence'));
-            
-            let crashPoint = 2.00; // Fallback default
-
-            if (seqDoc.exists() && seqDoc.data().rounds && seqDoc.data().rounds.length === 20) {
-                let sequence = seqDoc.data().rounds; // Get the array of 20 numbers
-                
-                // Get the current round number
-                const counterDoc = await getDoc(doc(db, 'settings', 'game_counter'));
-                let currentIndex = counterDoc.exists() ? counterDoc.data().index : 0;
-
-                // SHUFFLE LOGIC: If we reached the end of the 20 rounds, shuffle the deck!
-                if (currentIndex >= 20) {
-                    // Fisher-Yates Shuffle Algorithm
-                    for (let i = sequence.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [sequence[i], sequence[j]] = [sequence[j], sequence[i]];
-                    }
-                    
-                    // Save the newly shuffled sequence back to the database
-                    await setDoc(doc(db, 'settings', 'crash_sequence'), { rounds: sequence });
-                    
-                    // Reset the index back to the start
-                    currentIndex = 0;
-                }
-
-                // Get the crash point for this round
-                crashPoint = sequence[currentIndex];
-
-                // Increment the index for the next round
-                let nextIndex = currentIndex + 1;
-
-                // Save the new index
-                await setDoc(doc(db, 'settings', 'game_counter'), { index: nextIndex });
-            } else {
-                // Fallback if no sequence is set by admin (uses original math)
-                const array = new Uint32Array(1);
-                window.crypto.getRandomValues(array);
-                crashPoint = await calculateCrashPoint(array[0].toString());
-            }
-
-            // 2. Start the new round with the chosen crash point
-            const newRoundRef = await addDoc(collection(db, 'live_trends'), {
-                status: 'waiting',
-                startTime: serverTimestamp(),
-                roundNumber: Date.now(),
-                crashPoint: crashPoint,
-                createdAt: serverTimestamp()
-            });
-        }
-
         function startCountdown(startTimeMs) {
             gameStatus = 'waiting';
             updateUIState();
             
             const updateTimer = () => {
+                if (gameStatus !== 'waiting') return;
                 const timeLeft = Math.max(0, Math.ceil((startTimeMs + (timeToStart * 1000) - Date.now()) / 1000));
                 
                 if (timeLeft <= 0) {
@@ -726,22 +647,22 @@
             requestAnimationFrame(updateTimer);
         }
 
-        function startRound(startTimeMs) {
+        function startRound(roundStartTimeMs) {
             if (gameStatus === 'running') return;
             gameStatus = 'running';
             updateUIState();
             
-            playStart(); 
+            playStart();
             
-            roundStartTime = startTimeMs;
-
+            roundStartTime = roundStartTimeMs;
+            
             const animate = () => {
                 if (gameStatus !== 'running') return;
 
                 const elapsed = (Date.now() - roundStartTime) / 1000;
-                currentMultiplier = 1.00 + Math.pow(elapsed, 1.35) * 0.15;
+                currentMultiplier = 1.00 + Math.pow(Math.max(0, elapsed), 1.35) * 0.15;
 
-                const xPos = elapsed * 40; 
+                const xPos = Math.max(0, elapsed) * 40; 
                 const yPos = canvas.height - ((currentMultiplier - 1) * 60); 
 
                 if (points.length === 0 || points[points.length-1].x < xPos) {
@@ -775,29 +696,61 @@
             animate();
         }
 
+        // ==========================================
+        // ⚡ ATOMIC CRASH (Transaction Lock)
+        // ==========================================
         async function triggerCrash(crashMultiplier) {
             if (gameStatus === 'crashed') return;
-            
             gameStatus = 'crashed';
             cancelAnimationFrame(animationFrame);
-
-            if (unsubscribeLiveBets) unsubscribeLiveBets();
-            const q = query(collection(db, 'live_bets'), where('roundId', '==', currentRoundId), where('status', '==', 'active'));
-            const snapshot = await getDocs(q);
-            const batch = writeBatch(db);
-            snapshot.forEach(doc => {
-                batch.update(doc.ref, { status: 'lost' });
-            });
-            await batch.commit();
-
+            
+            // Local UI crash
             triggerCrashUI(crashMultiplier);
-
-            setTimeout(() => { createNewRound(); }, 4000);
+            
+            let wonTheRace = false;
+            
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const roundRef = doc(db, 'live_trends', currentRoundId);
+                    const roundSnap = await transaction.get(roundRef);
+                    
+                    if (!roundSnap.exists()) return;
+                    if (roundSnap.data().status === 'crashed') return; // Already crashed by another client
+                    
+                    transaction.update(roundRef, {
+                        status: 'crashed',
+                        crashedAt: serverTimestamp(),
+                        finalMultiplier: crashMultiplier
+                    });
+                    
+                    wonTheRace = true;
+                });
+            } catch(e) {
+                console.warn("Crash transaction failed:", e);
+            }
+            
+            // Only the winner handles the bet cleanup
+            if (wonTheRace) {
+                try {
+                    const q = query(collection(db, 'live_bets'), where('roundId', '==', currentRoundId), where('status', '==', 'active'));
+                    const snapshot = await getDocs(q);
+                    const batch = writeBatch(db);
+                    snapshot.forEach(doc => {
+                        batch.update(doc.ref, { status: 'lost' });
+                    });
+                    await batch.commit();
+                } catch(e) { console.warn("Bet cleanup failed:", e); }
+            }
         }
 
         function triggerCrashUI(crashMultiplier) {
+            cancelAnimationFrame(animationFrame);
+            gameStatus = 'crashed';
+            
+            document.getElementById('center-multi').innerText = crashMultiplier.toFixed(2) + 'x';
             document.getElementById('center-multi').style.color = '#ff3366';
             document.getElementById('center-multi').style.textShadow = '0 0 30px rgba(255, 51, 102, 0.6)';
+            document.getElementById('status-text').innerText = 'TREND CRASHED';
             
             updateUIState();
             drawGraph();
@@ -816,13 +769,16 @@
             let timeLeft = 10;
             countdownEl.innerText = `${timeLeft}s`;
             
-            const interval = setInterval(() => {
+            if (countdownOverlayInterval) clearInterval(countdownOverlayInterval);
+            
+            countdownOverlayInterval = setInterval(() => {
                 timeLeft--;
                 countdownEl.innerText = `${timeLeft}s`;
                 if (timeLeft <= 0) {
-                    clearInterval(interval);
+                    clearInterval(countdownOverlayInterval);
                     overlay.classList.remove('active');
-                    createNewRound();
+                    // ALL clients try to create the next round - transaction lock ensures only one wins
+                    createNewRoundAtomic();
                 }
             }, 1000);
         }
@@ -832,7 +788,9 @@
             const statusText = document.getElementById('status-text');
 
             if (gameStatus === 'waiting') {
-                btn.innerText = myBetId ? 'AWAITING...' : `PLACE TREND (${currencySymbol}${betAmount})`;
+                btn.innerHTML = myBetId 
+                    ? `<span class="btn-main-text">AWAITING...</span>` 
+                    : `<span class="btn-main-text">PLACE TREND</span><span class="btn-sub-text">${currencySymbol}${betAmount}</span>`;
                 btn.className = 'action-btn place-bet';
                 btn.disabled = !!myBetId;
                 statusText.innerText = 'Awaiting Market';
@@ -843,37 +801,22 @@
                     btn.className = 'action-btn stop';
                     btn.disabled = false;
                 } else {
-                    btn.innerText = 'MONITORING...';
+                    btn.innerHTML = `<span class="btn-main-text">MONITORING...</span>`;
                     btn.className = 'action-btn place-bet';
                     btn.disabled = true;
                 }
             } 
             else if (gameStatus === 'crashed') {
                 statusText.innerText = 'TREND CRASHED';
-                btn.innerText = 'WAITING...';
+                btn.innerHTML = `<span class="btn-main-text">WAITING...</span>`;
                 btn.className = 'action-btn place-bet';
                 btn.disabled = true;
             }
         }
 
-        // --- THE VARIABLE ODDS MATH (Fallback) ---
-        async function calculateCrashPoint(seed) {
-            const msgBuffer = new TextEncoder().encode(seed);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-            
-            const hashInt = parseInt(hashHex.substring(0, 8), 16);
-            const maxInt = 0xffffffff;
-            const randomVal = hashInt / maxInt;
-
-            if (randomVal < 0.40) return 1.01 + (randomVal * 1.25); 
-            else if (randomVal < 0.70) return 1.50 + ((randomVal - 0.40) * 3.33); 
-            else if (randomVal < 0.90) return 2.50 + ((randomVal - 0.70) * 12.5); 
-            else return 5.00 + ((randomVal - 0.90) * 450.0); 
-        }
-
-        // --- USER ACTIONS ---
+        // ==========================================
+        // USER ACTIONS
+        // ==========================================
         window.handleAction = async () => {
             initAudio(); 
             if (gameStatus === 'waiting' && !hasBetThisRound) {
@@ -963,9 +906,14 @@
             } catch(e) { console.error(e); }
         }
 
-        // --- DRAWING & RENDERING ---
+        // ==========================================
+        // RENDERING
+        // ==========================================
         function getMultiplierColor(m) {
-            if (m >= 6.00) return '#b829ff'; if (m >= 3.00) return '#ffcc00'; if (m >= 2.00) return '#00ff88'; return '#00e5ff'; 
+            if (m >= 6.00) return '#b829ff'; 
+            if (m >= 3.00) return '#ffcc00'; 
+            if (m >= 2.00) return '#00ff88'; 
+            return '#00e5ff'; 
         }
 
         function drawGraph() {
@@ -975,25 +923,49 @@
                 if (w <= 0 || h <= 0) return;
                 ctx.clearRect(0, 0, w, h);
                 
-                const padLeft = 40; const padRight = 20; const padTop = 30; const padBottom = 30;
-                const graphWidth = w - padLeft - padRight; const graphHeight = h - padTop - padBottom;
-                const maxY = Math.max(2.0, currentMultiplier + 0.5); const minY = 1.0; const maxX = 30; 
+                const padLeft = 40, padRight = 20, padTop = 30, padBottom = 30;
+                const graphWidth = w - padLeft - padRight;
+                const graphHeight = h - padTop - padBottom;
+                const maxY = Math.max(2.0, currentMultiplier + 0.5);
+                const minY = 1.0;
+                const maxX = 30; 
 
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)'; ctx.lineWidth = 1; ctx.font = '10px Inter'; ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; ctx.textAlign = 'right';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)'; 
+                ctx.lineWidth = 1; 
+                ctx.font = '10px Inter'; 
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; 
+                ctx.textAlign = 'right';
+                
                 for (let i = 0; i <= 4; i++) {
                     const yVal = minY + ((maxY - minY) / 4) * i;
                     const yPos = h - padBottom - ((yVal - minY) / (maxY - minY)) * graphHeight;
-                    ctx.beginPath(); ctx.moveTo(padLeft, yPos); ctx.lineTo(w - padRight, yPos); ctx.stroke(); ctx.fillText(yVal.toFixed(1) + 'x', padLeft - 5, yPos + 4);
+                    ctx.beginPath(); ctx.moveTo(padLeft, yPos); ctx.lineTo(w - padRight, yPos); ctx.stroke();
+                    ctx.fillText(yVal.toFixed(1) + 'x', padLeft - 5, yPos + 4);
                 }
 
                 if (points.length < 2) return;
-                let mapped = points.map(p => ({ x: padLeft + (p.x / maxX) * graphWidth, y: h - padBottom - ((p.y - minY) / (maxY - minY)) * graphHeight }));
+                
+                let mapped = points.map(p => ({ 
+                    x: padLeft + (p.x / maxX) * graphWidth, 
+                    y: h - padBottom - ((p.y - minY) / (maxY - minY)) * graphHeight 
+                }));
 
-                ctx.beginPath(); ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = gameStatus === 'crashed' ? '#ff3366' : getMultiplierColor(currentMultiplier); ctx.lineWidth = 4; ctx.shadowBlur = 15; ctx.shadowColor = ctx.strokeStyle;
-                ctx.moveTo(mapped[0].x, mapped[0].y); for (let i = 1; i < mapped.length; i++) ctx.lineTo(mapped[i].x, mapped[i].y); ctx.stroke();
+                ctx.beginPath(); 
+                ctx.lineJoin = 'round'; 
+                ctx.lineCap = 'round'; 
+                ctx.strokeStyle = gameStatus === 'crashed' ? '#ff3366' : getMultiplierColor(currentMultiplier); 
+                ctx.lineWidth = 4; 
+                ctx.shadowBlur = 15; 
+                ctx.shadowColor = ctx.strokeStyle;
+                ctx.moveTo(mapped[0].x, mapped[0].y); 
+                for (let i = 1; i < mapped.length; i++) ctx.lineTo(mapped[i].x, mapped[i].y); 
+                ctx.stroke();
 
                 if (gameStatus === 'running') {
-                    ctx.beginPath(); ctx.arc(mapped[mapped.length-1].x, mapped[mapped.length-1].y, 5, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
+                    ctx.beginPath(); 
+                    ctx.arc(mapped[mapped.length-1].x, mapped[mapped.length-1].y, 5, 0, Math.PI*2); 
+                    ctx.fillStyle = '#fff'; 
+                    ctx.fill();
                 }
             } catch(e) {}
         }
@@ -1002,7 +974,8 @@
             const list = document.getElementById('trenders-list');
             list.innerHTML = '';
             activePlayers.forEach(p => {
-                const row = document.createElement('div'); row.className = `player-row ${p.isSelf ? 'is-you' : ''}`;
+                const row = document.createElement('div'); 
+                row.className = `player-row ${p.isSelf ? 'is-you' : ''}`;
                 
                 let multHtml = '';
                 let winHtml = '';
@@ -1018,11 +991,15 @@
                     winHtml = `-${currencySymbol}${p.bet}`;
                 }
                 
-                let avatar = p.profilePic ? `<img src="${p.profilePic}" class="avatar-img">` : `<svg class="avatar-svg" viewBox="0 0 40 40"><rect width="40" height="40" fill="${p.color}" opacity="0.15"/><circle cx="20" cy="15" r="7" fill="${p.color}"/><path d="M 8 40 Q 8 26 20 26 Q 32 26 32 40" fill="${p.color}"/></svg>`;
+                let avatar = p.profilePic 
+                    ? `<img src="${p.profilePic}" class="avatar-img">` 
+                    : `<svg class="avatar-svg" viewBox="0 0 40 40"><rect width="40" height="40" fill="#10b981" opacity="0.15"/><circle cx="20" cy="15" r="7" fill="#10b981"/><path d="M 8 40 Q 8 26 20 26 Q 32 26 32 40" fill="#10b981"/></svg>`;
 
                 row.innerHTML = `
                     <div class="user-info"><div class="avatar-wrap">${avatar}</div><div class="username">${p.name}</div></div>
-                    <div class="row-bet">${currencySymbol}${p.bet}</div><div class="row-mult">${multHtml}</div><div class="row-win">${winHtml}</div>
+                    <div class="row-bet">${currencySymbol}${p.bet}</div>
+                    <div class="row-mult">${multHtml}</div>
+                    <div class="row-win">${winHtml}</div>
                 `;
                 list.appendChild(row);
             });

@@ -28,7 +28,6 @@
             background-image: radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.05) 0%, transparent 50%);
         }
 
-        /* HEADER */
         .top-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 15px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border-light);
@@ -39,7 +38,6 @@
         .header-title { font-size: 16px; font-weight: 900; color: var(--white); letter-spacing: 1.5px; text-transform: uppercase; }
         .wallet-balance { font-size: 14px; font-weight: 800; color: var(--gold); background: var(--bg-elevated); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(251,191,36,0.3); }
 
-        /* TABS */
         .tabs-container {
             display: flex; background: var(--bg-card); padding: 10px 20px; gap: 10px;
             border-bottom: 1px solid var(--border-light); position: sticky; top: 60px; z-index: 9;
@@ -51,12 +49,10 @@
         }
         .tab-btn.active { background: rgba(0, 217, 255, 0.1); color: var(--cyan); border-color: var(--cyan-glow); }
 
-        /* CONTENT AREA */
         .content-area { flex: 1; padding: 15px; overflow-y: auto; padding-bottom: 50px; }
         
         .orders-list { display: flex; flex-direction: column; gap: 15px; }
 
-        /* ORDER CARD */
         .order-card {
             background: var(--bg-card); border: 1px solid var(--border-light);
             border-radius: 16px; padding: 15px; position: relative; overflow: hidden;
@@ -75,13 +71,11 @@
         .detail-value.gold { color: var(--gold); }
         .detail-value.cyan { color: var(--cyan); }
 
-        /* PROGRESS BAR */
         .progress-container { margin-bottom: 15px; }
         .progress-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; }
         .progress-bar-bg { height: 6px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden; }
         .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--emerald)); border-radius: 3px; transition: width 1s linear; }
 
-        /* CLAIM BUTTON */
         .btn-claim {
             width: 100%; padding: 14px; border-radius: 10px; border: none;
             background: var(--cyan); color: #000; font-size: 14px; font-weight: 900;
@@ -95,14 +89,12 @@
         }
         .btn-claim.cooldown { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border-light); box-shadow: none; cursor: not-allowed; }
 
-        /* EMPTY STATE */
         .empty-state {
             text-align: center; padding: 50px 20px; color: var(--text-muted); font-size: 14px;
             display: flex; flex-direction: column; align-items: center; gap: 10px;
         }
         .empty-state svg { width: 60px; height: 60px; fill: var(--bg-elevated); }
 
-        /* Loader */
         .loader-wrap { display: flex; justify-content: center; padding: 40px; }
         .spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--cyan); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -131,9 +123,10 @@
     </main>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, query, where, onSnapshot, writeBatch, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // LOCKED TO 13.1.0
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, query, where, onSnapshot, writeBatch, serverTimestamp, increment, addDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
@@ -156,6 +149,9 @@
         let currentTab = 'active';
         let timerInterval = null;
 
+        // 🐕 WATCHDOG STATE
+        let isClaiming = false;
+
         const CURRENCY_MAP = {
             'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 
             'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'TZS': 'TSh', 
@@ -164,9 +160,20 @@
             'PKR': '₨', 'BDT': '৳'
         };
 
-        // Helper to format money
         function formatMoney(amount) {
             return `${currencySymbol}${amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+
+        async function logSecurityEvent(event, details = {}) {
+            try {
+                await addDoc(collection(db, 'security_logs'), {
+                    event: event,
+                    uid: currentUser?.uid || 'unknown',
+                    page: 'orders.html',
+                    timestamp: serverTimestamp(),
+                    ...details
+                });
+            } catch (e) { console.warn('Guardian log failed', e); }
         }
 
         // 1. Auth & Real-time Listeners
@@ -174,16 +181,14 @@
             if (!user) { window.location.replace('login.html'); return; }
             currentUser = user;
 
-            // Fetch Currency
             onSnapshot(doc(db, 'users', user.uid), (snap) => {
                 if (snap.exists()) {
                     userCurrency = snap.data().currency || 'ZMW';
                     currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
-                    renderOrders(); // Re-render to update symbols
+                    renderOrders();
                 }
             });
 
-            // Fetch Wallet
             onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
                 if (snap.exists()) {
                     const bal = snap.data().balance || 0;
@@ -191,15 +196,11 @@
                 }
             });
 
-            // Fetch Investments
             const q = query(collection(db, 'user_investments'), where('uid', '==', user.uid));
             onSnapshot(q, (snap) => {
                 allInvestments = [];
                 snap.forEach(d => allInvestments.push({ id: d.id, ...d.data() }));
-                
-                // Sort: Active first, then by start date
                 allInvestments.sort((a, b) => b.startDate.toMillis() - a.startDate.toMillis());
-                
                 renderOrders();
             });
         });
@@ -217,10 +218,8 @@
             const list = document.getElementById('orders-list');
             const now = Date.now();
 
-            // Separate Active and Old
             const activeOrders = allInvestments.filter(inv => inv.status === 'active' && inv.endDate.toMillis() > now);
             const oldOrders = allInvestments.filter(inv => inv.status === 'completed' || inv.endDate.toMillis() <= now);
-
             const displayList = currentTab === 'active' ? activeOrders : oldOrders;
 
             if (displayList.length === 0) {
@@ -235,8 +234,6 @@
             }
 
             list.innerHTML = '';
-            
-            // Clear old timer
             if (timerInterval) clearInterval(timerInterval);
 
             displayList.forEach(inv => {
@@ -250,15 +247,12 @@
 
                 if (inv.status === 'active') {
                     // Claim Logic (24 hours cooldown)
-                    // If lastClaimedAt is missing, they can claim immediately (first day)
                     const lastClaimMs = inv.lastClaimedAt ? inv.lastClaimedAt.toMillis() : inv.startDate.toMillis();
-                    const nextClaimMs = lastClaimMs + (24 * 60 * 60 * 1000); // 24 hours
+                    const nextClaimMs = lastClaimMs + (24 * 60 * 60 * 1000); 
                     
                     if (now >= nextClaimMs) {
-                        // Ready to claim
-                        actionHtml = `<button class="btn-claim" onclick="claimDaily('${inv.id}', ${inv.dailyIncome})">CLAIM ${formatMoney(inv.dailyIncome)}</button>`;
+                        actionHtml = `<button class="btn-claim" id="claim-btn-${inv.id}" onclick="claimDaily('${inv.id}')">CLAIM ${formatMoney(inv.dailyIncome)}</button>`;
                     } else {
-                        // On cooldown
                         const diff = nextClaimMs - now;
                         const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
                         const m = Math.floor((diff / 1000 / 60) % 60);
@@ -315,13 +309,11 @@
                 list.appendChild(card);
             });
 
-            // Start Timers for cooldown buttons
             startCooldownTimers(displayList);
         }
 
         function startCooldownTimers(displayList) {
             if (timerInterval) clearInterval(timerInterval);
-            const now = Date.now();
 
             timerInterval = setInterval(() => {
                 const currentTime = Date.now();
@@ -335,7 +327,6 @@
                     if (el) {
                         const diff = nextClaimMs - currentTime;
                         if (diff <= 0) {
-                            // Time is up! Re-render the whole thing to show Claim button
                             renderOrders(); 
                         } else {
                             const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
@@ -348,9 +339,9 @@
             }, 1000);
         }
 
-        // 4. Claim Action
-        window.claimDaily = async (invId, dailyIncome) => {
-            if (!currentUser) return;
+        // 4. Claim Action (With Watchdogs)
+        window.claimDaily = async (invId) => {
+            if (!currentUser || isClaiming) return;
 
             const inv = allInvestments.find(i => i.id === invId);
             if (!inv) return;
@@ -358,43 +349,60 @@
             const lastClaimMs = inv.lastClaimedAt ? inv.lastClaimedAt.toMillis() : inv.startDate.toMillis();
             const nextClaimMs = lastClaimMs + (24 * 60 * 60 * 1000);
             
+            // 🐕 WATCHDOG: Early Claim Detection
             if (Date.now() < nextClaimMs) {
+                logSecurityEvent('early_daily_claim_attempt', { 
+                    invId: invId, 
+                    timeRemainingMs: nextClaimMs - Date.now() 
+                });
                 alert("You must wait 24 hours between claims.");
                 return;
+            }
+
+            // 🐕 WATCHDOG: Spam Click Guard
+            isClaiming = true;
+            const claimBtn = document.getElementById(`claim-btn-${invId}`);
+            if (claimBtn) {
+                claimBtn.disabled = true;
+                claimBtn.innerText = "PROCESSING...";
             }
 
             try {
                 const batch = writeBatch(db);
 
-                // 1. Update Investment lastClaimedAt
                 const invRef = doc(db, 'user_investments', invId);
                 batch.update(invRef, { lastClaimedAt: serverTimestamp() });
 
-                // 2. Add Daily Income to Wallet
                 const walletRef = doc(db, 'wallets', currentUser.uid);
                 const txRef = doc(collection(db, 'transactions'));
                 
                 batch.update(walletRef, { 
-                    balance: increment(dailyIncome),
+                    balance: increment(inv.dailyIncome),
                     lastTxId: txRef.id 
                 });
 
-                // 3. Create Ledger Receipt
                 batch.set(txRef, {
                     uid: currentUser.uid, 
                     type: 'daily_claim', 
-                    amount: dailyIncome, 
+                    amount: inv.dailyIncome, 
                     status: 'completed', 
                     createdAt: serverTimestamp()
                 });
 
                 await batch.commit();
 
-                alert(`Successfully claimed ${formatMoney(dailyIncome)}!`);
+                alert(`Successfully claimed ${formatMoney(inv.dailyIncome)}!`);
 
             } catch (e) {
                 console.error(e);
+                logSecurityEvent('daily_claim_failed', { invId: invId, reason: e.message });
                 alert("Claim failed. Please try again.");
+            } finally {
+                isClaiming = false;
+                if (claimBtn) {
+                    claimBtn.disabled = false;
+                    claimBtn.innerText = `CLAIM ${formatMoney(inv.dailyIncome)}`;
+                }
             }
         };
     </script>

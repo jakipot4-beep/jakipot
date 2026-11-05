@@ -7,14 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* PURE MONOCHROME THEME */
             --bg-deep: #09090b;
             --bg-surface: #18181b;
             --bg-elevated: #27272a;
-            
             --text-primary: #ffffff; 
             --text-secondary: #a1a1aa; 
-            
             --border-light: rgba(255, 255, 255, 0.08);
             --danger: #ef4444;
         }
@@ -26,9 +23,6 @@
             height: 100vh; display: flex; flex-direction: column; overflow: hidden;
         }
 
-        /* =========================================
-           HEADER
-           ========================================= */
         .top-header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 15px 20px; background: var(--bg-surface); border-bottom: 1px solid var(--border-light);
@@ -40,7 +34,6 @@
         .icon-btn { background: transparent; border: none; cursor: pointer; display: grid; place-items: center; padding: 5px; }
         .icon-btn svg { width: 22px; height: 22px; fill: var(--text-primary); }
         
-        /* Dropdown Menu */
         .menu-dropdown {
             position: absolute; top: 60px; right: 20px; background: var(--bg-elevated);
             border: 1px solid var(--border-light); border-radius: 12px; padding: 8px;
@@ -51,9 +44,6 @@
         .menu-item { padding: 10px 15px; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-primary); text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 10px; }
         .menu-item:hover { background: rgba(255,255,255,0.05); }
 
-        /* =========================================
-           SEARCH BAR
-           ========================================= */
         .search-container { padding: 15px 20px; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); }
         .search-box {
             display: flex; align-items: center; gap: 10px; background: var(--bg-deep);
@@ -66,9 +56,6 @@
         }
         .search-box input::placeholder { color: var(--text-secondary); }
 
-        /* =========================================
-           CHAT LIST
-           ========================================= */
         .chat-list { flex: 1; overflow-y: auto; padding: 10px 0; }
         
         .chat-row {
@@ -114,11 +101,21 @@
         .admin-row:hover { background: rgba(255, 255, 255, 0.06); }
 
         .empty-search { padding: 20px; color: var(--text-secondary); font-size: 13px; text-align: center; display: none; }
+
+        /* NEW: Loader & Watchdog Styles */
+        .loading-spinner {
+            display: flex; justify-content: center; align-items: center; padding: 40px;
+        }
+        .spinner {
+            width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #ffffff; border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .chat-row.blocked { pointer-events: none; opacity: 0.5; }
     </style>
 </head>
 <body>
 
-    <!-- HEADER -->
     <header class="top-header">
         <div class="header-title">JAKIPOT Chat</div>
         <div class="header-actions">
@@ -131,7 +128,6 @@
         </div>
     </header>
 
-    <!-- DROPDOWN MENU -->
     <div class="menu-dropdown" id="header-menu">
         <a href="chat-settings.html" class="menu-item">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
@@ -139,7 +135,6 @@
         </a>
     </div>
 
-    <!-- SEARCH -->
     <div class="search-container">
         <div class="search-box">
             <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
@@ -147,10 +142,8 @@
         </div>
     </div>
 
-    <!-- CHAT LIST -->
     <main class="chat-list" id="chat-list">
         
-        <!-- ADMIN SECTION -->
         <div id="admin-section"></div>
 
         <div class="group-header" id="global-header">Global Community</div>
@@ -164,7 +157,7 @@
             <div class="chat-info">
                 <div class="chat-name-row">
                     <span class="chat-name">JAKIPOT International</span>
-                    <span class="chat-time">Just now</span>
+                    <span class="chat-time">Official</span>
                 </div>
                 <div class="chat-msg-row">
                     <span class="chat-preview">Welcome to the official community group!</span>
@@ -175,15 +168,16 @@
 
         <div class="group-header" id="recent-header">Recent Chats</div>
         <div id="private-chats-container">
-            <p style="padding: 20px; color: var(--text-secondary); font-size: 13px;">Loading users...</p>
+            <div class="loading-spinner"><div class="spinner"></div></div>
         </div>
         <div class="empty-search" id="empty-search">No users found.</div>
     </main>
 
     <script type="module">
+        // LOCKED TO 13.1.0
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
-        import { getFirestore, collection, doc, query, where, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, query, where, limit, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
@@ -200,10 +194,12 @@
         const db = getFirestore(app);
 
         let currentUser = null;
-
-        // Global arrays to store fetched data for searching
         let allUsers = [];
         let adminUser = null;
+        
+        // 🐕 WATCHDOG STATE
+        let lastClickTime = 0;
+        let rapidClickCount = 0;
 
         onAuthStateChanged(auth, (user) => {
             if (!user) { window.location.replace('login.html'); return; }
@@ -225,6 +221,43 @@
             }
         });
 
+        // 🐕 WATCHDOG: Log Security Events
+        async function logSecurityEvent(event, details = {}) {
+            try {
+                await addDoc(collection(db, 'security_logs'), {
+                    event: event,
+                    uid: currentUser?.uid || 'unknown',
+                    page: 'chat-rooms.html',
+                    timestamp: serverTimestamp(),
+                    ...details
+                });
+            } catch (e) { console.warn('Guardian log failed', e); }
+        }
+
+        // 🐕 WATCHDOG: Spam Click Detection
+        window.handleChatClick = (event) => {
+            const now = Date.now();
+            
+            if (now - lastClickTime < 300) {
+                rapidClickCount++;
+                if (rapidClickCount >= 5) {
+                    event.preventDefault();
+                    document.querySelectorAll('.chat-row').forEach(r => r.classList.add('blocked'));
+                    logSecurityEvent('chat_room_spam_click', { clicks: rapidClickCount });
+                    alert("Please slow down. Spam detected.");
+                    setTimeout(() => {
+                        document.querySelectorAll('.chat-row').forEach(r => r.classList.remove('blocked'));
+                        rapidClickCount = 0;
+                    }, 3000);
+                    return false;
+                }
+            } else {
+                rapidClickCount = 0;
+            }
+            lastClickTime = now;
+            return true;
+        };
+
         // 1. FIND ADMIN
         function findAdmin() {
             const q = query(collection(db, 'users'), where('role', '==', 'admin'), limit(1));
@@ -232,7 +265,7 @@
             onSnapshot(q, (snapshot) => {
                 const adminSection = document.getElementById('admin-section');
                 adminSection.innerHTML = '';
-                adminUser = null; // Reset
+                adminUser = null;
 
                 if (snapshot.empty) return;
 
@@ -250,9 +283,9 @@
                     <div class="group-header" id="support-header">Official Support</div>
                     <a href="chat.html?roomId=${roomId}&name=${encodeURIComponent(admin.fullName || 'Admin')}&avatar=${admin.profilePicUrl || ''}" 
                        class="chat-row admin-row" 
+                       onclick="return handleChatClick(event);"
                        data-name="${(admin.fullName || 'admin support').toLowerCase()}">
                         <div class="avatar-wrapper">
-                            <!-- FIXED: Removed hardcoded white background -->
                             <div class="avatar">${avatarHtml}</div>
                             <div class="online-dot"></div>
                         </div>
@@ -270,7 +303,7 @@
                         </div>
                     </a>
                 `;
-                filterChats(); // Apply current search filter to new admin row
+                filterChats();
             });
         }
 
@@ -280,14 +313,13 @@
             const q = query(collection(db, 'users'), limit(100));
 
             onSnapshot(q, (snapshot) => {
-                allUsers = []; // Reset array
+                allUsers = [];
                 container.innerHTML = '';
                 
                 snapshot.forEach(docSnap => {
                     if (docSnap.id === currentUser.uid) return;
                     const user = docSnap.data();
                     if (!user.fullName || user.role === 'admin') return;
-
                     allUsers.push({ id: docSnap.id, ...user });
                 });
 
@@ -295,7 +327,7 @@
             });
         }
 
-        // 3. RENDER USERS (Called when data loads or search happens)
+        // 3. RENDER USERS
         function renderUsers() {
             const container = document.getElementById('private-chats-container');
             container.innerHTML = '';
@@ -308,6 +340,7 @@
                 container.innerHTML += `
                     <a href="chat.html?roomId=${roomId}&name=${encodeURIComponent(user.fullName)}&avatar=${user.profilePicUrl || ''}" 
                        class="chat-row user-chat-row" 
+                       onclick="return handleChatClick(event);"
                        data-name="${user.fullName.toLowerCase()}">
                         <div class="avatar-wrapper">
                             <div class="avatar">${avatarHtml}</div>
@@ -315,10 +348,10 @@
                         <div class="chat-info">
                             <div class="chat-name-row">
                                 <span class="chat-name">${user.fullName}</span>
-                                <span class="chat-time">${Math.floor(Math.random() * 12) + 1}:00 PM</span>
+                                <span class="chat-time">Tap to chat</span>
                             </div>
                             <div class="chat-msg-row">
-                                <span class="chat-preview">Tap to open conversation</span>
+                                <span class="chat-preview">Open a secure conversation</span>
                             </div>
                         </div>
                     </a>
@@ -329,14 +362,13 @@
                 container.innerHTML = '<p style="padding: 20px; color: var(--text-secondary); font-size: 13px;">No other users found yet.</p>';
             }
 
-            filterChats(); // Apply current search filter to new user rows
+            filterChats();
         }
 
         // 4. FUNCTIONAL SEARCH
         function filterChats() {
             const searchText = document.getElementById('search-input').value.toLowerCase();
             
-            // Filter Global Group
             const globalRow = document.getElementById('global-chat-row');
             const globalHeader = document.getElementById('global-header');
             if (globalRow.dataset.name.includes(searchText)) {
@@ -347,7 +379,6 @@
                 globalHeader.style.display = 'none';
             }
 
-            // Filter Admin Row
             const adminRow = document.querySelector('.admin-row');
             const supportHeader = document.getElementById('support-header');
             if (adminRow) {
@@ -360,7 +391,6 @@
                 }
             }
 
-            // Filter Users
             let visibleUsers = 0;
             document.querySelectorAll('.user-chat-row').forEach(row => {
                 if (row.dataset.name.includes(searchText)) {
@@ -371,7 +401,6 @@
                 }
             });
 
-            // Handle Empty State for Users
             const recentHeader = document.getElementById('recent-header');
             const emptyState = document.getElementById('empty-search');
             

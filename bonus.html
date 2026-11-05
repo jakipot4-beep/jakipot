@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JAKIPOT - Bonuses & Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #060b19;
+            --bg-card: #0f172a;
+            --bg-elevated: #1e293b;
+            --cyan: #00D9FF;
+            --emerald: #10b981;
+            --gold: #fbbf24;
+            --danger: #ef4444;
+            --text-white: #ffffff;
+            --text-muted: #8b9bb4;
+            --border-light: rgba(255, 255, 255, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg-deep); color: var(--text-white); 
+            min-height: 100vh; display: flex; flex-direction: column;
+            background-image: radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.05) 0%, transparent 50%);
+        }
+
+        /* HEADER */
+        .top-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 15px 20px; background: var(--bg-card); 
+            border-bottom: 1px solid var(--border-light);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .back-btn {
+            background: transparent; border: none; cursor: pointer;
+            width: 36px; height: 36px; border-radius: 50%;
+            display: grid; place-items: center; transition: background 0.2s;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.05); }
+        .back-btn svg { width: 24px; height: 24px; fill: var(--text-white); }
+        .header-title { font-size: 18px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; }
+
+        /* HERO */
+        .hero {
+            padding: 30px 20px 20px 20px;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(0, 217, 255, 0.15);
+            border: 1px solid rgba(0, 217, 255, 0.4);
+            color: var(--cyan);
+            font-size: 11px; font-weight: 900;
+            padding: 6px 14px; border-radius: 20px;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-bottom: 15px;
+        }
+        .hero h1 {
+            font-size: 32px; font-weight: 900;
+            line-height: 1.1; margin-bottom: 10px;
+            background: linear-gradient(135deg, #ffffff 0%, var(--cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            font-size: 14px; color: var(--text-muted);
+            font-weight: 500; line-height: 1.5;
+            max-width: 340px; margin: 0 auto;
+        }
+
+        /* CARDS CONTAINER */
+        .cards-container {
+            flex: 1;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-bottom: 50px;
+        }
+
+        /* CARD BASE */
+        .game-card {
+            position: relative;
+            border-radius: 20px;
+            padding: 22px 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.3s;
+            text-decoration: none;
+            color: var(--text-white);
+            border: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-height: 120px;
+        }
+        .game-card:active { transform: scale(0.98); }
+        
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: -30px; right: -30px;
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            opacity: 0.15;
+            transition: opacity 0.3s, transform 0.5s;
+        }
+        .game-card:hover::before { opacity: 0.25; transform: scale(1.1); }
+
+        .game-icon {
+            width: 60px; height: 60px;
+            border-radius: 16px;
+            display: grid; place-items: center;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        .game-icon svg { width: 30px; height: 30px; }
+
+        .game-content {
+            flex: 1;
+            position: relative;
+            z-index: 2;
+            min-width: 0;
+        }
+        .game-title {
+            font-size: 17px;
+            font-weight: 900;
+            letter-spacing: 0.3px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .game-desc {
+            font-size: 12px;
+            line-height: 1.4;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        .game-badge {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: 900;
+            padding: 3px 8px;
+            border-radius: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .game-arrow {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: grid; place-items: center;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s;
+        }
+        .game-card:hover .game-arrow { transform: translateX(4px); }
+        .game-arrow svg { width: 16px; height: 16px; fill: currentColor; }
+
+        /* === LIVE TREND (GREEN) === */
+        .card-live-trend {
+            background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.25);
+        }
+        .card-live-trend::before {
+            background: radial-gradient(circle, #d1fae5 0%, transparent 70%);
+        }
+        .card-live-trend .game-icon {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .card-live-trend .game-icon svg { fill: #fff; }
+        .card-live-trend .game-badge {
+            background: rgba(255, 255, 255, 0.25);
+            color: #fff;
+        }
+        .card-live-trend .game-title { color: #fff; }
+        .card-live-trend .game-desc { color: #d1fae5; }
+        .card-live-trend:hover { box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4); }
+
+        /* === MACHINE (BLACK) === */
+        .card-machine {
+            background: linear-gradient(135deg, #000000 0%, #111827 50%, #1f2937 100%);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+        .card-machine::before {
+            background: radial-gradient(circle, #4b5563 0%, transparent 70%);
+        }
+        .card-machine .game-icon {
+            background: linear-gradient(135deg, #374151, #1f2937);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .card-machine .game-icon svg { fill: #fbbf24; }
+        .card-machine .game-badge {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+        .card-machine .game-title { color: #fff; }
+        .card-machine .game-desc { color: #9ca3af; }
+        .card-machine .game-arrow {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+        }
+        .card-machine:hover { box-shadow: 0 15px 40px rgba(251, 191, 36, 0.15); }
+
+        /* === FRUIT (PURPLE) === */
+        .card-fruit {
+            background: linear-gradient(135deg, #6b21a8 0%, #9333ea 50%, #a855f7 100%);
+            box-shadow: 0 10px 30px rgba(168, 85, 247, 0.3);
+        }
+        .card-fruit::before {
+            background: radial-gradient(circle, #f3e8ff 0%, transparent 70%);
+        }
+        .card-fruit .game-icon {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .card-fruit .game-icon svg { fill: #fff; }
+        .card-fruit .game-badge {
+            background: rgba(255, 255, 255, 0.25);
+            color: #fff;
+        }
+        .card-fruit .game-title { color: #fff; }
+        .card-fruit .game-desc { color: #f3e8ff; }
+        .card-fruit:hover { box-shadow: 0 15px 40px rgba(168, 85, 247, 0.5); }
+
+        /* === LOCKED PLAN (RED) === */
+        .card-locked-plan {
+            background: linear-gradient(135deg, #991b1b 0%, #dc2626 50%, #ef4444 100%);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+        }
+        .card-locked-plan::before {
+            background: radial-gradient(circle, #fecaca 0%, transparent 70%);
+        }
+        .card-locked-plan .game-icon {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .card-locked-plan .game-icon svg { fill: #fff; }
+        .card-locked-plan .game-badge {
+            background: rgba(255, 255, 255, 0.25);
+            color: #fff;
+        }
+        .card-locked-plan .game-title { color: #fff; }
+        .card-locked-plan .game-desc { color: #fecaca; }
+        .card-locked-plan:hover { box-shadow: 0 15px 40px rgba(239, 68, 68, 0.5); }
+
+        /* === DOWNLOAD APP (BROWN) === */
+        .card-download {
+            background: linear-gradient(135deg, #78350f 0%, #92400e 50%, #b45309 100%);
+            box-shadow: 0 10px 30px rgba(146, 64, 14, 0.3);
+        }
+        .card-download::before {
+            background: radial-gradient(circle, #fde68a 0%, transparent 70%);
+        }
+        .card-download .game-icon {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .card-download .game-icon svg { fill: #fbbf24; }
+        .card-download .game-badge {
+            background: rgba(251, 191, 36, 0.3);
+            color: #fde68a;
+        }
+        .card-download .game-title { color: #fff; }
+        .card-download .game-desc { color: #fde68a; }
+
+        /* TOAST for "Coming Soon" */
+        #toast {
+            position: fixed;
+            bottom: 30px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-card);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            border-radius: 14px;
+            padding: 16px 24px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            z-index: 999;
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 90vw;
+            pointer-events: none;
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        #toast svg { width: 24px; height: 24px; fill: var(--gold); flex-shrink: 0; }
+
+        /* SECTION LABEL */
+        .section-label {
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 0 20px;
+            max-width: 600px;
+            margin: 10px auto 12px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-light);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-header">
+        <button class="back-btn" onclick="window.location.href='home.html'">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </button>
+        <div class="header-title">Bonus Center</div>
+        <div style="width: 36px;"></div>
+    </header>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-badge">🎁 Welcome to Bonus Center</div>
+        <h1>Choose Your Game</h1>
+        <p>Play. Win. Earn. Multiple ways to grow your balance.</p>
+    </div>
+
+    <div class="section-label">Games & Opportunities</div>
+
+    <!-- CARDS -->
+    <div class="cards-container">
+
+        <!-- LIVE TREND (GREEN) -->
+        <a href="live-trending.html" class="game-card card-live-trend">
+            <div class="game-icon">
+                <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+            </div>
+            <div class="game-content">
+                <div class="game-badge">LIVE</div>
+                <div class="game-title">Live Trend</div>
+                <div class="game-desc">Play live trend and get a chance to win <strong id="trend-prize" style="color: #fff;">K100,000</strong></div>
+            </div>
+            <div class="game-arrow">
+                <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+            </div>
+        </a>
+
+        <!-- MACHINE (BLACK) -->
+        <a href="trending-machine.html" class="game-card card-machine">
+            <div class="game-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+            </div>
+            <div class="game-content">
+                <div class="game-badge">TREND WITH US</div>
+                <div class="game-title">Machine</div>
+                <div class="game-desc">Trend with us and win according to your selected amount</div>
+            </div>
+            <div class="game-arrow">
+                <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+            </div>
+        </a>
+
+        <!-- FRUIT (PURPLE) -->
+        <a href="fruit.html" class="game-card card-fruit">
+            <div class="game-icon">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="8" cy="15" r="4" fill="currentColor"/>
+                    <circle cx="16" cy="15" r="4" fill="currentColor"/>
+                    <path d="M8 11c2-4 5-6 8-6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="game-content">
+                <div class="game-badge">SLOTS</div>
+                <div class="game-title">Fruit Spin</div>
+                <div class="game-desc">Spin the fruits and get a chance to win up to <strong id="fruit-prize" style="color: #fff;">K30,000</strong></div>
+            </div>
+            <div class="game-arrow">
+                <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+            </div>
+        </a>
+
+        <!-- LOCKED PLAN (RED) -->
+        <a href="locked-plans.html" class="game-card card-locked-plan">
+            <div class="game-icon">
+                <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            </div>
+            <div class="game-content">
+                <div class="game-badge">INVEST</div>
+                <div class="game-title">Locked Plan</div>
+                <div class="game-desc">Invest with us and become more — daily returns, guaranteed structure</div>
+            </div>
+            <div class="game-arrow">
+                <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+            </div>
+        </a>
+
+        <!-- DOWNLOAD APP (BROWN) -->
+        <div onclick="showComingSoon()" class="game-card card-download">
+            <div class="game-icon">
+                <svg viewBox="0 0 24 24"><path d="M17 1H7c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14zm-5-1c.83 0 1.5-.67 1.5-1.5S12.83 15 12 15s-1.5.67-1.5 1.5.67 1.5 1.5 1.5z"/></svg>
+            </div>
+            <div class="game-content">
+                <div class="game-badge">SOON</div>
+                <div class="game-title">Download App</div>
+                <div class="game-desc">Get JAKIPOT on your phone — faster, smoother, always with you</div>
+            </div>
+            <div class="game-arrow">
+                <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        <span>📱 JAKIPOT App is coming soon! Stay tuned.</span>
+    </div>
+
+    <script type="module">
+        // LOCKED TO 13.1.0
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
+        };
+
+        const CURRENCY_MAP = {
+            'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 
+            'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'TZS': 'TSh', 
+            'UGX': 'USh', 'BWP': 'P', 'MWK': 'MK', 'MZN': 'MT', 
+            'NAD': 'N$', 'AOA': 'Kz', 'PHP': '₱', 'IDR': 'Rp', 
+            'PKR': '₨', 'BDT': '৳'
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Update prize amounts with user's currency
+        onAuthStateChanged(auth, (user) => {
+            if (!user) return;
+            
+            onSnapshot(doc(db, 'users', user.uid), (snap) => {
+                if (!snap.exists()) return;
+                
+                const currency = snap.data().currency || 'ZMW';
+                const symbol = CURRENCY_MAP[currency] || currency;
+                
+                // Update prize displays with user's currency symbol
+                document.getElementById('trend-prize').innerText = `${symbol}100,000`;
+                document.getElementById('fruit-prize').innerText = `${symbol}30,000`;
+            });
+        });
+
+        // Show "coming soon" toast for download button
+        window.showComingSoon = () => {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        };
+    </script>
+</body>
+</html>

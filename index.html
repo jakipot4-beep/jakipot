@@ -139,6 +139,12 @@
             transform: scale(0.95);
             box-shadow: 0 0 30px var(--emerald);
         }
+        
+        /* 🛑 VISUAL VERSION TAG */
+        .version-tag {
+            position: fixed; bottom: 10px; right: 10px;
+            font-size: 10px; color: #10b981; font-weight: bold; opacity: 0.5;
+        }
 
         /* =========================================
            4. TRANSITION & LOADING SCREEN
@@ -284,14 +290,10 @@
         <!-- Bird Mascot -->
         <div class="mascot-container">
             <svg class="bird-svg" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">
-                <!-- Body -->
                 <path d="M 20 50 Q 50 30 80 50 Q 50 80 20 50" fill="#10b981"/>
-                <!-- Wing -->
                 <path class="wing" d="M 50 45 Q 30 20 10 30 Q 30 50 50 45" fill="#38bdf8"/>
-                <!-- Eye -->
                 <circle cx="70" cy="48" r="3" fill="#fff"/>
                 <circle cx="71" cy="48" r="1.5" fill="#060b19"/>
-                <!-- Beak -->
                 <path d="M 80 50 L 90 45 L 80 55 Z" fill="#f59e0b"/>
             </svg>
         </div>
@@ -315,14 +317,16 @@
             <p class="transition-text">Wait... 🐦 As we take you to the sign-up page.</p>
         </div>
     </div>
+    
+    <!-- 🛑 VISUAL VERSION TAG -->
+    <div class="version-tag">Index v5.0</div>
 
     <!-- FIREBASE & LOGIC -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
-        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app-check.js";
+        // 🛑 FIXED: Changed to 10.8.0 so the script actually loads
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
 
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
             authDomain: "jakipot.firebaseapp.com",
@@ -334,18 +338,11 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        try { getAnalytics(app); } catch (e) { console.warn('[Analytics]', e?.message); }
 
-        // App Check
-        const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-        if (isLocal) self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-
-        try {
-            initializeAppCheck(app, {
-                provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'),
-                isTokenAutoRefreshEnabled: true
-            });
-        } catch (e) { console.warn('[AppCheck]', e?.message); }
+        initializeAppCheck(app, {
+            provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'),
+            isTokenAutoRefreshEnabled: true
+        });
 
         // --- UI/UX TRANSITION LOGIC ---
         window.startTransition = () => {
@@ -423,7 +420,9 @@
         for (let i = 0; i < 40; i++) { particles.push(new Particle()); }
 
         function animateParticles() {
-            if (!document.getElementById('splash-screen').classList.contains('hidden')) {
+            // Stop animation if the splash screen is hidden to save battery
+            const splash = document.getElementById('splash-screen');
+            if (splash && splash.style.display !== 'none') {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 particles.forEach(p => { p.update(); p.draw(); });
                 requestAnimationFrame(animateParticles);

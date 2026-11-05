@@ -7,14 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Premium Monochrome Slate Theme */
             --bg-deep: #09090b;       
             --bg-surface: #18181b;    
             --bg-elevated: #27272a;   
-            
             --text-primary: #ffffff;   
             --text-secondary: #a1a1aa; 
-            
             --border-light: rgba(255, 255, 255, 0.08);
             --chat-sent: #3f3f46;      
             --chat-received: #27272a;  
@@ -28,7 +25,6 @@
             height: 100vh; display: flex; flex-direction: column; overflow: hidden; 
         }
 
-        /* HEADER */
         .chat-header {
             display: flex; align-items: center; gap: 15px; padding: 12px 20px;
             background: var(--bg-surface); border-bottom: 1px solid var(--border-light); height: 70px; z-index: 10;
@@ -53,7 +49,6 @@
         .chat-title-text h3 { font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; }
         .chat-title-text p { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
 
-        /* CHAT AREA */
         #chat-screen { flex: 1; display: flex; flex-direction: column; height: calc(100vh - 70px); }
         
         .messages-container {
@@ -65,7 +60,6 @@
             background-size: cover; background-position: center; background-attachment: fixed;
         }
 
-        /* MESSAGE ROW & AVATAR */
         .message-row { display: flex; gap: 10px; align-items: flex-end; max-width: 85%; }
         .message-row.sent { align-self: flex-end; justify-content: flex-end; }
         .message-row.received { align-self: flex-start; justify-content: flex-start; }
@@ -81,7 +75,12 @@
         .message-row.sent .message-bubble { align-items: flex-end; }
         .message-row.received .message-bubble { align-items: flex-start; }
         
-        .message-sender { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; margin-left: 4px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        .message-sender { 
+            font-size: 11px; color: var(--text-secondary); 
+            margin-bottom: 4px; margin-left: 4px; font-weight: 700; 
+            display: flex; align-items: center; gap: 4px; 
+        }
+        .message-sender svg { width: 12px; height: 12px; fill: var(--gold, #fbbf24); }
         
         .message-text {
             padding: 12px 16px; font-size: 15px; line-height: 1.4;
@@ -89,28 +88,25 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         
-        .message-row.sent .message-text { 
-            background: var(--chat-sent); border-radius: 18px 18px 0 18px; 
-        }
-        .message-row.received .message-text { 
-            background: var(--chat-received); border-radius: 18px 18px 18px 0; 
-        }
+        .message-row.sent .message-text { background: var(--chat-sent); border-radius: 18px 18px 0 18px; }
+        .message-row.received .message-text { background: var(--chat-received); border-radius: 18px 18px 18px 0; }
         
         .message-image { max-width: 100%; border-radius: 12px; margin-top: 5px; border: 1px solid var(--border-light); }
         .message-audio { width: 220px; margin-top: 5px; outline: none; border-radius: 20px; }
         .message-time { font-size: 10px; color: #71717a; margin-top: 4px; margin-right: 4px; margin-left: 4px; }
 
-        /* ADMIN ACTIONS */
         .admin-actions { display: none; gap: 8px; margin-top: 6px; }
         .admin-actions button {
             background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger);
             color: var(--danger); font-size: 10px; font-weight: 800; padding: 5px 10px;
             border-radius: 8px; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; gap: 4px;
         }
+        .admin-actions button svg { width: 11px; height: 11px; fill: var(--danger); }
         .admin-actions button:hover { background: var(--danger); color: #ffffff; }
+        .admin-actions button:hover svg { fill: #ffffff; }
         body.is-admin .message-row.received:hover .admin-actions { display: flex; }
 
-        /* INPUT AREA */
         .chat-input-area {
             padding: 12px 15px; background: var(--bg-surface); border-top: 1px solid var(--border-light);
             display: flex; align-items: center; gap: 8px; padding-bottom: max(12px, env(safe-area-inset-bottom));
@@ -141,22 +137,40 @@
         .mic-btn.recording svg { fill: #ffffff; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 
-        /* Suspended Overlay */
         .suspended-overlay {
             position: fixed; inset: 0; background: rgba(9, 9, 11, 0.98); z-index: 999;
             display: none; flex-direction: column; justify-content: center; align-items: center;
             text-align: center; padding: 20px; backdrop-filter: blur(10px);
         }
         .suspended-overlay.active { display: flex; }
-        .suspended-icon { font-size: 60px; margin-bottom: 20px; }
+        .suspended-icon-wrap { 
+            width: 100px; height: 100px; border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1); border: 2px solid var(--danger);
+            display: grid; place-items: center; margin-bottom: 25px;
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
+        }
+        .suspended-icon-wrap svg { width: 50px; height: 50px; fill: var(--danger); }
         .suspended-title { font-size: 24px; font-weight: 900; color: var(--danger); margin-bottom: 10px; }
         .suspended-text { font-size: 14px; color: var(--text-secondary); line-height: 1.5; max-width: 300px; }
+
+        /* Empty State */
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 40px 20px; color: var(--text-secondary);
+        }
+        .empty-state svg { width: 60px; height: 60px; fill: var(--text-secondary); opacity: 0.5; margin-bottom: 15px; }
+        .empty-state p { font-size: 14px; font-weight: 600; }
     </style>
 </head>
 <body>
 
     <div class="suspended-overlay" id="suspended-overlay">
-        <div class="suspended-icon">🚫</div>
+        <div class="suspended-icon-wrap">
+            <!-- Custom SVG: Ban Icon -->
+            <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z"/>
+            </svg>
+        </div>
         <div class="suspended-title">Account Suspended</div>
         <div class="suspended-text">Your account has been suspended by the administrator. You cannot participate in the global chat. Please contact support.</div>
     </div>
@@ -201,9 +215,10 @@
     </section>
 
     <script type="module">
+        // LOCKED TO 13.1.0
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
-        import { getFirestore, collection, doc, getDoc, setDoc, addDoc, deleteDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, getDoc, setDoc, addDoc, deleteDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
@@ -216,6 +231,14 @@
         };
 
         const CLOUDINARY = { cloudName: 'c2n8j0v', uploadPreset: 'doravica_unsigned' };
+        const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+        // Custom SVG Definitions
+        const SVG_CROWN = `<svg viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>`;
+        const SVG_TRASH = `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+        const SVG_BAN = `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z"/></svg>`;
+        const SVG_CHAT = `<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>`;
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -225,19 +248,47 @@
         let currentUserData = null;
         let isAdmin = false;
         
-        // Cache to hold user profiles (for real-time avatars)
         const userCache = {};
         
         let messageCount = 0;
         let lastMessageTime = 0;
         let mediaRecorder, audioChunks = [], isRecording = false;
 
-        // 1. Auth Check & Load User Cache
+        async function logSecurityEvent(event, details = {}) {
+            try {
+                await addDoc(collection(db, 'security_logs'), {
+                    event: event,
+                    uid: currentUser?.uid || 'unknown',
+                    page: 'global-chat.html',
+                    timestamp: serverTimestamp(),
+                    ...details
+                });
+            } catch (e) { console.warn('Guardian log failed', e); }
+        }
+
+        async function ensureChatMembership() {
+            if (!currentUser) return;
+            try {
+                const memberRef = doc(db, 'chat_group_members', `${currentUser.uid}_${ROOM_ID}`);
+                const snap = await getDoc(memberRef);
+                if (!snap.exists()) {
+                    await setDoc(memberRef, {
+                        uid: currentUser.uid,
+                        groupId: ROOM_ID,
+                        joinedAt: serverTimestamp()
+                    });
+                }
+            } catch (e) {
+                console.warn('Could not create chat membership', e);
+            }
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.replace('login.html'); return; }
             currentUser = user;
 
-            // Listen to ALL users to populate the avatar cache in real-time
+            await ensureChatMembership();
+
             onSnapshot(collection(db, 'users'), (snapshot) => {
                 snapshot.forEach(doc => {
                     userCache[doc.id] = doc.data();
@@ -250,7 +301,7 @@
                 
                 if (currentUserData.status === 'suspended') {
                     document.getElementById('suspended-overlay').classList.add('active');
-                    document.getElementById('chat-input-area').style.display = 'none';
+                    document.querySelector('.chat-input-area').style.display = 'none';
                     return;
                 }
 
@@ -263,7 +314,6 @@
             loadMessages();
         });
 
-        // 2. Load Messages
         function loadMessages() {
             const container = document.getElementById('messages-container');
             const q = query(
@@ -276,7 +326,12 @@
             onSnapshot(q, (snapshot) => {
                 container.innerHTML = '';
                 if (snapshot.empty) {
-                    container.innerHTML = '<p style="text-align:center; color:var(--text-secondary); margin-top:20px;">Welcome to the International Group! Say hello 👋</p>';
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            ${SVG_CHAT}
+                            <p>Welcome to the International Group!<br>Say hello to the community.</p>
+                        </div>
+                    `;
                     return;
                 }
 
@@ -286,7 +341,6 @@
                     const isSent = msg.uid === currentUser.uid;
                     const timeStr = msg.timestamp ? new Date(msg.timestamp.toMillis()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
                     
-                    // Get real-time avatar from cache
                     const senderProfile = userCache[msg.uid] || {};
                     const senderAvatarUrl = senderProfile.profilePicUrl;
                     const avatarHtml = senderAvatarUrl 
@@ -306,20 +360,20 @@
                     if (isAdmin && !isSent) {
                         adminHtml = `
                             <div class="admin-actions">
-                                <button onclick="adminDeleteMessage('${msgId}')">🗑️ Delete</button>
-                                <button onclick="adminKickUser('${msg.uid}', '${msg.senderName}')">🚫 Kick</button>
+                                <button onclick="adminDeleteMessage('${msgId}')">${SVG_TRASH} Delete</button>
+                                <button onclick="adminKickUser('${msg.uid}', '${msg.senderName}')">${SVG_BAN} Kick</button>
                             </div>
                         `;
                     }
 
-                    // Only show avatar for received messages
                     const avatarBlock = !isSent ? `<div class="message-avatar">${avatarHtml}</div>` : '';
+                    const crownHtml = msg.isAdmin ? SVG_CROWN : '';
 
                     container.innerHTML += `
                         <div class="message-row ${isSent ? 'sent' : 'received'}">
                             ${avatarBlock}
                             <div class="message-bubble">
-                                ${!isSent ? `<div class="message-sender">${msg.senderName} ${msg.isAdmin ? '👑' : ''}</div>` : ''}
+                                ${!isSent ? `<div class="message-sender">${msg.senderName} ${crownHtml}</div>` : ''}
                                 ${contentHtml}
                                 <div class="message-time">${timeStr}</div>
                                 ${adminHtml}
@@ -331,27 +385,16 @@
             });
         }
 
-        // 3. Send Message
         window.sendMessage = async () => {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
             if (!text) return;
 
-            const banCheck = await getDoc(doc(db, 'chat_bans', currentUser.uid));
-            if (banCheck.exists()) {
-                alert('You have been kicked from the global chat by the admin.');
-                return;
-            }
-
             const now = Date.now();
             if (now - lastMessageTime < 5000) {
                 messageCount++;
                 if (messageCount > 3) {
-                    await addDoc(collection(db, 'security_logs'), {
-                        event: 'GLOBAL_CHAT_SPAM_DETECTED',
-                        uid: currentUser.uid,
-                        timestamp: serverTimestamp()
-                    });
+                    logSecurityEvent('GLOBAL_CHAT_SPAM_DETECTED', { message: text.substring(0, 20) });
                     alert('Slow down! You are sending messages too fast.');
                     return;
                 }
@@ -362,20 +405,25 @@
 
             input.value = '';
 
-            await addDoc(collection(db, 'chat_messages'), {
-                groupId: ROOM_ID,
-                uid: currentUser.uid,
-                senderName: currentUserData?.fullName || 'User',
-                isAdmin: isAdmin,
-                messageType: 'text',
-                textContent: text,
-                timestamp: serverTimestamp()
-            });
+            try {
+                await addDoc(collection(db, 'chat_messages'), {
+                    groupId: ROOM_ID,
+                    uid: currentUser.uid,
+                    senderName: currentUserData?.fullName || 'User',
+                    isAdmin: isAdmin,
+                    messageType: 'text',
+                    textContent: text,
+                    timestamp: serverTimestamp()
+                });
+            } catch (err) {
+                console.error(err);
+                logSecurityEvent('global_chat_send_failed', { reason: err.message });
+                alert("Message failed to send. Please try again.");
+            }
         };
 
         window.handleEnter = (e) => { if (e.key === 'Enter') sendMessage(); };
 
-        // 4. Admin Actions
         window.adminDeleteMessage = async (msgId) => {
             if (!isAdmin) return;
             if (confirm('Delete this message permanently?')) {
@@ -385,21 +433,40 @@
 
         window.adminKickUser = async (uid, name) => {
             if (!isAdmin) return;
-            if (confirm(`Kick ${name} from the global chat?`)) {
-                await setDoc(doc(db, 'chat_bans', uid), {
-                    uid: uid,
-                    bannedBy: currentUser.uid,
-                    reason: 'Kicked from Global Chat',
-                    timestamp: serverTimestamp()
-                });
-                alert(`${name} has been kicked from the chat.`);
+            if (confirm(`Kick ${name} from the global chat? This will suspend their account.`)) {
+                try {
+                    const batch = writeBatch(db);
+                    
+                    const banRef = doc(db, 'banned_users', uid);
+                    batch.set(banRef, {
+                        uid: uid,
+                        bannedBy: currentUser.uid,
+                        reason: 'Kicked from Global Chat',
+                        timestamp: serverTimestamp()
+                    });
+
+                    const userRef = doc(db, 'users', uid);
+                    batch.update(userRef, { status: 'suspended' });
+
+                    await batch.commit();
+                    alert(`${name} has been kicked and suspended.`);
+                } catch (err) {
+                    console.error(err);
+                    alert("Failed to kick user.");
+                }
             }
         };
 
-        // 5. Upload Image
         window.uploadImage = async (input) => {
             const file = input.files[0];
             if (!file) return;
+
+            if (file.size > MAX_FILE_SIZE) {
+                alert("Image is too large. Maximum size is 5MB.");
+                logSecurityEvent('global_chat_large_file', { type: 'image', size: file.size });
+                input.value = '';
+                return;
+            }
             
             const container = document.getElementById('messages-container');
             container.innerHTML += `<div class="message-bubble sent" style="align-self:flex-end;"><div class="message-text" style="font-style:italic; opacity:0.7;">Uploading image...</div></div>`;
@@ -432,7 +499,6 @@
             input.value = '';
         };
 
-        // 6. Voice Notes
         window.toggleRecording = async () => {
             if (isRecording) {
                 mediaRecorder.stop();
@@ -450,6 +516,13 @@
                 
                 mediaRecorder.onstop = async () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    
+                    if (audioBlob.size > MAX_FILE_SIZE) {
+                        alert("Voice note too long. Please record a shorter message.");
+                        logSecurityEvent('global_chat_large_file', { type: 'voice', size: audioBlob.size });
+                        return;
+                    }
+
                     const file = new File([audioBlob], "voice.webm", { type: 'audio/webm' });
 
                     const container = document.getElementById('messages-container');

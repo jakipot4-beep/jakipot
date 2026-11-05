@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>About JAKIPOT - Our Story</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #060b19; --bg-card: #0f172a; --bg-elevated: #1e293b;
+            --cyan: #00D9FF; --cyan-glow: rgba(0, 217, 255, 0.3);
+            --emerald: #10b981; --gold: #fbbf24;
+            --text-white: #ffffff; --text-muted: #8b9bb4; 
+            --border-light: rgba(255, 255, 255, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg-deep); color: var(--text-white); 
+            min-height: 100vh; display: flex; flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+           HEADER
+           ========================================= */
+        .top-header {
+            display: flex; align-items: center; gap: 15px;
+            padding: 15px 20px; background: var(--bg-card); 
+            border-bottom: 1px solid var(--border-light);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .back-btn {
+            background: transparent; border: none; cursor: pointer;
+            width: 36px; height: 36px; border-radius: 50%;
+            display: grid; place-items: center; transition: background 0.2s;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.05); }
+        .back-btn svg { width: 24px; height: 24px; fill: var(--text-white); }
+        .header-title { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; }
+
+        /* =========================================
+           HERO SECTION
+           ========================================= */
+        .hero {
+            position: relative;
+            height: 420px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 40px 25px;
+        }
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            transform: scale(1.05);
+            animation: heroZoom 20s ease-in-out infinite alternate;
+        }
+        @keyframes heroZoom {
+            from { transform: scale(1.05); }
+            to { transform: scale(1.15); }
+        }
+        .hero-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(180deg, 
+                rgba(6, 11, 25, 0.4) 0%, 
+                rgba(6, 11, 25, 0.7) 50%,
+                rgba(6, 11, 25, 0.98) 100%);
+        }
+        .hero-overlay::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 100%, rgba(0, 217, 255, 0.15) 0%, transparent 60%);
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            animation: fadeUp 1s ease 0.2s both;
+        }
+        .hero-tag {
+            display: inline-block;
+            background: rgba(0, 217, 255, 0.15);
+            border: 1px solid rgba(0, 217, 255, 0.4);
+            color: var(--cyan);
+            font-size: 11px; font-weight: 900;
+            padding: 6px 14px; border-radius: 20px;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-bottom: 15px;
+        }
+        .hero h1 {
+            font-size: 44px; font-weight: 900; line-height: 1;
+            letter-spacing: -1px; margin-bottom: 12px;
+            background: linear-gradient(135deg, #ffffff 0%, var(--cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-subtitle {
+            font-size: 15px; font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            max-width: 320px;
+            line-height: 1.5;
+        }
+
+        /* =========================================
+           MAIN CONTENT
+           ========================================= */
+        .content {
+            flex: 1;
+            padding: 10px 20px 60px 20px;
+            max-width: 700px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Section base */
+        .section {
+            margin-bottom: 35px;
+            animation: fadeUp 0.8s ease both;
+        }
+        .section:nth-child(1) { animation-delay: 0.1s; }
+        .section:nth-child(2) { animation-delay: 0.2s; }
+        .section:nth-child(3) { animation-delay: 0.3s; }
+        .section:nth-child(4) { animation-delay: 0.4s; }
+        .section:nth-child(5) { animation-delay: 0.5s; }
+
+        .section-label {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 12px; font-weight: 800;
+            color: var(--cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .section-label::before {
+            content: '';
+            width: 24px; height: 2px;
+            background: var(--cyan);
+            border-radius: 2px;
+        }
+        .section-title {
+            font-size: 26px; font-weight: 900;
+            color: var(--white);
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+        .section-text {
+            font-size: 15px;
+            color: var(--text-muted);
+            line-height: 1.75;
+            margin-bottom: 12px;
+        }
+        .section-text strong {
+            color: var(--white);
+            font-weight: 800;
+        }
+
+        /* Image cards with overlay text */
+        .story-card {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+        .story-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.6s ease;
+        }
+        .story-card:hover .story-img { transform: scale(1.05); }
+        .story-img-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 30%, rgba(6, 11, 25, 0.95) 100%);
+        }
+        .story-img-label {
+            position: absolute;
+            bottom: 15px; left: 20px; right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .story-img-badge {
+            background: rgba(0, 217, 255, 0.9);
+            color: #000;
+            font-size: 10px; font-weight: 900;
+            padding: 4px 10px;
+            border-radius: 6px;
+            letter-spacing: 1px;
+        }
+        .story-img-title {
+            font-size: 16px; font-weight: 800;
+            color: var(--white);
+        }
+
+        /* Quote card */
+        .quote-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
+            border-left: 4px solid var(--cyan);
+            border-radius: 16px;
+            padding: 25px 22px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .quote-card::before {
+            content: '"';
+            position: absolute;
+            top: -20px; right: 15px;
+            font-size: 100px;
+            font-weight: 900;
+            color: var(--cyan);
+            opacity: 0.08;
+            font-family: Georgia, serif;
+        }
+        .quote-text {
+            font-size: 17px; font-weight: 700;
+            color: var(--white);
+            line-height: 1.5;
+            font-style: italic;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Africa Chapter Highlight */
+        .africa-highlight {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%);
+            border: 1px solid rgba(251, 191, 36, 0.25);
+            border-radius: 18px;
+            padding: 22px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .africa-highlight::before {
+            content: '';
+            position: absolute;
+            top: -30px; right: -30px;
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.15) 0%, transparent 70%);
+        }
+        .africa-date {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            color: var(--gold);
+            font-size: 11px; font-weight: 900;
+            padding: 5px 12px; border-radius: 20px;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        .africa-title {
+            font-size: 22px; font-weight: 900;
+            color: var(--white);
+            margin-bottom: 10px;
+            display: flex; align-items: center; gap: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        .africa-title span { font-size: 28px; }
+        .africa-text {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Values Grid */
+        .values-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .value-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 20px 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .value-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .value-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 217, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.1);
+        }
+        .value-card:hover::before { opacity: 1; }
+        .value-icon {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            display: grid; place-items: center;
+            margin-bottom: 12px;
+        }
+        .value-icon svg { width: 22px; height: 22px; fill: #fff; }
+        .value-title {
+            font-size: 14px; font-weight: 900;
+            color: var(--white);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .value-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        /* GreenStake Partnership Card */
+        .partnership-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .partnership-img-wrapper {
+            position: relative;
+            height: 180px;
+            overflow: hidden;
+        }
+        .partnership-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        .partnership-card:hover .partnership-img { transform: scale(1.05); }
+        .partnership-img-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(180deg, transparent 20%, var(--bg-card) 100%);
+        }
+        .partnership-logo-badge {
+            position: absolute;
+            bottom: 12px; left: 20px;
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(16, 185, 129, 0.95);
+            color: #fff;
+            font-size: 12px; font-weight: 900;
+            padding: 6px 14px;
+            border-radius: 8px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+        .partnership-logo-badge span { font-size: 16px; }
+        .partnership-content {
+            padding: 20px;
+        }
+
+        /* Mission Section */
+        .mission-section {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
+            border-radius: 20px;
+            padding: 30px 25px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            margin-top: 20px;
+        }
+        .mission-section::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 217, 255, 0.15) 0%, transparent 70%);
+        }
+        .mission-icon-wrap {
+            width: 50px; height: 50px;
+            border-radius: 14px;
+            background: rgba(0, 217, 255, 0.15);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            display: grid; place-items: center;
+            margin-bottom: 15px;
+            position: relative; z-index: 1;
+        }
+        .mission-icon-wrap svg { width: 26px; height: 26px; fill: var(--cyan); }
+        .mission-title {
+            font-size: 20px; font-weight: 900;
+            color: var(--white);
+            margin-bottom: 10px;
+            position: relative; z-index: 1;
+        }
+        .mission-text {
+            font-size: 15px;
+            color: var(--text-muted);
+            line-height: 1.7;
+            position: relative; z-index: 1;
+        }
+
+        /* Final CTA */
+        .final-cta {
+            margin-top: 40px;
+            padding: 40px 25px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%);
+            border-radius: 24px;
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .final-cta::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle at 20% 20%, rgba(0, 217, 255, 0.1) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+        }
+        .final-cta * { position: relative; z-index: 1; }
+        .final-brand {
+            font-size: 32px; font-weight: 900;
+            letter-spacing: -0.5px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--cyan) 0%, var(--emerald) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .final-tagline {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 1px;
+            line-height: 1.6;
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 36px; }
+            .section-title { font-size: 22px; }
+            .africa-title { font-size: 19px; }
+            .final-brand { font-size: 26px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-header">
+        <button class="back-btn" onclick="window.location.href='profile.html'">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </button>
+        <div class="header-title">About JAKIPOT</div>
+    </header>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-tag">🌍 Our Story</div>
+            <h1>JAKIPOT</h1>
+            <p class="hero-subtitle">A Vision. A Purpose. A Global Community.</p>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="content">
+
+        <!-- OUR BEGINNING -->
+        <div class="section">
+            <div class="section-label">Our Beginning</div>
+            
+            <div class="story-card">
+                <img class="story-img" src="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=800&auto=format&fit=crop" alt="London, United Kingdom" loading="lazy">
+                <div class="story-img-overlay"></div>
+                <div class="story-img-label">
+                    <span class="story-img-badge">EST. 2024</span>
+                    <span class="story-img-title">Born in the United Kingdom 🇬🇧</span>
+                </div>
+            </div>
+
+            <p class="section-text">
+                Jakipot began in <strong>2024</strong>, founded by an individual from the United Kingdom, with a vision of creating something meaningful — a digital platform where people could connect, discover opportunities, and become part of a growing community.
+            </p>
+        </div>
+
+        <!-- THE VISION -->
+        <div class="section">
+            <div class="section-label">The Vision</div>
+            
+            <div class="quote-card">
+                <p class="quote-text">
+                    "Opportunities become greater when people come together."
+                </p>
+            </div>
+
+            <p class="section-text">
+                Jakipot was created with a purpose: to build a platform that brings people from different backgrounds, communities, and countries together.
+            </p>
+            <p class="section-text">
+                A place where users can <strong>discover</strong>, <strong>connect</strong>, <strong>share</strong>, and explore different opportunities through one digital experience.
+            </p>
+        </div>
+
+        <!-- A NEW CHAPTER - AFRICA -->
+        <div class="section">
+            <div class="section-label">A New Chapter</div>
+
+            <div class="story-card">
+                <img class="story-img" src="https://images.unsplash.com/photo-1523805009345-7448845a9e53?q=80&w=800&auto=format&fit=crop" alt="Africa" loading="lazy">
+                <div class="story-img-overlay"></div>
+                <div class="story-img-label">
+                    <span class="story-img-badge" style="background: var(--gold);">15 SEPTEMBER 2026</span>
+                    <span class="story-img-title">JAKIPOT WIN — Africa 🌍</span>
+                </div>
+            </div>
+
+            <div class="africa-highlight">
+                <div class="africa-date">⭐ MILESTONE</div>
+                <div class="africa-title">
+                    <span>🌍</span> A Growing Presence in Africa
+                </div>
+                <p class="africa-text">
+                    On <strong style="color: var(--gold);">15 September 2026</strong>, Jakipot became known as <strong style="color: var(--white);">JAKIPOT WIN</strong>, marking a new chapter in its journey and its growing presence in Africa.
+                    <br><br>
+                    This milestone represents the beginning of a broader vision — connecting people across Africa and beyond while welcoming a global community.
+                </p>
+            </div>
+        </div>
+
+        <!-- WHAT JAKIPOT REPRESENTS -->
+        <div class="section">
+            <div class="section-label">What We Stand For</div>
+            <h2 class="section-title">What Jakipot Represents</h2>
+            <p class="section-text">
+                Four values define everything we build and every decision we make.
+            </p>
+
+            <div class="values-grid">
+                <!-- Connection -->
+                <div class="value-card" style="--accent: var(--cyan);">
+                    <div class="value-icon" style="background: linear-gradient(135deg, #00D9FF, #0284c7);">
+                        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                    </div>
+                    <div class="value-title">Connection</div>
+                    <div class="value-desc">Bringing people together regardless of location.</div>
+                </div>
+
+                <!-- Opportunity -->
+                <div class="value-card" style="--accent: var(--gold);">
+                    <div class="value-icon" style="background: linear-gradient(135deg, #fbbf24, #d97706);">
+                        <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+                    </div>
+                    <div class="value-title">Opportunity</div>
+                    <div class="value-desc">Creating a space to discover new possibilities.</div>
+                </div>
+
+                <!-- Community -->
+                <div class="value-card" style="--accent: var(--emerald);">
+                    <div class="value-icon" style="background: linear-gradient(135deg, #10b981, #047857);">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    </div>
+                    <div class="value-title">Community</div>
+                    <div class="value-desc">Encouraging participation, contribution, and growth.</div>
+                </div>
+
+                <!-- Innovation -->
+                <div class="value-card" style="--accent: #a855f7;">
+                    <div class="value-icon" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">
+                        <svg viewBox="0 0 24 24"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>
+                    </div>
+                    <div class="value-title">Innovation</div>
+                    <div class="value-desc">Building a digital experience that evolves.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GREENSTAKE HUB -->
+        <div class="section">
+            <div class="section-label">Our Partners</div>
+            <h2 class="section-title">GreenStake Hub 🤝</h2>
+
+            <div class="partnership-card">
+                <div class="partnership-img-wrapper">
+                    <img class="partnership-img" src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=800&auto=format&fit=crop" alt="GreenStake Hub Partnership" loading="lazy">
+                    <div class="partnership-img-overlay"></div>
+                    <div class="partnership-logo-badge">
+                        <span>🌱</span> GreenStake Hub
+                    </div>
+                </div>
+                <div class="partnership-content">
+                    <p class="section-text" style="margin-bottom: 0;">
+                        Jakipot also welcomes people to connect with <strong>GreenStake Hub</strong>, a community that helps promote the platform, share information, introduce new members, and create awareness of its development.
+                    </p>
+                    <p class="section-text" style="margin-top: 12px; margin-bottom: 0;">
+                        Through community participation, more people can learn about Jakipot and become part of its journey.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- OUR MISSION -->
+        <div class="section">
+            <div class="section-label">Our Mission</div>
+
+            <div class="mission-section">
+                <div class="mission-icon-wrap">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                </div>
+                <h2 class="mission-title">Building a Connected World</h2>
+                <p class="mission-text">
+                    To build a platform that connects people globally, creates opportunities for participation, and grows through <strong style="color: var(--white);">community</strong>, <strong style="color: var(--white);">innovation</strong>, and <strong style="color: var(--white);">shared vision</strong>.
+                </p>
+            </div>
+        </div>
+
+        <!-- FINAL CTA -->
+        <div class="final-cta">
+            <div class="final-brand">JAKIPOT WIN</div>
+            <p class="final-tagline">
+                One vision. Many possibilities.<br>A connected world.
+            </p>
+        </div>
+
+    </div>
+
+    <script>
+        // Smooth scroll-triggered animations (progressive enhancement)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.section').forEach(el => {
+            el.style.animationPlayState = 'paused';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

@@ -20,7 +20,8 @@
         .header h1 { font-size: 22px; font-weight: 900; color: var(--white); }
         .header p { font-size: 14px; color: var(--light-blue); margin-top: 8px; }
         .card { background: var(--bg-card); padding: 30px 25px; border-radius: 20px; width: 100%; max-width: 450px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid var(--border-color); }
-        .btn-google { width: 100%; padding: 14px; background: var(--white); color: #333; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-google { width: 100%; padding: 14px; background: var(--white); color: #333; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: opacity 0.2s; }
+        .btn-google:disabled { opacity: 0.5; cursor: not-allowed; }
         .google-icon { width: 22px; height: 22px; }
         .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; color: var(--text-muted); font-size: 11px; font-weight: 700; }
         .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-color); }
@@ -31,15 +32,15 @@
         .input-field:focus { outline: none; border-color: var(--emerald); }
         .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; fill: var(--text-muted); cursor: pointer; }
         .forgot-link { display: block; text-align: right; font-size: 12px; color: var(--light-blue); text-decoration: none; margin-top: -5px; margin-bottom: 20px; }
-        .btn-continue { width: 100%; padding: 16px; background: var(--emerald); color: var(--white); border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; }
+        .btn-continue { width: 100%; padding: 16px; background: var(--emerald); color: var(--white); border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: opacity 0.2s; }
+        .btn-continue:disabled { opacity: 0.5; cursor: not-allowed; }
         .message-box { margin-top: 12px; font-size: 13px; text-align: center; min-height: 18px; }
         .message-box.error { color: var(--danger); }
         .message-box.success { color: var(--emerald); }
         .footer { margin-top: 25px; text-align: center; font-size: 14px; color: var(--text-muted); }
         .footer a { color: var(--light-blue); text-decoration: none; font-weight: 700; }
         
-        /* 🛑 THE VISUAL VERSION TAG */
-        .version-tag { text-align: center; font-size: 12px; color: #10b981; margin-top: 15px; font-weight: bold; letter-spacing: 1px; background: rgba(16,185,129,0.1); padding: 5px; border-radius: 5px; }
+        .version-tag { text-align: center; font-size: 11px; color: #10b981; margin-top: 15px; font-weight: bold; letter-spacing: 1px; background: rgba(16,185,129,0.1); padding: 5px; border-radius: 5px; }
 
         #loading-overlay { display: none; position: fixed; inset: 0; background: rgba(6,11,25,0.98); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
         #loading-overlay.show { display: flex; }
@@ -47,6 +48,15 @@
         .loading-title { color: var(--white); font-size: 18px; font-weight: 800; margin-bottom: 8px; }
         .loading-text { color: var(--light-blue); font-size: 14px; font-weight: 600; }
         @keyframes flyAcross { 0% { transform: translateX(-100px); } 100% { transform: translateX(100px); } }
+
+        /* Lockout Banner */
+        .lockout-banner {
+            background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger);
+            border-radius: 10px; padding: 12px; margin-bottom: 15px;
+            font-size: 13px; color: #fca5a5; text-align: center;
+            font-weight: 600; display: none;
+        }
+        .lockout-banner.show { display: block; }
     </style>
 </head>
 <body>
@@ -65,6 +75,8 @@
     </div>
 
     <div class="card">
+        <div class="lockout-banner" id="lockout-banner"></div>
+
         <button class="btn-google" id="google-btn" onclick="loginWithGoogle()">
             <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
             Continue with Google
@@ -87,8 +99,7 @@
             <div id="message-box" class="message-box"></div>
         </form>
         
-        <!-- 🛑 VISUAL CHECK: If you see this, the code is updated! -->
-        <div class="version-tag">Version 4.0 (Live)</div>
+        <div class="version-tag">Version 5.0 (Live)</div>
     </div>
 
     <div class="footer">Don't have an account? <a href="register.html">Sign Up</a></div>
@@ -100,109 +111,264 @@
     </div>
 
     <script type="module">
-        // 🛑 ALERT: Proves the script loaded
-        console.log("Login Script V4 Loaded");
+        // LOCKED TO 13.1.0
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app-check.js";
+        import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
-        import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
+        };
 
-        const firebaseConfig = { apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", authDomain: "jakipot.firebaseapp.com", projectId: "jakipot", storageBucket: "jakipot.firebasestorage.app", messagingSenderId: "396191754293", appId: "1:396191754293:web:5b11a11d82e773d19ee97c" };
         const app = initializeApp(firebaseConfig);
-        initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), isTokenAutoRefreshEnabled: true });
+        
+        // App Check with localhost debug
+        const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        if (isLocal) self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+        try {
+            initializeAppCheck(app, { 
+                provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), 
+                isTokenAutoRefreshEnabled: true 
+            });
+        } catch(e) { console.warn('App Check:', e); }
+
         const auth = getAuth(app);
         const db = getFirestore(app);
 
         const msgBox = document.getElementById('message-box');
         const submitBtn = document.getElementById('submit-btn');
+        const googleBtn = document.getElementById('google-btn');
+        const lockoutBanner = document.getElementById('lockout-banner');
 
-        // 🛑 THE FIX: We REMOVED onAuthStateChanged. The user must click Login.
-        
+        // 🐕 WATCHDOG: Spam login protection
+        let failedAttempts = 0;
+        let lockoutUntil = 0;
+        const MAX_ATTEMPTS = 5;
+        const LOCKOUT_DURATION = 60000; // 60 seconds
+
+        function checkLockout() {
+            const now = Date.now();
+            if (lockoutUntil > now) {
+                const remaining = Math.ceil((lockoutUntil - now) / 1000);
+                lockoutBanner.classList.add('show');
+                lockoutBanner.innerText = `Too many failed attempts. Please wait ${remaining} seconds.`;
+                submitBtn.disabled = true;
+                submitBtn.innerText = `WAIT ${remaining}s`;
+                return true;
+            }
+            
+            // Lockout expired
+            if (lockoutUntil > 0) {
+                lockoutUntil = 0;
+                failedAttempts = 0;
+                lockoutBanner.classList.remove('show');
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'LOGIN →';
+            }
+            return false;
+        }
+
+        function registerFailedAttempt() {
+            failedAttempts++;
+            if (failedAttempts >= MAX_ATTEMPTS) {
+                lockoutUntil = Date.now() + LOCKOUT_DURATION;
+                checkLockout();
+                
+                // Auto-clear lockout display
+                setInterval(() => {
+                    if (!checkLockout()) {
+                        // Stop checking once lockout clears
+                    }
+                }, 1000);
+            }
+        }
+
+        // ==========================================
+        // 🎯 SMART ROUTING (based on user status)
+        // ==========================================
         async function routeUser(user) {
             try {
                 const docRef = doc(db, 'users', user.uid);
                 const docSnap = await getDoc(docRef);
 
+                // New user with no profile → send to complete registration
                 if (!docSnap.exists()) {
-                    showError("Account profile not found. Redirecting to register...");
-                    setTimeout(() => window.location.replace('register.html'), 2000);
+                    showError("No account profile found. Redirecting to signup...");
+                    setTimeout(() => window.location.replace('register.html'), 1500);
                     return;
                 }
 
                 const data = docSnap.data();
-                
+
+                // Block suspended users
+                if (data.status === 'suspended') {
+                    await signOut(auth);
+                    showError("Your account has been suspended. Please contact support.");
+                    document.getElementById('loading-overlay').classList.remove('show');
+                    return;
+                }
+
+                // 📊 Update lastActive for admin tracking (silent fail OK)
+                try {
+                    await updateDoc(docRef, { lastActive: serverTimestamp() });
+                } catch (e) {
+                    console.warn('Could not update lastActive:', e.message);
+                }
+
+                // 👑 Admin routing (FIXED: admin.html not admin-dashboard.html)
                 if (data.role === 'admin') {
-                    window.location.replace('admin-dashboard.html');
+                    window.location.replace('admin.html');
+                    return;
+                }
+
+                // 🎯 Route by user state
+                if (data.status === 'activated') {
+                    window.location.replace('home.html');
+                } else if (data.status === 'pending_review') {
+                    // Waiting for admin to review activation payment
+                    window.location.replace('pay.html');
+                } else if (data.status === 'approved') {
+                    // Approved but hasn't entered verification code yet
+                    window.location.replace('pay.html');
+                } else if (data.signupStage === 'proof' || data.signupStage === 'kyc') {
+                    // Abandoned signup at KYC step
+                    window.location.replace('proof.html');
+                } else if (data.signupStage === 'password_setup') {
+                    // Abandoned signup at PIN setup
+                    window.location.replace('password-set-up.html');
+                } else if (data.signupStage === 'payment' || data.signupStage === 'payment_submitted') {
+                    // Abandoned signup at payment step
+                    window.location.replace('pay.html');
+                } else if (data.signupStage === 'verified' || data.status === 'incomplete') {
+                    // Incomplete profile → continue from register2
+                    window.location.replace('register2.html');
                 } else {
+                    // Fallback: go to home
                     window.location.replace('home.html');
                 }
             } catch (err) {
-                console.error('Routing error', err);
-                showError("Connection error. Please try again.");
+                console.error('Routing error:', err);
+                showError("Connection error. Please check your internet and try again.");
                 document.getElementById('loading-overlay').classList.remove('show');
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'LOGIN →';
+                googleBtn.disabled = false;
             }
         }
 
+        // ==========================================
+        // UI ACTIONS
+        // ==========================================
         window.togglePassword = () => {
             const pwdInput = document.getElementById('login-password');
             pwdInput.type = pwdInput.type === 'password' ? 'text' : 'password';
         };
 
         window.loginWithGoogle = async () => {
-            msgBox.className = 'message-box'; msgBox.innerText = "";
-            const googleBtn = document.getElementById('google-btn');
+            if (checkLockout()) return;
+            
+            msgBox.className = 'message-box'; 
+            msgBox.innerText = "";
+            
             googleBtn.disabled = true;
+            const originalHTML = googleBtn.innerHTML;
+            googleBtn.innerHTML = '<span style="opacity:0.6">Connecting...</span>';
+
             const provider = new GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
+
             try {
                 const result = await signInWithPopup(auth, provider);
                 document.getElementById('loading-overlay').classList.add('show');
                 await routeUser(result.user);
             } catch (error) {
                 googleBtn.disabled = false;
-                showError(error.message || 'Google login failed.');
+                googleBtn.innerHTML = originalHTML;
+                
+                if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+                    showError('Sign-in cancelled.');
+                } else if (error.code === 'auth/popup-blocked') {
+                    showError('Popup blocked. Please allow popups for this site.');
+                } else {
+                    showError(error.message || 'Google login failed.');
+                }
             }
         };
 
         window.handleEmailLogin = async (e) => {
             e.preventDefault();
-            msgBox.className = 'message-box'; msgBox.innerText = "";
+            if (checkLockout()) return;
+            
+            msgBox.className = 'message-box'; 
+            msgBox.innerText = "";
+            
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
 
-            if (!email || !password) { showError('Please fill in all fields.'); return; }
+            if (!email || !password) { 
+                showError('Please fill in all fields.'); 
+                return; 
+            }
 
-            submitBtn.disabled = true; submitBtn.innerText = 'LOGGING IN...';
+            submitBtn.disabled = true; 
+            submitBtn.innerText = 'LOGGING IN...';
 
             try {
                 const result = await signInWithEmailAndPassword(auth, email, password);
+                failedAttempts = 0; // Reset on success
                 document.getElementById('loading-overlay').classList.add('show');
                 await routeUser(result.user);
             } catch (error) {
-                submitBtn.disabled = false; submitBtn.innerText = 'LOGIN →';
-                if (error.code === 'auth/invalid-credential') {
-                    showError('Invalid email or password.');
+                submitBtn.disabled = false; 
+                submitBtn.innerText = 'LOGIN →';
+                registerFailedAttempt();
+                
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                    showError(`Invalid email or password. (${MAX_ATTEMPTS - failedAttempts} attempts left)`);
+                } else if (error.code === 'auth/too-many-requests') {
+                    showError('Too many attempts. Please wait and try again later.');
                 } else {
-                    showError(error.message);
+                    showError(error.message || 'Login failed. Please try again.');
                 }
             }
         };
 
         window.forgotPassword = async (e) => {
             e.preventDefault();
-            msgBox.className = 'message-box'; msgBox.innerText = "";
+            msgBox.className = 'message-box'; 
+            msgBox.innerText = "";
+            
             const email = document.getElementById('login-email').value.trim();
-            if (!email) { showError('Please enter your email address first.'); return; }
+            if (!email) { 
+                showError('Please enter your email address first.'); 
+                return; 
+            }
+            
             try {
                 await sendPasswordResetEmail(auth, email);
-                msgBox.className = 'message-box success'; msgBox.innerText = 'Password reset link sent!';
-            } catch (error) { showError('Failed to send reset email.'); }
+                msgBox.className = 'message-box success'; 
+                msgBox.innerText = 'Password reset link sent! Check your inbox.';
+            } catch (error) {
+                showError('Failed to send reset email. Check the email address.');
+            }
         };
 
-        function showError(msg) { msgBox.className = 'message-box error'; msgBox.innerText = msg; }
+        function showError(msg) { 
+            msgBox.className = 'message-box error'; 
+            msgBox.innerText = msg; 
+        }
 
+        // Clear error on input
         ['login-email', 'login-password'].forEach(id => {
-            document.getElementById(id).addEventListener('input', () => { msgBox.innerText = ""; });
+            document.getElementById(id).addEventListener('input', () => { 
+                msgBox.innerText = ""; 
+            });
         });
     </script>
 </body>

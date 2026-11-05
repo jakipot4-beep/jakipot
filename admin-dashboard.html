@@ -68,21 +68,111 @@
         .input-group input, .input-group select { padding: 14px; border-radius: 10px; background: var(--bg-elevated); border: 1px solid var(--border-light); color: var(--text-white); font-size: 15px; outline: none; }
         .input-group input:focus, .input-group select:focus { border-color: var(--cyan); }
 
+        /* Image Preview */
+        .img-preview-box {
+            margin-top: 10px;
+            display: none;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+            background: #000;
+            position: relative;
+            height: 160px;
+        }
+        .img-preview-box.show { display: block; }
+        .img-preview-box img { width: 100%; height: 100%; object-fit: cover; }
+        .img-preview-badge {
+            position: absolute; top: 8px; left: 8px;
+            background: rgba(16, 185, 129, 0.9); color: #fff;
+            padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800;
+        }
+
+        /* ==========================================
+           CHAT STYLES (Premium)
+           ========================================== */
         .chat-container { display: flex; height: calc(100vh - 220px); background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-light); overflow: hidden; }
-        .chat-sidebar { width: 280px; border-right: 1px solid var(--border-light); overflow-y: auto; background: rgba(0,0,0,0.2); }
-        .chat-user-item { padding: 15px 20px; border-bottom: 1px solid var(--border-light); cursor: pointer; transition: 0.2s; }
-        .chat-user-item:hover, .chat-user-item.active { background: rgba(0, 217, 255, 0.1); border-left: 3px solid var(--cyan); }
-        .chat-user-item h4 { font-size: 14px; margin-bottom: 4px; color: var(--text-white); }
-        .chat-user-item p { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .chat-main { flex: 1; display: flex; flex-direction: column; }
-        .chat-history { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        .msg { max-width: 75%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.4; }
+        
+        .chat-sidebar { width: 300px; border-right: 1px solid var(--border-light); overflow-y: auto; background: rgba(0,0,0,0.2); flex-shrink: 0; }
+        .chat-sidebar::-webkit-scrollbar { width: 4px; }
+        .chat-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+        .chat-user-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 15px 18px; border-bottom: 1px solid var(--border-light);
+            cursor: pointer; transition: 0.2s; position: relative;
+        }
+        .chat-user-item:hover { background: rgba(0, 217, 255, 0.05); }
+        .chat-user-item.active { background: rgba(0, 217, 255, 0.1); border-left: 3px solid var(--cyan); padding-left: 15px; }
+        
+        .chat-user-item.global-chat-item {
+            background: linear-gradient(90deg, rgba(0, 217, 255, 0.08), rgba(16, 185, 129, 0.08));
+            border-bottom: 2px solid rgba(0, 217, 255, 0.2);
+        }
+        .chat-user-item.global-chat-item:hover { background: linear-gradient(90deg, rgba(0, 217, 255, 0.15), rgba(16, 185, 129, 0.15)); }
+        
+        .chat-avatar-circle {
+            width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+            display: grid; place-items: center; font-weight: 900; font-size: 16px;
+            background: var(--bg-elevated); color: var(--text-white);
+            overflow: hidden; border: 2px solid rgba(255,255,255,0.1);
+        }
+        .chat-avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+        .chat-avatar-circle.global { 
+            background: linear-gradient(135deg, var(--cyan), var(--emerald)); 
+            border-color: var(--cyan);
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.4);
+            font-size: 22px;
+        }
+        
+        .chat-preview { flex: 1; min-width: 0; }
+        .chat-preview h4 { font-size: 14px; font-weight: 800; color: var(--text-white); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-preview p { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-user-item.active .chat-preview h4 { color: var(--cyan); }
+        
+        .chat-time-badge { font-size: 10px; color: var(--text-muted); flex-shrink: 0; align-self: flex-start; margin-top: 3px; }
+        
+        .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        
+        .chat-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 15px 20px; background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid var(--border-light); flex-shrink: 0;
+        }
+        .chat-header-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: grid; place-items: center; font-weight: 900;
+            background: var(--bg-elevated); overflow: hidden;
+            border: 2px solid var(--cyan);
+        }
+        .chat-header-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .chat-header-info h3 { font-size: 15px; font-weight: 800; color: var(--text-white); }
+        .chat-header-info p { font-size: 11px; color: var(--emerald); font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        .online-dot { width: 6px; height: 6px; background: var(--emerald); border-radius: 50%; display: inline-block; }
+        
+        .chat-history {
+            flex: 1; padding: 20px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 10px;
+            background-image: 
+                linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), 
+                url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
+            background-size: cover; background-position: center;
+        }
+        .chat-history::-webkit-scrollbar { width: 4px; }
+        .chat-history::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+        .msg { max-width: 70%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.4; position: relative; }
         .msg.admin { align-self: flex-end; background: var(--cyan); color: #000; border-bottom-right-radius: 4px; font-weight: 600; }
         .msg.user { align-self: flex-start; background: var(--bg-elevated); color: var(--text-white); border-bottom-left-radius: 4px; border: 1px solid var(--border-light); }
-        .chat-input-area { padding: 15px; border-top: 1px solid var(--border-light); display: flex; gap: 10px; background: rgba(0,0,0,0.2); }
-        .chat-input { flex: 1; padding: 15px; border-radius: 10px; border: 1px solid var(--border-light); background: var(--bg-elevated); color: var(--text-white); outline: none; }
+        .msg-time { font-size: 9px; opacity: 0.6; margin-top: 4px; font-weight: 600; }
+        .msg img.msg-image { max-width: 100%; border-radius: 10px; margin-bottom: 4px; }
+        .msg audio { max-width: 100%; }
+        .msg-sender-name { font-size: 10px; font-weight: 800; color: var(--gold); margin-bottom: 3px; text-transform: uppercase; }
+
+        .chat-input-area { padding: 12px 15px; border-top: 1px solid var(--border-light); display: flex; gap: 10px; background: rgba(0,0,0,0.2); flex-shrink: 0; }
+        .chat-input { flex: 1; padding: 14px 18px; border-radius: 24px; border: 1px solid var(--border-light); background: var(--bg-elevated); color: var(--text-white); outline: none; font-size: 14px; }
         .chat-input:focus { border-color: var(--cyan); }
-        .btn-send { padding: 0 25px; border-radius: 10px; border: none; background: var(--cyan); color: #000; font-weight: 900; cursor: pointer; font-size: 14px; }
+        .btn-send { padding: 0 24px; border-radius: 24px; border: none; background: var(--cyan); color: #000; font-weight: 900; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .btn-send:hover { background: #00b8d4; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 100; }
         .modal-overlay.active { display: flex; }
@@ -94,7 +184,6 @@
         .sequence-scroll-box::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
         .sequence-scroll-box::-webkit-scrollbar-thumb { background: rgba(0, 217, 255, 0.4); border-radius: 4px; }
 
-        /* --- LIVE ENGINE STYLES --- */
         .engine-status-box { background: #000; border: 1px solid var(--cyan); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0, 217, 255, 0.15); }
         .engine-multiplier { font-size: 48px; font-weight: 900; color: var(--cyan); margin: 10px 0; font-variant-numeric: tabular-nums; }
         .engine-round { font-size: 14px; font-weight: 800; color: var(--gold); text-transform: uppercase; }
@@ -128,7 +217,6 @@
 
     <main class="main-content">
         
-        <!-- TAB: DASHBOARD -->
         <div class="tab-panel active" id="tab-dashboard">
             <div class="page-title">Quick Overview</div>
             <div class="stats-grid">
@@ -148,6 +236,13 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-info">
+                        <h4>Pending Deposits</h4>
+                        <h2 id="stat-deposits" style="color: var(--emerald);">0</h2>
+                    </div>
+                    <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--emerald);">💰</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
                         <h4>Pending Withdrawals</h4>
                         <h2 id="stat-withdrawals" style="color: var(--danger);">0</h2>
                     </div>
@@ -156,31 +251,27 @@
             </div>
         </div>
 
-        <!-- TAB: ACTIVATIONS -->
         <div class="tab-panel" id="tab-activations">
-            <div class="page-title">Pending Activations</div>
+            <div class="page-title">Pending Activations ($0.25)</div>
             <div class="list-container" id="activations-list"></div>
         </div>
 
-        <!-- TAB: USERS -->
         <div class="tab-panel" id="tab-users">
             <div class="page-title">Manage Users</div>
             <div class="list-container" id="users-list"></div>
         </div>
 
-        <!-- TAB: DEPOSITS -->
         <div class="tab-panel" id="tab-deposits">
             <div class="page-title">Pending Deposits</div>
             <div class="list-container" id="deposits-list"></div>
         </div>
 
-        <!-- TAB: WITHDRAWALS -->
         <div class="tab-panel" id="tab-withdrawals">
             <div class="page-title">Pending Withdrawals</div>
             <div class="list-container" id="withdrawals-list"></div>
         </div>
 
-        <!-- TAB: PLANS -->
+        <!-- PLANS TAB (with image preview) -->
         <div class="tab-panel" id="tab-plans">
             <div class="page-title">Create New Locked Plan</div>
             <div class="form-card">
@@ -191,10 +282,17 @@
                     </div>
                     <div class="input-group">
                         <label>Image URL (ImgBB)</label>
-                        <input type="text" id="plan-img" placeholder="https://i.ibb.co/...">
+                        <input type="text" id="plan-img" placeholder="https://i.ibb.co/..." oninput="previewPlanImage()">
                     </div>
                 </div>
-                <div class="form-grid">
+                
+                <!-- Live Image Preview -->
+                <div class="img-preview-box" id="plan-img-preview">
+                    <span class="img-preview-badge">LIVE PREVIEW</span>
+                    <img id="plan-img-preview-tag" src="" alt="Plan preview" onerror="this.parentElement.classList.remove('show')">
+                </div>
+
+                <div class="form-grid" style="margin-top: 15px;">
                     <div class="input-group">
                         <label>Invest Amount</label>
                         <input type="number" id="plan-invest" placeholder="500">
@@ -208,14 +306,12 @@
                         <input type="number" id="plan-duration" placeholder="10">
                     </div>
                 </div>
-                <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 10px;" onclick="createPlan()">CREATE PLAN</button>
+                <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;" onclick="createPlan()">CREATE PLAN</button>
             </div>
         </div>
 
-        <!-- TAB: TRENDING MACHINE -->
         <div class="tab-panel" id="tab-machine">
             <div class="page-title">Create Trending Machine</div>
-            
             <div class="form-card">
                 <div class="form-grid">
                     <div class="input-group">
@@ -228,56 +324,33 @@
                     </div>
                 </div>
                 <div class="form-grid">
-                    <div class="input-group">
-                        <label>Duration (Days)</label>
-                        <input type="number" id="machine-duration" placeholder="7">
-                    </div>
-                    <div class="input-group">
-                        <label>Min Amount</label>
-                        <input type="number" id="machine-min" placeholder="100">
-                    </div>
-                    <div class="input-group">
-                        <label>Max Amount</label>
-                        <input type="number" id="machine-max" placeholder="5000">
-                    </div>
-                    <div class="input-group">
-                        <label>Payout Multiplier</label>
-                        <input type="number" id="machine-multiplier" placeholder="1.5" step="0.1">
-                    </div>
+                    <div class="input-group"><label>Duration (Days)</label><input type="number" id="machine-duration" placeholder="7"></div>
+                    <div class="input-group"><label>Min Amount</label><input type="number" id="machine-min" placeholder="100"></div>
+                    <div class="input-group"><label>Max Amount</label><input type="number" id="machine-max" placeholder="5000"></div>
+                    <div class="input-group"><label>Payout Multiplier</label><input type="number" id="machine-multiplier" placeholder="1.5" step="0.1"></div>
                 </div>
                 <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 10px;" onclick="createMachine()">CREATE MACHINE</button>
             </div>
-
             <div class="page-title" style="margin-top: 30px;">Active Machines</div>
             <div class="list-container" id="machines-list"></div>
         </div>
 
-        <!-- TAB: LIVE TRENDING ENGINE -->
         <div class="tab-panel" id="tab-live-trending">
             <div class="page-title">Live Trending Engine</div>
-            
-            <!-- THE GAME ENGINE -->
             <div class="engine-status-box">
                 <div class="engine-round" id="engine-round-display">ROUND 0 / 20</div>
                 <div class="engine-multiplier" id="engine-multiplier-display">1.00x</div>
                 <div class="engine-state" id="engine-state-display">Engine is Offline</div>
-                
                 <button class="btn btn-approve" id="engine-toggle-btn" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;" onclick="toggleEngine()">START LIVE ENGINE</button>
             </div>
-
             <div class="form-card">
                 <h3 style="margin-bottom: 10px; color: var(--cyan);">Auto-Crash Sequence (20 Rounds)</h3>
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Set crash points. They will loop automatically after 20 rounds.</p>
-                
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Set crash points. They will shuffle automatically after 20 rounds.</p>
                 <div class="sequence-scroll-box" style="max-height: 220px; overflow-y: auto; padding-right: 8px; margin-bottom: 20px; border: 1px solid #1e293b; border-radius: 10px; padding: 10px;">
-                    <div id="sequence-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
-                        <!-- Inputs generated by JS -->
-                    </div>
+                    <div id="sequence-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;"></div>
                 </div>
-                
-                <button class="btn btn-neutral" style="width: 100%; padding: 16px; font-size: 16px;" onclick="saveCrashSequence()">SAVE SEQUENCE (Restarts Game)</button>
+                <button class="btn btn-neutral" style="width: 100%; padding: 16px; font-size: 16px;" onclick="saveCrashSequence()">SAVE SEQUENCE</button>
             </div>
-
             <div class="form-card" style="border-color: rgba(239, 68, 68, 0.3);">
                 <h3 style="margin-bottom: 10px; color: var(--danger);">Emergency Manual Crash</h3>
                 <div class="input-group" style="margin-bottom: 15px;">
@@ -288,41 +361,42 @@
             </div>
         </div>
 
-        <!-- TAB: CHAT -->
+        <!-- PREMIUM CHAT TAB -->
         <div class="tab-panel" id="tab-chat">
             <div class="page-title">Live Support Chat</div>
             <div class="chat-container">
                 <div class="chat-sidebar" id="chat-user-list">
-                    <div style="padding: 20px; text-align: center; color: var(--text-muted);">Loading chats...</div>
+                    <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">Loading chats...</div>
                 </div>
                 <div class="chat-main">
+                    <div class="chat-header" id="chat-header" style="display: none;">
+                        <div class="chat-header-avatar" id="chat-header-avatar">💬</div>
+                        <div class="chat-header-info">
+                            <h3 id="chat-header-name">Select a chat</h3>
+                            <p><span class="online-dot"></span> Online</p>
+                        </div>
+                    </div>
                     <div class="chat-history" id="chat-history">
                         <div style="text-align: center; margin-top: 100px; color: var(--text-muted);">
-                            <div style="font-size: 40px; margin-bottom: 10px;">💬</div>
-                            Select a user from the left to start chatting.
+                            <div style="font-size: 50px; margin-bottom: 15px;">💬</div>
+                            <div style="font-size: 14px; font-weight: 700;">Select a chat from the left</div>
+                            <div style="font-size: 12px; margin-top: 5px;">Start a conversation with users or join the Global Community</div>
                         </div>
                     </div>
                     <div class="chat-input-area" id="chat-input-area" style="display: none;">
-                        <input type="text" id="chat-input" class="chat-input" placeholder="Type a message to the user...">
+                        <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMessage()">
                         <button class="btn-send" onclick="sendMessage()">SEND</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- TAB: SETTINGS -->
         <div class="tab-panel" id="tab-settings">
             <div class="page-title">Platform Settings</div>
             <div class="form-card">
                 <div class="form-grid">
-                    <div class="input-group">
-                        <label>Min Deposit</label>
-                        <input type="number" id="set-min-deposit" placeholder="10">
-                    </div>
-                    <div class="input-group">
-                        <label>Min Withdrawal</label>
-                        <input type="number" id="set-min-withdraw" placeholder="50">
-                    </div>
+                    <div class="input-group"><label>Min Deposit</label><input type="number" id="set-min-deposit" placeholder="10"></div>
+                    <div class="input-group"><label>Min Withdrawal</label><input type="number" id="set-min-withdraw" placeholder="50"></div>
                     <div class="input-group">
                         <label>System Status</label>
                         <select id="set-game-status">
@@ -337,17 +411,14 @@
 
     </main>
 
-    <!-- ADJUST BALANCE MODAL -->
     <div class="modal-overlay" id="balance-modal">
         <div class="modal-content">
             <h3>Adjust Balance</h3>
             <p>Current: <span id="modal-current-bal" style="color: var(--cyan); font-weight: 800;">0.00</span></p>
-            
             <div class="input-group" style="text-align: left;">
                 <label>Amount (e.g. 500 or -200)</label>
                 <input type="number" id="balance-adjust-input" placeholder="0">
             </div>
-            
             <div style="display: flex; gap: 10px; margin-top: 25px;">
                 <button class="btn btn-neutral" style="flex: 1;" onclick="closeModal()">Cancel</button>
                 <button class="btn btn-approve" style="flex: 1;" onclick="confirmBalanceAdjust()">Confirm</button>
@@ -356,10 +427,11 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, query, where, orderBy, limit, onSnapshot, updateDoc, addDoc, writeBatch, increment, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // LOCKED TO 13.1.0
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app-check.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, query, where, orderBy, limit, onSnapshot, updateDoc, addDoc, writeBatch, increment, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
@@ -379,8 +451,16 @@
         let selectedUserId = null;
         let unsubscribeChat = null;
         let currentChatId = null;
+        let currentChatName = 'Chat';
+        let currentChatAvatar = '';
         
-        // ENGINE STATE VARIABLES
+        // USER CACHE for avatars
+        const userCache = {};
+        
+        // Live chat group state
+        let lastChatGroupsSnapshot = null;
+
+        // Engine state
         let engineRunning = false;
         let currentRoundIndex = 0;
         let liveMultiplier = 1.00;
@@ -401,11 +481,43 @@
                 loadCrashSequence(); 
                 loadSettings(); 
                 loadMachines();
+                loadUsersCache();
             } else {
                 alert("Access Denied. You are not an Admin.");
                 window.location.replace('home.html'); 
             }
         });
+
+        // ==========================================
+        // IMAGE PREVIEW FOR PLANS
+        // ==========================================
+        window.previewPlanImage = () => {
+            const url = document.getElementById('plan-img').value.trim();
+            const wrap = document.getElementById('plan-img-preview');
+            const img = document.getElementById('plan-img-preview-tag');
+            
+            if (url && url.startsWith('http')) {
+                img.src = url;
+                wrap.classList.add('show');
+            } else {
+                wrap.classList.remove('show');
+            }
+        };
+
+        // ==========================================
+        // LOAD ALL USERS INTO CACHE (for chat avatars)
+        // ==========================================
+        function loadUsersCache() {
+            onSnapshot(collection(db, 'users'), (snap) => {
+                snap.forEach(doc => {
+                    userCache[doc.id] = doc.data();
+                });
+                // Re-render chat sidebar if we have chat groups
+                if (lastChatGroupsSnapshot) {
+                    renderChatSidebar();
+                }
+            });
+        }
 
         function initDashboard() {
             // Users List
@@ -436,8 +548,8 @@
                 });
             });
 
-            // PENDING ACTIVATIONS
-            onSnapshot(query(collection(db, 'deposits'), where('status', '==', 'pending')), async (snap) => {
+            // ACTIVATIONS (type: activation)
+            onSnapshot(query(collection(db, 'deposits'), where('status', '==', 'pending'), where('type', '==', 'activation')), async (snap) => {
                 const list = document.getElementById('activations-list');
                 const dashStat = document.getElementById('stat-activations');
                 if (!list) return;
@@ -453,43 +565,74 @@
                 for (const doc of snap.docs) {
                     const d = doc.data();
                     let userName = "Unknown User";
-                    let userEmail = d.email || "N/A";
-                    
                     try {
                         const uSnap = await getDoc(doc(db, 'users', d.uid));
-                        if (uSnap.exists()) {
-                            const u = uSnap.data();
-                            userName = u.fullName || "No Name";
-                            userEmail = u.email || userEmail;
-                        }
+                        if (uSnap.exists()) userName = uSnap.data().fullName || "No Name";
                     } catch (e) { }
 
-                    let screenshotUrl = '#';
-                    if (d.screenshot && d.screenshot.publicId) {
-                        screenshotUrl = `https://res.cloudinary.com/c2n8j0v/image/upload/${d.screenshot.publicId}.${d.screenshot.format}`;
-                    }
+                    let screenshotUrl = d.screenshotUrl || (d.screenshot ? `https://res.cloudinary.com/c2n8j0v/image/upload/${d.screenshot.publicId}.${d.screenshot.format}` : '#');
 
                     list.innerHTML += `
-                        <div class="row-card" style="align-items: flex-start; flex-direction: column; padding: 20px; background: #0f172a;">
+                        <div class="row-card" style="align-items: flex-start; flex-direction: column; padding: 20px;">
                             <div style="display: flex; justify-content: space-between; width: 100%; flex-wrap: wrap; gap: 15px;">
                                 <div class="row-info">
                                     <div class="row-title" style="color: var(--cyan);">${userName}</div>
-                                    <div class="row-sub">Email: <span>${userEmail}</span> | Phone: <span>${d.recipient?.number || 'N/A'}</span></div>
-                                    <div class="row-sub" style="margin-top: 5px;">Paid: <span style="color: var(--emerald); font-size: 16px;">$${d.amountUSD} USD</span> (${d.currency} ${d.amountConverted || d.amountZMW})</div>
-                                    <div class="row-sub" style="margin-top: 5px;">Network: <span>${d.network ? d.network.toUpperCase() : 'MANUAL'}</span></div>
+                                    <div class="row-sub">Paid: <span style="color: var(--emerald);">$${d.amountUSD || 0.25} USD</span></div>
                                 </div>
                                 <div class="row-actions">
                                     <button class="btn btn-cyan" onclick="generateActivationCode('${doc.id}', '${d.uid}')">🔑 Generate Code</button>
-                                    <button class="btn btn-reject" onclick="rejectActivation('${doc.id}')">❌ Reject</button>
+                                    <button class="btn btn-reject" onclick="rejectDeposit('${doc.id}')">❌ Reject</button>
                                 </div>
                             </div>
-                            
-                            <div style="width: 100%; margin-top: 15px; background: #060b19; border-radius: 8px; padding: 15px; border: 1px solid #1e293b;">
-                                <div style="font-size: 12px; font-weight: 800; color: var(--gold); margin-bottom: 8px; text-transform: uppercase;">Payment SMS:</div>
-                                <div style="font-size: 13px; color: var(--text-white); white-space: pre-wrap; font-family: monospace; margin-bottom: 15px; background: #1e293b; padding: 10px; border-radius: 6px;">${d.smsText || 'No SMS provided'}</div>
-                                
-                                <div style="font-size: 12px; font-weight: 800; color: var(--gold); margin-bottom: 8px; text-transform: uppercase;">Screenshot Proof:</div>
-                                ${screenshotUrl !== '#' ? `<a href="${screenshotUrl}" target="_blank"><img src="${screenshotUrl}" style="max-width: 100%; max-height: 300px; border-radius: 8px; border: 1px solid #334155; object-fit: cover;" alt="Payment Proof" onerror="this.style.display='none'"></a>` : '<div style="color: var(--text-muted); font-size: 13px;">No screenshot uploaded</div>'}
+                            <div style="width: 100%; margin-top: 15px; background: #060b19; border-radius: 8px; padding: 15px;">
+                                <div style="font-size: 12px; font-weight: 800; color: var(--gold); margin-bottom: 8px;">SMS PROOF:</div>
+                                <div style="font-size: 13px; font-family: monospace; margin-bottom: 15px;">${d.smsText || 'No SMS'}</div>
+                                ${screenshotUrl !== '#' ? `<a href="${screenshotUrl}" target="_blank"><img src="${screenshotUrl}" style="max-width: 100%; max-height: 200px; border-radius: 8px;" onerror="this.style.display='none'"></a>` : 'No Image'}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            // DEPOSITS (type: deposit)
+            onSnapshot(query(collection(db, 'deposits'), where('status', '==', 'pending'), where('type', '==', 'deposit')), async (snap) => {
+                const list = document.getElementById('deposits-list');
+                const dashStat = document.getElementById('stat-deposits');
+                if (!list) return;
+
+                list.innerHTML = '';
+                dashStat.innerText = snap.size;
+
+                if(snap.empty) {
+                    list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No pending deposits.</div>';
+                    return;
+                }
+
+                for (const doc of snap.docs) {
+                    const d = doc.data();
+                    let userName = "Unknown User";
+                    try {
+                        const uSnap = await getDoc(doc(db, 'users', d.uid));
+                        if (uSnap.exists()) userName = uSnap.data().fullName || "No Name";
+                    } catch (e) { }
+
+                    list.innerHTML += `
+                        <div class="row-card" style="align-items: flex-start; flex-direction: column; padding: 20px;">
+                            <div style="display: flex; justify-content: space-between; width: 100%; flex-wrap: wrap; gap: 15px;">
+                                <div class="row-info">
+                                    <div class="row-title" style="color: var(--emerald);">${userName}</div>
+                                    <div class="row-sub">Amount: <span style="color: var(--emerald); font-size: 18px;">${d.currency} ${d.amount}</span></div>
+                                    <div class="row-sub">Method: <span>${d.method || 'MTN'}</span></div>
+                                </div>
+                                <div class="row-actions">
+                                    <button class="btn btn-approve" onclick="approveDeposit('${doc.id}', '${d.uid}', ${d.amount})">✅ Approve</button>
+                                    <button class="btn btn-reject" onclick="rejectDeposit('${doc.id}')">❌ Reject</button>
+                                </div>
+                            </div>
+                            <div style="width: 100%; margin-top: 15px; background: #060b19; border-radius: 8px; padding: 15px;">
+                                <div style="font-size: 12px; font-weight: 800; color: var(--gold); margin-bottom: 8px;">SMS PROOF:</div>
+                                <div style="font-size: 13px; font-family: monospace; margin-bottom: 15px;">${d.smsText || 'No SMS'}</div>
+                                ${d.screenshotUrl ? `<a href="${d.screenshotUrl}" target="_blank"><img src="${d.screenshotUrl}" style="max-width: 100%; max-height: 200px; border-radius: 8px;" onerror="this.style.display='none'"></a>` : 'No Image'}
                             </div>
                         </div>
                     `;
@@ -521,21 +664,82 @@
                 });
             });
 
-            // Chat List
-            onSnapshot(query(collection(db, 'chat_groups'), orderBy('lastMessageTime', 'desc')), (snap) => {
-                const list = document.getElementById('chat-user-list');
-                list.innerHTML = '';
-                if(snap.empty) list.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">No active chats</div>';
+            // CHAT GROUPS LISTENER - sorted in memory (handles missing fields)
+            onSnapshot(collection(db, 'chat_groups'), (snap) => {
+                lastChatGroupsSnapshot = snap;
+                renderChatSidebar();
+            });
+        }
 
-                snap.forEach(doc => {
-                    const chat = doc.data();
-                    list.innerHTML += `
-                        <div class="chat-user-item" id="chat-item-${doc.id}" onclick="openChat('${doc.id}', '${chat.userName || 'User'}')">
-                            <h4>${chat.userName || 'User'}</h4>
-                            <p>${chat.lastMessage || 'No messages yet'}</p>
+        // ==========================================
+        // 🎨 RENDER CHAT SIDEBAR (with Global + Users)
+        // ==========================================
+        function renderChatSidebar() {
+            if (!lastChatGroupsSnapshot) return;
+            
+            const list = document.getElementById('chat-user-list');
+            list.innerHTML = '';
+
+            // 1. GLOBAL COMMUNITY (always pinned)
+            list.innerHTML += `
+                <div class="chat-user-item global-chat-item" id="chat-item-global_chat" onclick="openChat('global_chat', 'Global Community', '')">
+                    <div class="chat-avatar-circle global">🌍</div>
+                    <div class="chat-preview">
+                        <h4>Global Community</h4>
+                        <p>Everyone's chat room</p>
+                    </div>
+                </div>
+            `;
+
+            // 2. PRIVATE CHATS (real users)
+            const chats = [];
+            lastChatGroupsSnapshot.forEach(doc => {
+                const data = doc.data();
+                if (doc.id === 'global_chat') return;
+                
+                const lastTime = data.lastMessageTime?.toMillis() || data.createdAt?.toMillis() || 0;
+                chats.push({ id: doc.id, ...data, _lastTimeMs: lastTime });
+            });
+            
+            chats.sort((a, b) => b._lastTimeMs - a._lastTimeMs);
+
+            if (chats.length === 0) {
+                list.innerHTML += `<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">No private chats yet. Users will appear here when they message you.</div>`;
+                return;
+            }
+
+            chats.forEach(chat => {
+                // Extract other user's UID from groupId
+                let otherUid = null;
+                if (chat.id.startsWith('private_')) {
+                    const uids = chat.id.replace('private_', '').split('_');
+                    otherUid = uids.find(id => id !== currentAdmin.uid);
+                }
+                
+                const otherUser = otherUid ? userCache[otherUid] : null;
+                const userName = otherUser?.fullName || chat.userName || 'User';
+                const userAvatar = otherUser?.profilePicUrl || chat.userAvatar;
+                const initial = userName.charAt(0).toUpperCase();
+                
+                const lastMsg = chat.lastMessage || 'No messages yet';
+                const timeStr = chat._lastTimeMs > 0 
+                    ? new Date(chat._lastTimeMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    : '';
+
+                const avatarHtml = userAvatar 
+                    ? `<img src="${userAvatar}" alt="${initial}">` 
+                    : initial;
+
+                list.innerHTML += `
+                    <div class="chat-user-item" id="chat-item-${chat.id}" onclick="openChat('${chat.id}', '${userName.replace(/'/g, "\\'")}', '${userAvatar || ''}')">
+                        <div class="chat-avatar-circle">${avatarHtml}</div>
+                        <div class="chat-preview">
+                            <h4>${userName}</h4>
+                            <p>${lastMsg}</p>
                         </div>
-                    `;
-                });
+                        <div class="chat-time-badge">${timeStr}</div>
+                    </div>
+                `;
             });
         }
 
@@ -559,15 +763,14 @@
             }
         };
 
-        window.rejectActivation = async (depositId) => {
-            if(!confirm("Reject this payment?")) return;
+        window.rejectDeposit = async (depositId) => {
+            if(!confirm("Reject this request?")) return;
             try {
                 await updateDoc(doc(db, 'deposits', depositId), { status: 'rejected' });
-                alert("Activation rejected.");
+                alert("Request rejected.");
             } catch (e) { alert("Failed to reject."); }
         };
 
-        // --- USERS ACTIONS ---
         window.toggleBlock = async (uid, currentStatus) => {
             const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
             await updateDoc(doc(db, 'users', uid), { status: newStatus });
@@ -598,7 +801,6 @@
             } catch (e) { alert("Failed. Check console."); }
         };
 
-        // --- DEPOSIT ACTIONS ---
         window.approveDeposit = async (depositId, uid, amount) => {
             try {
                 const batch = writeBatch(db);
@@ -612,9 +814,6 @@
             } catch (e) { alert("Failed to approve."); }
         };
 
-        window.rejectDeposit = async (depositId) => { await updateDoc(doc(db, 'deposits', depositId), { status: 'rejected' }); };
-
-        // --- WITHDRAWAL ACTIONS ---
         window.approveWithdrawal = async (withdrawId) => {
             await updateDoc(doc(db, 'withdrawals', withdrawId), { status: 'approved' });
             alert("Marked as paid!");
@@ -640,10 +839,20 @@
             const invest = parseFloat(document.getElementById('plan-invest').value);
             const daily = parseFloat(document.getElementById('plan-daily').value);
             const duration = parseInt(document.getElementById('plan-duration').value);
+            
             if (!name || !invest || !daily || !duration) { alert("Fill all fields"); return; }
-            await addDoc(collection(db, 'plans'), { name, imageUrl: img, investAmount: invest, dailyIncome: daily, durationDays: duration, isActive: true });
+            if (!img) { alert("Please paste an image URL"); return; }
+            
+            await addDoc(collection(db, 'plans'), { 
+                name, imageUrl: img, investAmount: invest, dailyIncome: daily, durationDays: duration, isActive: true 
+            });
             alert("Plan Created!");
-            document.getElementById('plan-name').value = ''; document.getElementById('plan-img').value = ''; document.getElementById('plan-invest').value = ''; document.getElementById('plan-daily').value = ''; document.getElementById('plan-duration').value = '';
+            document.getElementById('plan-name').value = ''; 
+            document.getElementById('plan-img').value = ''; 
+            document.getElementById('plan-invest').value = ''; 
+            document.getElementById('plan-daily').value = ''; 
+            document.getElementById('plan-duration').value = '';
+            document.getElementById('plan-img-preview').classList.remove('show');
         };
 
         // --- TRENDING MACHINE ACTIONS ---
@@ -678,16 +887,19 @@
             if (!countryName || !countryCode || !duration || !min || !max || !multiplier) { alert("Please fill all fields."); return; }
             await addDoc(collection(db, 'trending_machines'), { countryName, countryCode, durationDays: duration, minAmount: min, maxAmount: max, payoutMultiplier: multiplier, isActive: true, createdAt: serverTimestamp() });
             alert("Trending Machine Created!");
-            document.getElementById('machine-country-name').value = ''; document.getElementById('machine-country-code').value = ''; document.getElementById('machine-duration').value = ''; document.getElementById('machine-min').value = ''; document.getElementById('machine-max').value = ''; document.getElementById('machine-multiplier').value = '';
+            document.getElementById('machine-country-name').value = ''; 
+            document.getElementById('machine-country-code').value = ''; 
+            document.getElementById('machine-duration').value = ''; 
+            document.getElementById('machine-min').value = ''; 
+            document.getElementById('machine-max').value = ''; 
+            document.getElementById('machine-multiplier').value = '';
         };
 
         window.deleteMachine = async (id) => {
             if(confirm("Delete this machine?")) { await deleteDoc(doc(db, 'trending_machines', id)); alert("Machine Deleted."); }
         };
 
-        // ==========================================
-        // 🟢 LIVE TRENDING ENGINE
-        // ==========================================
+        // --- ENGINE ---
         async function loadCrashSequence() {
             const grid = document.getElementById('sequence-grid');
             grid.innerHTML = '';
@@ -715,7 +927,6 @@
             await setDoc(doc(db, 'settings', 'game_counter'), { index: 0 });
             loadCrashSequence();
             alert("Sequence Saved! Engine Restarted from Round 1.");
-            if(engineRunning) { stopEngine(); setTimeout(startEngine, 1000); }
         };
 
         window.toggleEngine = async () => {
@@ -728,8 +939,6 @@
             document.getElementById('engine-toggle-btn').innerText = "STOP LIVE ENGINE";
             document.getElementById('engine-toggle-btn').className = "btn btn-reject";
             document.getElementById('engine-toggle-btn').style.cssText = "width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;";
-            
-            // Read sequence and start
             await loadCrashSequence();
             currentRoundIndex = 0;
             runRound();
@@ -739,7 +948,6 @@
             engineRunning = false;
             clearTimeout(engineTimeout);
             clearInterval(engineInterval);
-            
             document.getElementById('engine-toggle-btn').innerText = "START LIVE ENGINE";
             document.getElementById('engine-toggle-btn').className = "btn btn-approve";
             document.getElementById('engine-toggle-btn').style.cssText = "width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;";
@@ -749,15 +957,11 @@
 
         async function runRound() {
             if (!engineRunning) return;
-            
-            if (currentRoundIndex >= crashSequence.length) {
-                currentRoundIndex = 0; // Loop back to start
-            }
+            if (currentRoundIndex >= crashSequence.length) currentRoundIndex = 0;
 
             const crashPoint = crashSequence[currentRoundIndex];
             currentCrashPoint = crashPoint;
             
-            // Update UI
             document.getElementById('engine-round-display').innerText = `ROUND ${currentRoundIndex + 1} / 20`;
             document.getElementById('engine-multiplier-display').innerText = "1.00x";
             document.getElementById('engine-multiplier-display').style.color = "var(--cyan)";
@@ -765,77 +969,54 @@
             document.getElementById('engine-state-display').style.color = "var(--gold)";
 
             try {
-                // 1. Create the round in Firestore
                 const roundRef = await addDoc(collection(db, 'live_trends'), {
                     roundNumber: currentRoundIndex + 1,
                     crashPoint: crashPoint,
                     status: 'waiting',
+                    startTime: serverTimestamp(),
                     createdAt: serverTimestamp()
                 });
                 currentRoundId = roundRef.id;
 
-                // 2. Wait 10 seconds for bets
                 await new Promise(r => engineTimeout = setTimeout(r, 10000));
                 if (!engineRunning) return;
 
-                // 3. Start Flying
                 document.getElementById('engine-state-display').innerText = "Plane is flying!";
                 document.getElementById('engine-state-display').style.color = "var(--emerald)";
-                
-                await updateDoc(doc(db, 'live_trends', currentRoundId), { status: 'flying' });
+                await updateDoc(doc(db, 'live_trends', currentRoundId), { status: 'running' });
 
                 liveMultiplier = 1.00;
                 let msSinceStart = 0;
 
-                // 4. Fly Loop (updates every 100ms)
                 return new Promise((resolve) => {
                     engineInterval = setInterval(async () => {
                         if (!engineRunning) { clearInterval(engineInterval); resolve(); return; }
-
                         msSinceStart += 100;
-                        // Exponential growth formula for flight
                         liveMultiplier = 1.00 + Math.pow(msSinceStart / 1000, 1.5) * 0.1; 
-
                         document.getElementById('engine-multiplier-display').innerText = liveMultiplier.toFixed(2) + "x";
 
                         if (liveMultiplier >= currentCrashPoint) {
                             clearInterval(engineInterval);
                             document.getElementById('engine-multiplier-display').style.color = "var(--danger)";
                             document.getElementById('engine-multiplier-display').innerText = currentCrashPoint.toFixed(2) + "x CRASHED";
-                            
-                            // 5. Crash!
-                            await updateDoc(doc(db, 'live_trends', currentRoundId), { 
-                                status: 'crashed',
-                                crashedAt: serverTimestamp()
-                            });
-                            
+                            await updateDoc(doc(db, 'live_trends', currentRoundId), { status: 'crashed', crashedAt: serverTimestamp() });
                             document.getElementById('engine-state-display').innerText = "Crashed! Waiting for next round...";
-                            
-                            // Wait 5 seconds before next round
-                            engineTimeout = setTimeout(() => {
-                                currentRoundIndex++;
-                                runRound();
-                            }, 5000);
-                            
+                            engineTimeout = setTimeout(() => { currentRoundIndex++; runRound(); }, 5000);
                             resolve();
                         }
                     }, 100);
                 });
-
             } catch (e) {
                 console.error("Engine Error:", e);
                 document.getElementById('engine-state-display').innerText = "Error! Check network.";
-                engineTimeout = setTimeout(runRound, 5000); // Try again in 5s
+                engineTimeout = setTimeout(runRound, 5000);
             }
         }
 
         window.triggerCrash = async () => {
-            const manualCrashInput = document.getElementById('manual-crash').value;
-            const crashPoint = parseFloat(manualCrashInput);
-
+            const crashPoint = parseFloat(document.getElementById('manual-crash').value);
             if (isNaN(crashPoint) || crashPoint < 1.01) { alert("Enter valid crash point."); return; }
             if (!engineRunning || !currentRoundId) { alert("Engine must be running."); return; }
-
             try {
                 currentCrashPoint = crashPoint;
                 await updateDoc(doc(db, 'live_trends', currentRoundId), { crashPoint: crashPoint });
@@ -843,7 +1024,6 @@
             } catch (error) { alert("Failed to set crash point."); }
         };
 
-        // --- SETTINGS ACTIONS ---
         async function loadSettings() {
             const docSnap = await getDoc(doc(db, 'settings', 'platform'));
             if (docSnap.exists()) {
@@ -862,42 +1042,123 @@
             alert("Platform Settings Saved!");
         };
 
-        // --- CHAT SYSTEM ---
-        window.openChat = (chatId, userName) => {
+        // ==========================================
+        // CHAT SYSTEM - FIXED
+        // ==========================================
+        window.openChat = (chatId, userName, userAvatar) => {
             currentChatId = chatId;
+            currentChatName = userName;
+            currentChatAvatar = userAvatar || '';
+            
             document.querySelectorAll('.chat-user-item').forEach(el => el.classList.remove('active'));
             const activeItem = document.getElementById(`chat-item-${chatId}`);
             if(activeItem) activeItem.classList.add('active');
+
+            // Update header
+            const header = document.getElementById('chat-header');
+            header.style.display = 'flex';
+            document.getElementById('chat-header-name').innerText = chatId === 'global_chat' ? '🌍 ' + userName : userName;
+            
+            const headerAvatar = document.getElementById('chat-header-avatar');
+            if (chatId === 'global_chat') {
+                headerAvatar.innerText = '🌍';
+                headerAvatar.style.background = 'linear-gradient(135deg, #00D9FF, #10b981)';
+            } else if (userAvatar) {
+                headerAvatar.innerHTML = `<img src="${userAvatar}" alt="${userName}">`;
+                headerAvatar.style.background = 'var(--bg-elevated)';
+            } else {
+                headerAvatar.innerText = userName.charAt(0).toUpperCase();
+                headerAvatar.style.background = 'var(--bg-elevated)';
+            }
 
             document.getElementById('chat-input-area').style.display = 'flex';
             document.getElementById('chat-history').innerHTML = `<p style="text-align: center; color: var(--text-muted); margin-top: 20px;">Loading messages...</p>`;
             
             if (unsubscribeChat) unsubscribeChat();
 
-            const q = query(collection(db, 'chat_messages'), where('groupId', '==', chatId), orderBy('createdAt', 'asc'));
+            // Query messages - sorted by timestamp (for old) OR createdAt (for legacy)
+            const q = query(collection(db, 'chat_messages'), where('groupId', '==', chatId), limit(200));
+            
             unsubscribeChat = onSnapshot(q, (snap) => {
                 const history = document.getElementById('chat-history');
                 history.innerHTML = '';
+                
                 if (snap.empty) {
-                    history.innerHTML = `<div style="text-align: center; margin-top: 50px; color: var(--text-muted);"><div style="font-size: 30px; margin-bottom: 10px;">👋</div>Send a message to start the conversation.</div>`;
+                    history.innerHTML = `<div style="text-align: center; margin-top: 50px; color: var(--text-muted);"><div style="font-size: 40px; margin-bottom: 10px;">👋</div><div style="font-weight: 700;">No messages yet</div><div style="font-size: 12px; margin-top: 5px;">Send a message to start the conversation</div></div>`;
                     return;
                 }
+
+                // Sort messages manually in case of mixed timestamp fields
+                const msgs = [];
                 snap.forEach(doc => {
-                    const msg = doc.data();
-                    const isAdmin = msg.senderId === currentAdmin.uid;
-                    history.innerHTML += `<div class="msg ${isAdmin ? 'admin' : 'user'}">${msg.text}</div>`;
+                    const m = doc.data();
+                    const time = m.timestamp?.toMillis?.() || m.createdAt?.toMillis?.() || 0;
+                    msgs.push({ ...m, _time: time });
+                });
+                msgs.sort((a, b) => a._time - b._time);
+
+                msgs.forEach(msg => {
+                    // Handle both old (senderId) and new (uid) field names
+                    const senderUid = msg.uid || msg.senderId;
+                    const isAdmin = senderUid === currentAdmin.uid;
+                    const text = msg.textContent || msg.text || '';
+                    const msgType = msg.messageType || 'text';
+                    const timeStr = msg._time > 0 
+                        ? new Date(msg._time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : '';
+
+                    let contentHtml = '';
+                    if (msgType === 'image' && msg.imageUrl) {
+                        contentHtml = `<img src="${msg.imageUrl}" class="msg-image" alt="Image">`;
+                    } else if (msgType === 'voice' && msg.voiceNoteUrl) {
+                        contentHtml = `<audio controls src="${msg.voiceNoteUrl}"></audio>`;
+                    } else {
+                        contentHtml = text;
+                    }
+
+                    // Show sender name in global chat for other users
+                    const showSenderName = !isAdmin && chatId === 'global_chat';
+
+                    history.innerHTML += `
+                        <div class="msg ${isAdmin ? 'admin' : 'user'}">
+                            ${showSenderName ? `<div class="msg-sender-name">${msg.senderName || 'User'}</div>` : ''}
+                            ${contentHtml}
+                            <div class="msg-time">${timeStr}</div>
+                        </div>
+                    `;
                 });
                 history.scrollTop = history.scrollHeight;
             });
         };
 
         window.sendMessage = async () => {
-            const text = document.getElementById('chat-input').value;
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
             if (!text || !currentChatId) return;
-            const chatRef = doc(db, 'chat_groups', currentChatId);
-            await updateDoc(chatRef, { lastMessage: text, lastMessageTime: serverTimestamp() });
-            await addDoc(collection(db, 'chat_messages'), { groupId: currentChatId, senderId: currentAdmin.uid, senderName: 'Admin', text: text, createdAt: serverTimestamp() });
-            document.getElementById('chat-input').value = '';
+            
+            input.value = '';
+
+            try {
+                // Use consistent field names as user side
+                await addDoc(collection(db, 'chat_messages'), {
+                    groupId: currentChatId,
+                    uid: currentAdmin.uid,
+                    senderName: 'Admin',
+                    messageType: 'text',
+                    textContent: text,
+                    timestamp: serverTimestamp()
+                });
+
+                // Update chat_group summary
+                await setDoc(doc(db, 'chat_groups', currentChatId), {
+                    lastMessage: 'Admin: ' + text,
+                    lastMessageTime: serverTimestamp()
+                }, { merge: true });
+
+            } catch (e) {
+                console.error(e);
+                alert("Failed to send message.");
+            }
         };
 
         window.logout = async () => { await signOut(auth); window.location.replace('login.html'); };

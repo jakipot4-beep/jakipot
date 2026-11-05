@@ -27,7 +27,6 @@
             background-image: radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.08) 0%, transparent 50%);
         }
 
-        /* HEADER */
         .top-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 15px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border-light);
@@ -37,10 +36,8 @@
         .back-btn svg { width: 24px; height: 24px; fill: currentColor; }
         .header-title { font-size: 16px; font-weight: 900; color: var(--text-white); letter-spacing: 1.5px; text-transform: uppercase; }
 
-        /* CONTENT */
         .content-area { flex: 1; padding: 25px 20px; overflow-y: auto; padding-bottom: 50px; display: flex; flex-direction: column; align-items: center; }
         
-        /* HERO ILLUSTRATION */
         .hero-icon {
             width: 90px; height: 90px; background: rgba(0, 217, 255, 0.1); border-radius: 50%;
             display: grid; place-items: center; margin-bottom: 20px;
@@ -49,7 +46,72 @@
         .hero-icon svg { width: 50px; height: 50px; fill: var(--cyan); }
         
         .hero-title { font-size: 24px; font-weight: 900; text-align: center; margin-bottom: 10px; }
-        .hero-sub { font-size: 14px; color: var(--text-muted); text-align: center; line-height: 1.5; max-width: 300px; margin-bottom: 30px; }
+        .hero-sub { font-size: 14px; color: var(--text-muted); text-align: center; line-height: 1.5; max-width: 300px; margin-bottom: 25px; }
+
+        /* TRACKER CARD */
+        .tracker-card {
+            background: linear-gradient(145deg, var(--bg-card), #0a1220);
+            border: 2px solid var(--cyan);
+            border-radius: 20px; padding: 22px 20px;
+            width: 100%; max-width: 400px; margin-bottom: 20px;
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.15);
+        }
+        
+        .tracker-stats {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;
+        }
+        .stat-block {
+            background: rgba(0, 217, 255, 0.05); border-radius: 12px;
+            padding: 12px; text-align: center;
+            border: 1px solid rgba(0, 217, 255, 0.15);
+        }
+        .stat-label { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+        .stat-value { font-size: 26px; font-weight: 900; color: var(--cyan); line-height: 1; }
+        .stat-value.gold { color: var(--gold); }
+        
+        .progress-section { margin-bottom: 15px; }
+        .progress-labels { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
+        .progress-bar-bg {
+            height: 12px; background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px; overflow: hidden; position: relative;
+            border: 1px solid var(--border-light);
+        }
+        .progress-bar-fill {
+            height: 100%; background: linear-gradient(90deg, var(--cyan), var(--emerald));
+            border-radius: 20px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 15px var(--cyan-glow);
+            position: relative;
+        }
+        .progress-bar-fill::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+        .claim-btn {
+            width: 100%; padding: 16px; border-radius: 12px; border: none;
+            background: linear-gradient(90deg, var(--emerald), #059669);
+            color: var(--white); font-size: 15px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.5);
+            transition: all 0.2s;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+            animation: pulse-glow 2s infinite;
+        }
+        .claim-btn:hover:not(:disabled) { transform: translateY(-2px); }
+        .claim-btn:active:not(:disabled) { transform: scale(0.97); }
+        .claim-btn:disabled { background: var(--bg-elevated); color: var(--text-muted); cursor: not-allowed; box-shadow: none; animation: none; }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 4px 20px rgba(16, 185, 129, 0.5); }
+            50% { box-shadow: 0 4px 30px rgba(16, 185, 129, 0.8); }
+        }
+
+        .empty-tracker-msg {
+            text-align: center; color: var(--text-muted); font-size: 13px;
+            padding: 15px; background: rgba(255,255,255,0.03); border-radius: 12px;
+            line-height: 1.5;
+        }
 
         /* REFERRAL CARDS */
         .ref-card {
@@ -81,8 +143,52 @@
         .copy-btn:active { transform: scale(0.95); }
         .copy-btn.copied { background: var(--emerald); color: var(--white); }
 
-        /* SOCIAL SHARE GRID */
-        .share-title { font-size: 14px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-top: 20px; margin-bottom: 15px; align-self: flex-start; max-width: 400px; width: 100%; padding-left: 10px;}
+        /* HOW IT WORKS - REDESIGNED */
+        .how-it-works {
+            background: rgba(0, 217, 255, 0.05); border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 16px; padding: 20px;
+            width: 100%; max-width: 400px; margin-bottom: 20px;
+        }
+        .how-title { font-size: 14px; font-weight: 900; color: var(--cyan); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .how-title svg { width: 18px; height: 18px; fill: var(--cyan); }
+        
+        .how-step {
+            display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start;
+        }
+        .how-step:last-child { margin-bottom: 0; }
+        .how-num {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: var(--cyan); color: #000; font-size: 13px; font-weight: 900;
+            display: grid; place-items: center; flex-shrink: 0;
+        }
+        .how-num.gold { background: var(--gold); }
+        .how-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+        .how-text b { color: var(--white); }
+        .how-text .badge-mini { 
+            display: inline-block; background: rgba(251, 191, 36, 0.2); 
+            color: var(--gold); padding: 1px 6px; border-radius: 4px; 
+            font-size: 11px; font-weight: 800; margin: 0 2px;
+        }
+
+        .threshold-notice {
+            background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 10px; padding: 12px; margin-top: 15px;
+            display: flex; gap: 10px; align-items: flex-start;
+        }
+        .threshold-notice svg { width: 18px; height: 18px; fill: var(--gold); flex-shrink: 0; margin-top: 2px; }
+        .threshold-notice p { font-size: 12px; color: #fef3c7; line-height: 1.5; }
+        .threshold-notice b { color: var(--gold); }
+
+        .earn-banner {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(16, 185, 129, 0.15));
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            border-radius: 14px; padding: 16px; text-align: center; margin-top: 15px;
+        }
+        .earn-amount { font-size: 28px; font-weight: 900; color: var(--gold); text-shadow: 0 0 15px rgba(251, 191, 36, 0.4); line-height: 1; }
+        .earn-label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+        /* SHARE BUTTONS */
+        .share-title { font-size: 14px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-top: 10px; margin-bottom: 15px; align-self: flex-start; max-width: 400px; width: 100%; padding-left: 10px;}
         
         .social-grid {
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
@@ -99,7 +205,6 @@
         .social-btn svg { width: 32px; height: 32px; }
         .social-name { font-size: 11px; font-weight: 800; color: var(--text-white); }
 
-        /* Specific Brand Colors on Hover/Active */
         .social-btn.whatsapp:hover { border-color: #25D366; box-shadow: 0 0 15px rgba(37, 211, 102, 0.2); }
         .social-btn.facebook:hover { border-color: #1877F2; box-shadow: 0 0 15px rgba(24, 119, 242, 0.2); }
         .social-btn.tiktok:hover { border-color: #ff0050; box-shadow: 0 0 15px rgba(255, 0, 80, 0.2); }
@@ -107,7 +212,6 @@
         .social-btn.youtube:hover { border-color: #FF0000; box-shadow: 0 0 15px rgba(255, 0, 0, 0.2); }
         .social-btn.telegram:hover { border-color: #0088cc; box-shadow: 0 0 15px rgba(0, 136, 204, 0.2); }
 
-        /* Toast Alert */
         .toast {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
             background: var(--emerald); color: var(--white); padding: 12px 24px;
@@ -116,7 +220,7 @@
             opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none;
         }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(-10px); }
-
+        .toast.error { background: var(--danger, #ef4444); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
     </style>
 </head>
 <body>
@@ -136,9 +240,39 @@
         </div>
 
         <div class="hero-title">Invite Friends</div>
-        <div class="hero-sub">Share your link with friends. When they register and activate their account, you earn a bonus!</div>
+        <div class="hero-sub">Share your link with friends. Earn K20 for every friend who joins and activates their account!</div>
 
-        <!-- Referral Code Card -->
+        <div class="tracker-card">
+            <div class="tracker-stats">
+                <div class="stat-block">
+                    <div class="stat-label">Friends Joined</div>
+                    <div class="stat-value" id="stat-joined">0</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-label">Claimable</div>
+                    <div class="stat-value gold" id="stat-claimable">K0</div>
+                </div>
+            </div>
+
+            <div class="progress-section">
+                <div class="progress-labels">
+                    <span>Progress</span>
+                    <span id="progress-text">0 of 0 completed</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progress-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <button class="claim-btn" id="claim-btn" onclick="claimBonus()" disabled>
+                CLAIM BONUS
+            </button>
+
+            <div class="empty-tracker-msg" id="empty-msg">
+                Invite your first friend to start earning!
+            </div>
+        </div>
+
         <div class="ref-card">
             <div class="card-label">Your Referral Code</div>
             <div class="code-box">
@@ -147,7 +281,6 @@
             </div>
         </div>
 
-        <!-- Referral Link Card -->
         <div class="ref-card">
             <div class="card-label">Your Invite Link</div>
             <div class="link-box">
@@ -156,40 +289,72 @@
             </div>
         </div>
 
+        <!-- HOW IT WORKS WITH CLEAR 2-STEP PROCESS -->
+        <div class="how-it-works">
+            <div class="how-title">
+                <svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                How It Works
+            </div>
+            <div class="how-step">
+                <div class="how-num">1</div>
+                <div class="how-text">Share your link or code with a friend.</div>
+            </div>
+            <div class="how-step">
+                <div class="how-num">2</div>
+                <div class="how-text">They register using <b>your code</b>.</div>
+            </div>
+            <div class="how-step">
+                <div class="how-num">3</div>
+                <div class="how-text">They pay the <b>$0.25 activation fee</b> to unlock their account.</div>
+            </div>
+            <div class="how-step">
+                <div class="how-num gold">4</div>
+                <div class="how-text">They deposit <span class="badge-mini">K30+ minimum</span> to activate the platform.</div>
+            </div>
+            <div class="how-step">
+                <div class="how-num gold">5</div>
+                <div class="how-text">You claim your <b>K20 bonus</b> — straight to your wallet!</div>
+            </div>
+
+            <div class="threshold-notice">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                <p><b>Important:</b> Paying the $0.25 activation fee alone is NOT enough. Your friend must also make their <b>first deposit of K30 or more</b> to trigger your bonus.</p>
+            </div>
+
+            <div class="earn-banner">
+                <div class="earn-amount" id="earn-amount-display">K20</div>
+                <div class="earn-label">Earned Per Successful Friend</div>
+            </div>
+        </div>
+
         <div class="share-title">Share via Social Media</div>
         
         <div class="social-grid">
-            <!-- WhatsApp -->
             <div class="social-btn whatsapp" onclick="shareSocial('whatsapp')">
                 <svg viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                 <div class="social-name">WhatsApp</div>
             </div>
 
-            <!-- Facebook -->
             <div class="social-btn facebook" onclick="shareSocial('facebook')">
                 <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                 <div class="social-name">Facebook</div>
             </div>
 
-            <!-- TikTok -->
             <div class="social-btn tiktok" onclick="shareSocial('tiktok')">
                 <svg viewBox="0 0 24 24" fill="#000000"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
                 <div class="social-name">TikTok</div>
             </div>
 
-            <!-- Instagram -->
             <div class="social-btn instagram" onclick="shareSocial('instagram')">
                 <svg viewBox="0 0 24 24" fill="#E1306C"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                 <div class="social-name">Instagram</div>
             </div>
 
-            <!-- YouTube -->
             <div class="social-btn youtube" onclick="shareSocial('youtube')">
                 <svg viewBox="0 0 24 24" fill="#FF0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                 <div class="social-name">YouTube</div>
             </div>
 
-            <!-- Telegram -->
             <div class="social-btn telegram" onclick="shareSocial('telegram')">
                 <svg viewBox="0 0 24 24" fill="#0088cc"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
                 <div class="social-name">Telegram</div>
@@ -201,9 +366,11 @@
     <div id="toast" class="toast">Link Copied!</div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // LOCKED TO 13.1.0
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app-check.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, addDoc, collection, query, where, getDocs, limit, onSnapshot, serverTimestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", 
@@ -215,19 +382,86 @@
         };
         
         const app = initializeApp(firebaseConfig);
+        initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), isTokenAutoRefreshEnabled: true });
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // ✅ CHANGED: K600 → K20
+        const BONUS_PER_REFERRAL = 20;
+        
+        const CURRENCY_MAP = { 
+            'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 
+            'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'TZS': 'TSh', 
+            'UGX': 'USh', 'BWP': 'P', 'MWK': 'MK', 'MZN': 'MT', 
+            'NAD': 'N$', 'AOA': 'Kz', 'PHP': '₱', 'IDR': 'Rp', 
+            'PKR': '₨', 'BDT': '৳'
+        };
 
         let currentUser = null;
         let referralCode = "";
         let referralLink = "";
+        let currencySymbol = 'K';
+        let isGeneratingCode = false;
+        let allReferrals = [];
+        let unsubscribeReferrals = null;
+        let isClaiming = false;
         const baseUrl = window.location.origin + window.location.pathname.replace('referral.html', 'register.html');
 
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) { 
-                window.location.replace('login.html'); 
-                return; 
+        let lastCopyTime = 0;
+        let lastShareTime = 0;
+        let spamCount = 0;
+
+        async function logSecurityEvent(event, details = {}) {
+            try {
+                await addDoc(collection(db, 'security_logs'), {
+                    event: event,
+                    uid: currentUser?.uid || 'unknown',
+                    page: 'referral.html',
+                    timestamp: serverTimestamp(),
+                    ...details
+                });
+            } catch (e) { console.warn('Guardian log failed', e); }
+        }
+
+        function formatMoney(amount) {
+            return `${currencySymbol}${amount.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+        }
+
+        function generateSecureCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            const bytes = new Uint8Array(6);
+            crypto.getRandomValues(bytes);
+            let code = 'JKP-';
+            for (let i = 0; i < 6; i++) {
+                code += chars[bytes[i] % chars.length];
             }
+            return code;
+        }
+
+        async function generateUniqueReferralCode() {
+            if (isGeneratingCode) return null;
+            isGeneratingCode = true;
+            
+            let attempts = 0;
+            while (attempts < 5) {
+                const candidateCode = generateSecureCode();
+                const q = query(collection(db, 'users'), where('myReferralCode', '==', candidateCode), limit(1));
+                const snap = await getDocs(q);
+                
+                if (snap.empty) {
+                    isGeneratingCode = false;
+                    return candidateCode;
+                }
+                attempts++;
+            }
+            
+            isGeneratingCode = false;
+            await logSecurityEvent('referral_code_generation_failed', { reason: 'collision_limit_reached' });
+            return null;
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
             currentUser = user;
 
             try {
@@ -237,44 +471,183 @@
                 if (userSnap.exists()) {
                     const data = userSnap.data();
                     
+                    const curr = data.currency || 'ZMW';
+                    currencySymbol = CURRENCY_MAP[curr] || curr;
+                    document.getElementById('earn-amount-display').innerText = formatMoney(BONUS_PER_REFERRAL);
+                    
                     if (data.myReferralCode) {
                         referralCode = data.myReferralCode;
                     } else {
-                        // Fallback: Generate code if it doesn't exist
-                        referralCode = "JKP-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+                        referralCode = await generateUniqueReferralCode();
+                        if (!referralCode) {
+                            alert("Could not generate your referral code. Please try again later.");
+                            return;
+                        }
                         await updateDoc(userRef, { myReferralCode: referralCode });
+                        await logSecurityEvent('referral_code_generated', { code: referralCode });
                     }
 
-                    // Build the link
                     referralLink = `${baseUrl}?ref=${referralCode}`;
                     
-                    // Update UI
                     document.getElementById('ref-code-display').innerText = referralCode;
                     document.getElementById('ref-link-display').innerText = referralLink;
                 }
             } catch (e) {
-                console.error("Error fetching referral code:", e);
+                console.error("Error fetching user data:", e);
             }
+
+            setupReferralListener(user.uid);
         });
 
-        // 1. Copy to Clipboard Logic
+        function setupReferralListener(uid) {
+            if (unsubscribeReferrals) unsubscribeReferrals();
+
+            const q = query(
+                collection(db, 'referrals'),
+                where('referrerUid', '==', uid)
+            );
+
+            unsubscribeReferrals = onSnapshot(q, (snapshot) => {
+                allReferrals = [];
+                snapshot.forEach((d) => {
+                    allReferrals.push({ id: d.id, ...d.data() });
+                });
+                updateTrackerUI();
+            }, (error) => {
+                console.warn("Referral query error:", error);
+            });
+        }
+
+        function updateTrackerUI() {
+            const joined = allReferrals.length;
+            const completed = allReferrals.filter(r => r.status === 'completed').length;
+            const claimed = allReferrals.filter(r => r.status === 'claimed').length;
+            const totalDone = completed + claimed;
+            const claimableAmount = completed * BONUS_PER_REFERRAL;
+            const progressPercent = joined > 0 ? (totalDone / joined) * 100 : 0;
+
+            document.getElementById('stat-joined').innerText = joined;
+            document.getElementById('stat-claimable').innerText = formatMoney(claimableAmount);
+            document.getElementById('progress-text').innerText = `${totalDone} of ${joined} completed`;
+            document.getElementById('progress-fill').style.width = `${progressPercent}%`;
+
+            const claimBtn = document.getElementById('claim-btn');
+            const emptyMsg = document.getElementById('empty-msg');
+
+            if (completed > 0) {
+                claimBtn.disabled = false;
+                claimBtn.innerText = `CLAIM ${formatMoney(claimableAmount)} NOW`;
+                claimBtn.style.display = 'flex';
+                emptyMsg.style.display = 'none';
+            } else {
+                claimBtn.disabled = true;
+                claimBtn.style.display = 'none';
+                emptyMsg.style.display = 'block';
+                
+                if (joined === 0) {
+                    emptyMsg.innerText = "Invite your first friend to start earning!";
+                } else if (totalDone === 0) {
+                    emptyMsg.innerText = `${joined} friend${joined > 1 ? 's have' : ' has'} registered. Waiting for their K30 deposit...`;
+                } else {
+                    emptyMsg.innerText = `You have ${totalDone} successful referral${totalDone > 1 ? 's' : ''}. All bonuses claimed!`;
+                }
+            }
+        }
+
+        window.claimBonus = async () => {
+            if (!currentUser || isClaiming) return;
+
+            const claimable = allReferrals.filter(r => r.status === 'completed');
+            if (claimable.length === 0) {
+                showToast("No bonuses available to claim right now.", true);
+                return;
+            }
+
+            const totalBonus = claimable.length * BONUS_PER_REFERRAL;
+
+            if (!confirm(`Claim ${formatMoney(totalBonus)} for ${claimable.length} successful referral${claimable.length > 1 ? 's' : ''}?`)) {
+                return;
+            }
+
+            isClaiming = true;
+            const claimBtn = document.getElementById('claim-btn');
+            claimBtn.disabled = true;
+            claimBtn.innerText = "PROCESSING...";
+
+            try {
+                const batch = writeBatch(db);
+
+                const walletRef = doc(db, 'wallets', currentUser.uid);
+                const txRef = doc(collection(db, 'transactions'));
+                
+                batch.update(walletRef, {
+                    balance: increment(totalBonus),
+                    lastTxId: txRef.id
+                });
+
+                batch.set(txRef, {
+                    uid: currentUser.uid,
+                    type: 'referral_bonus',
+                    amount: totalBonus,
+                    status: 'completed',
+                    description: `Referral bonus for ${claimable.length} friend${claimable.length > 1 ? 's' : ''}`,
+                    createdAt: serverTimestamp()
+                });
+
+                claimable.forEach(ref => {
+                    batch.update(doc(db, 'referrals', ref.id), {
+                        status: 'claimed',
+                        claimedAt: serverTimestamp()
+                    });
+                });
+
+                await batch.commit();
+
+                await logSecurityEvent('referral_bonus_claimed', { 
+                    amount: totalBonus, 
+                    count: claimable.length 
+                });
+
+                showToast(`${formatMoney(totalBonus)} added to your wallet!`);
+
+            } catch (err) {
+                console.error("Claim error:", err);
+                await logSecurityEvent('referral_claim_failed', { reason: err.message });
+                
+                if (err.code === 'permission-denied') {
+                    showToast("Referral rules need updating. Please contact support.", true);
+                } else {
+                    showToast("Failed to claim. Please try again.", true);
+                }
+            } finally {
+                isClaiming = false;
+                claimBtn.disabled = false;
+            }
+        };
+
         window.copyText = (elementId, btnId) => {
+            const now = Date.now();
+            if (now - lastCopyTime < 300) {
+                spamCount++;
+                if (spamCount >= 5) {
+                    logSecurityEvent('referral_spam_copy', { count: spamCount });
+                    showToast("Slow down!");
+                    return;
+                }
+            } else {
+                spamCount = 0;
+            }
+            lastCopyTime = now;
+
             const textToCopy = document.getElementById(elementId).innerText;
             const btn = document.getElementById(btnId);
 
-            if (!textToCopy || textToCopy.includes('Loading') || textToCopy.includes('http')) {
-                if (elementId === 'ref-link-display' && textToCopy.startsWith('http')) {
-                    // It's a valid link, allow copy
-                } else {
-                    return; // Don't copy placeholder text
-                }
-            }
+            if (!textToCopy || textToCopy.includes('Loading') || textToCopy === 'https://...') return;
 
             navigator.clipboard.writeText(textToCopy).then(() => {
                 const originalText = btn.innerText;
                 btn.innerText = "COPIED ✓";
                 btn.classList.add('copied');
-                
                 showToast("Copied to clipboard!");
 
                 setTimeout(() => {
@@ -284,13 +657,23 @@
             });
         };
 
-        // 2. Social Share Logic
         window.shareSocial = (platform) => {
             if (!referralLink) return;
 
-            const message = `Join me on JAKIPOT! Use my link to register and start earning: ${referralLink}`;
+            const now = Date.now();
+            if (now - lastShareTime < 2000) {
+                logSecurityEvent('referral_spam_share', { platform: platform });
+                showToast("Please wait a moment before sharing again.");
+                return;
+            }
+            lastShareTime = now;
+
+            // ✅ CHANGED: mentions K20 per friend
+            const message = `🚀 Join me on JAKIPOT! Use my code ${referralCode} to register. Deposit K30+ after activation — I earn K20 per friend! Link: ${referralLink}`;
             const encodedMsg = encodeURIComponent(message);
             const encodedLink = encodeURIComponent(referralLink);
+
+            logSecurityEvent('referral_share_initiated', { platform: platform });
 
             if (platform === 'whatsapp') {
                 window.open(`https://wa.me/?text=${encodedMsg}`, '_blank');
@@ -302,19 +685,17 @@
                 window.open(`https://t.me/share/url?url=${encodedLink}&text=${encodeURIComponent("Join me on JAKIPOT!")}`, '_blank');
             } 
             else if (platform === 'instagram' || platform === 'tiktok' || platform === 'youtube') {
-                // These platforms don't allow direct URL sharing via web intent.
-                // We copy the link and tell the user to paste it.
-                navigator.clipboard.writeText(referralLink).then(() => {
-                    showToast(`Link copied! Paste it in your ${platform} bio/story.`);
+                navigator.clipboard.writeText(`${message}`).then(() => {
+                    showToast(`Message copied! Paste it in your ${platform} bio/story.`);
                 });
             }
         };
 
-        // 3. Toast Notification
         let toastTimeout;
-        function showToast(msg) {
+        function showToast(msg, isError = false) {
             const toast = document.getElementById('toast');
             toast.innerText = msg;
+            toast.classList.toggle('error', isError);
             toast.classList.add('show');
             
             clearTimeout(toastTimeout);

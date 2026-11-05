@@ -7,14 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Monochrome Slate Theme (No Blue, No Green) */
             --bg-deep: #09090b;       
             --bg-surface: #18181b;    
             --bg-elevated: #27272a;   
-            
             --text-primary: #ffffff;   
             --text-secondary: #a1a1aa; 
-            
             --border-light: rgba(255, 255, 255, 0.08);
             --chat-sent: #3f3f46;      
             --chat-received: #27272a;  
@@ -28,9 +25,6 @@
             height: 100vh; display: flex; flex-direction: column; overflow: hidden; 
         }
 
-        /* =========================================
-           HEADER
-           ========================================= */
         .chat-header {
             display: flex; align-items: center; gap: 15px; padding: 12px 20px;
             background: var(--bg-surface); border-bottom: 1px solid var(--border-light); height: 70px; z-index: 10;
@@ -43,7 +37,6 @@
         .back-btn:hover { background: rgba(255,255,255,0.05); }
         .back-btn svg { width: 24px; height: 24px; fill: var(--text-primary); }
         
-        /* Clickable Profile Area */
         .chat-title-area { 
             flex: 1; display: flex; align-items: center; gap: 12px; 
             cursor: pointer; transition: opacity 0.2s; padding: 5px; border-radius: 10px;
@@ -65,15 +58,11 @@
         .icon-btn:hover { background: rgba(255,255,255,0.05); }
         .icon-btn svg { width: 20px; height: 20px; fill: var(--text-primary); }
 
-        /* =========================================
-           CHAT AREA (Soft Background)
-           ========================================= */
         #chat-screen { flex: 1; display: flex; flex-direction: column; height: calc(100vh - 70px); }
         
         .messages-container {
             flex: 1; overflow-y: auto; padding: 20px;
             display: flex; flex-direction: column; gap: 12px;
-            /* Soft dark abstract wallpaper */
             background-image: 
                 linear-gradient(rgba(9, 9, 11, 0.9), rgba(9, 9, 11, 0.9)), 
                 url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
@@ -91,21 +80,13 @@
             word-wrap: break-word; color: var(--text-primary);
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        /* Message Tails */
-        .message-bubble.sent .message-text { 
-            background: var(--chat-sent); border-radius: 18px 18px 0 18px; 
-        }
-        .message-bubble.received .message-text { 
-            background: var(--chat-received); border-radius: 18px 18px 18px 0; 
-        }
+        .message-bubble.sent .message-text { background: var(--chat-sent); border-radius: 18px 18px 0 18px; }
+        .message-bubble.received .message-text { background: var(--chat-received); border-radius: 18px 18px 18px 0; }
         
         .message-image { max-width: 100%; border-radius: 12px; margin-top: 5px; border: 1px solid var(--border-light); }
         .message-audio { width: 220px; margin-top: 5px; outline: none; border-radius: 20px; }
         .message-time { font-size: 10px; color: #71717a; margin-top: 4px; margin-right: 4px; margin-left: 4px; }
 
-        /* =========================================
-           INPUT AREA
-           ========================================= */
         .chat-input-area {
             padding: 12px 15px; background: var(--bg-surface); border-top: 1px solid var(--border-light);
             display: flex; align-items: center; gap: 8px; padding-bottom: max(12px, env(safe-area-inset-bottom));
@@ -119,7 +100,6 @@
         }
         .chat-input:focus { border-color: var(--text-secondary); }
         
-        /* Action Buttons */
         .action-btn {
             width: 46px; height: 46px; border-radius: 50%; border: none; 
             display: grid; place-items: center; cursor: pointer; flex-shrink: 0;
@@ -130,7 +110,6 @@
         .attach-btn, .mic-btn { background: var(--bg-elevated); border: 1px solid var(--border-light); }
         .attach-btn svg, .mic-btn svg { width: 22px; height: 22px; fill: var(--text-secondary); }
         
-        /* White Send Button with Black Icon */
         .send-btn { background: #ffffff; }
         .send-btn svg { width: 20px; height: 20px; fill: #09090b; }
         
@@ -146,9 +125,8 @@
             <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         </button>
         
-        <!-- Clickable Profile Area -->
         <div class="chat-title-area" id="profile-link" onclick="viewProfile()">
-            <div class="chat-avatar-header" id="header-avatar">💬</div>
+            <div class="chat-avatar-header" id="header-avatar"></div>
             <div class="chat-title-text">
                 <h3 id="header-name">Chat</h3>
                 <p id="header-status">Online</p>
@@ -186,9 +164,10 @@
     </section>
 
     <script type="module">
+        // LOCKED TO 13.1.0 AS REQUESTED
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
-        import { getFirestore, collection, doc, getDoc, addDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, getDoc, setDoc, addDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
@@ -201,6 +180,8 @@
         };
 
         const CLOUDINARY = { cloudName: 'c2n8j0v', uploadPreset: 'doravica_unsigned' };
+        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB Watchdog
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -214,7 +195,9 @@
         let audioChunks = [];
         let isRecording = false;
 
-        // 1. Get URL Parameters
+        //  WATCHDOG STATE
+        let lastMessageTime = 0;
+
         const urlParams = new URLSearchParams(window.location.search);
         activeRoomId = urlParams.get('roomId');
         const chatName = urlParams.get('name') || 'Chat';
@@ -224,46 +207,77 @@
             window.location.replace('chat-rooms.html');
         }
 
-        // 2. Auth Check & Real-Time Header Setup
+        //  WATCHDOG: Log Security Events
+        async function logSecurityEvent(event, details = {}) {
+            try {
+                await addDoc(collection(db, 'security_logs'), {
+                    event: event,
+                    uid: currentUser?.uid || 'unknown',
+                    page: 'chat.html',
+                    roomId: activeRoomId,
+                    timestamp: serverTimestamp(),
+                    ...details
+                });
+            } catch (e) { console.warn('Guardian log failed', e); }
+        }
+
+        //  WATCHDOG: Ensure chat membership exists before sending messages
+        // This is REQUIRED by the strict Firestore rules
+        async function ensureChatMembership() {
+            if (!currentUser || !activeRoomId) return;
+            try {
+                const memberRef = doc(db, 'chat_group_members', `${currentUser.uid}_${activeRoomId}`);
+                const snap = await getDoc(memberRef);
+                if (!snap.exists()) {
+                    await setDoc(memberRef, {
+                        uid: currentUser.uid,
+                        groupId: activeRoomId,
+                        joinedAt: serverTimestamp()
+                    });
+                }
+            } catch (e) {
+                console.warn('Could not create chat membership', e);
+            }
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.replace('login.html'); return; }
             currentUser = user;
 
-            // Listen to current user's data (in case their name changes)
+            // 1. Create chat membership immediately (Fixes Permission Error)
+            await ensureChatMembership();
+
+            // 2. Listen to own data
             onSnapshot(doc(db, 'users', user.uid), (userDoc) => {
                 if (userDoc.exists()) currentUserData = userDoc.data();
             });
 
-            // Extract other user's UID
+            // 3. Extract other user UID
             if (activeRoomId.startsWith('private_')) {
                 const uids = activeRoomId.replace('private_', '').split('_');
                 otherUid = uids.find(id => id !== currentUser.uid);
             }
 
-            // Setup Initial Header
+            // 4. Setup Header
             document.getElementById('header-name').innerText = chatName;
             document.getElementById('header-avatar').innerText = chatName.charAt(0).toUpperCase();
             
             if (activeRoomId === 'global_chat') {
                 document.getElementById('header-status').innerText = 'Global Community';
-                document.getElementById('header-avatar').innerHTML = '🌍';
+                document.getElementById('header-avatar').innerText = ''; // FIXED ENCODING
             } else if (otherUid) {
-                // THE FIX: Listen to the other user's profile in real-time
-                // This updates the header if they change their picture or name while chatting.
                 onSnapshot(doc(db, 'users', otherUid), (otherDoc) => {
                     if (otherDoc.exists()) {
                         const otherData = otherDoc.data();
                         const headerAvatarEl = document.getElementById('header-avatar');
                         const headerNameEl = document.getElementById('header-name');
                         
-                        // Update avatar
                         if (otherData.profilePicUrl) {
                             headerAvatarEl.innerHTML = `<img src="${otherData.profilePicUrl}" alt="Avatar">`;
                         } else {
                             headerAvatarEl.innerText = (otherData.fullName || chatName).charAt(0).toUpperCase();
                         }
                         
-                        // Update name if they changed it
                         if (otherData.fullName) {
                             headerNameEl.innerText = otherData.fullName;
                         }
@@ -276,7 +290,6 @@
             loadMessages();
         });
 
-        // 3. View Profile Function
         window.viewProfile = () => {
             if (activeRoomId === 'global_chat') {
                 alert("This is the JAKIPOT International Group.");
@@ -289,7 +302,6 @@
             }
         };
 
-        // 4. Load Messages
         function loadMessages() {
             const container = document.getElementById('messages-container');
             container.innerHTML = '<p style="text-align:center; color:var(--text-secondary); margin-top:20px;">Loading messages...</p>';
@@ -334,11 +346,20 @@
             });
         }
 
-        // 5. Send Text Message
+        //  WATCHDOG: Spam Sender Guard on Text Messages
         window.sendMessage = async () => {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
             if (!text) return;
+
+            const now = Date.now();
+            if (now - lastMessageTime < 1000) {
+                logSecurityEvent('chat_spam_text', { attemptedText: text.substring(0, 20) });
+                alert("Please wait a second before sending another message.");
+                return;
+            }
+            lastMessageTime = now;
+
             input.value = '';
 
             await addDoc(collection(db, 'chat_messages'), {
@@ -353,10 +374,17 @@
 
         window.handleEnter = (e) => { if (e.key === 'Enter') sendMessage(); };
 
-        // 6. Upload Image
+        //  WATCHDOG: File Size Check on Image Upload
         window.uploadImage = async (input) => {
             const file = input.files[0];
             if (!file) return;
+
+            if (file.size > MAX_FILE_SIZE) {
+                alert("Image is too large. Maximum size is 5MB.");
+                logSecurityEvent('chat_large_file_attempt', { type: 'image', size: file.size });
+                input.value = '';
+                return;
+            }
             
             const container = document.getElementById('messages-container');
             container.innerHTML += `<div class="message-bubble sent"><div class="message-text" style="font-style:italic; opacity:0.7;">Uploading image...</div></div>`;
@@ -385,10 +413,10 @@
             } catch (err) {
                 alert('Image upload failed');
             }
-            input.value = ''; // Reset
+            input.value = '';
         };
 
-        // 7. Voice Notes
+        //  WATCHDOG: Recording Spam / File Size Check
         window.toggleRecording = async () => {
             if (isRecording) {
                 mediaRecorder.stop();
@@ -406,6 +434,13 @@
                 
                 mediaRecorder.onstop = async () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    
+                    if (audioBlob.size > MAX_FILE_SIZE) {
+                        alert("Voice note too long. Please record a shorter message.");
+                        logSecurityEvent('chat_large_file_attempt', { type: 'voice', size: audioBlob.size });
+                        return;
+                    }
+
                     const file = new File([audioBlob], "voice.webm", { type: 'audio/webm' });
 
                     const container = document.getElementById('messages-container');

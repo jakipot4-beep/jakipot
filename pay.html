@@ -54,8 +54,6 @@
         .fee-rate { font-size: 10px; color: var(--text-muted); }
 
         .instruction-note { background: rgba(56, 189, 248, 0.1); border-left: 3px solid var(--light-blue); padding: 10px 12px; border-radius: 0 8px 8px 0; margin-bottom: 15px; font-size: 12px; color: #bae6fd; line-height: 1.4; }
-        
-        /* NEW: International Guide */
         .intl-note { background: rgba(16, 185, 129, 0.1); border-left: 3px solid var(--emerald); padding: 10px 12px; border-radius: 0 8px 8px 0; margin-bottom: 20px; font-size: 12px; color: #d1fae5; line-height: 1.4; }
 
         .payment-method-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
@@ -132,7 +130,6 @@
 <body>
 
     <div class="nav-bar">
-        <!-- FIXED: Points back to activation.html -->
         <a href="activation.html" class="back-link" id="back-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
             Back
@@ -159,7 +156,6 @@
             <b>Important:</b> The activation fee is <b>$0.25 USD</b> (equivalent to <b>K5 ZMW</b>). Please send the exact amount shown above.
         </div>
 
-        <!-- NEW: Reminder for International Users -->
         <div class="intl-note">
             <b>Sending from outside Zambia?</b> No problem. Use apps like <b>Remitly, WorldRemit, or Western Union</b> to send the fee directly to the mobile money number below. Simply select "Mobile Money" as the delivery method in their app.
         </div>
@@ -239,6 +235,7 @@
     </div>
 
     <script type="module">
+        // LOCKED TO 13.1.0
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
         import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app-check.js";
@@ -455,12 +452,13 @@
             try {
                 const uploadResult = await uploadScreenshot(screenshotFile);
 
-                // FIXED: Changed status to 'pending' to match security rules
+                // CRITICAL FIX: Add type: 'activation' so Admin Dashboard distinguishes this from real deposits
                 const depositRef = await addDoc(collection(db, 'deposits'), {
+                    type: 'activation', // <--- THIS TELLS ADMIN DASHBOARD IT'S AN ACTIVATION FEE
                     uid: currentUser.uid, email: currentUser.email, network: localStorage.getItem('lastPaymentNetwork'),
                     recipient: selectedRecipient, amountUSD: 0.25, amountZMW: 5, amountConverted: exchangeRate ? (0.25 * exchangeRate).toFixed(2) : null,
                     currency: sessionStorage.getItem('signupCurrency') || userDocData.currency || 'ZMW', smsText: smsText, screenshot: uploadResult,
-                    status: 'pending', // <--- FIXED HERE
+                    status: 'pending',
                     createdAt: serverTimestamp()
                 });
 
