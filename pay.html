@@ -240,7 +240,7 @@
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
         import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app-check.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", authDomain: "jakipot.firebaseapp.com", projectId: "jakipot", storageBucket: "jakipot.firebasestorage.app", messagingSenderId: "396191754293", appId: "1:396191754293:web:5b11a11d82e773d19ee97c", measurementId: "G-L1CLB5TDHV" };
         const CLOUDINARY = { cloudName: 'jakipot', uploadPreset: 'jakipot_unsigned', folder: 'jakipot/payments', maxBytes: 5 * 1024 * 1024, allowedTypes: ['image/jpeg', 'image/jpg', 'image/png'] };
@@ -253,7 +253,7 @@
 
         const auth = getAuth(app); const db = getFirestore(app);
 
-        let currentUser = null; let userDocData = null; let selectedRecipient = null; let screenshotFile = null; let isSubmitting = false; let exchangeRate = null; let countdownInterval = null;
+        let currentUser = null; let userDocData = null; let selectedRecipient = null; let screenshotFile = null; let isSubmitting = false; let exchangeRate = null; let countdownInterval = null; let isPaymentSetup = false;
 
         const errorDiv = document.getElementById('error-msg'); const codeError = document.getElementById('code-error'); const submitBtn = document.getElementById('submit-btn');
         const statusBanner = document.getElementById('status-banner'); const paymentFormCard = document.getElementById('payment-form-card'); const verificationCard = document.getElementById('verification-card');
@@ -262,7 +262,7 @@
         const aiBubble = document.getElementById('ai-bubble'); let aiTimeout;
         window.addEventListener('load', () => { setTimeout(() => { aiBubble.classList.add('show'); }, 1500); setTimeout(() => { aiBubble.classList.remove('show'); }, 8000); });
         window.toggleAI = () => { aiBubble.classList.toggle('show'); if(aiBubble.classList.contains('show')) { aiBubble.innerHTML = "I am Jakipot AI. I am here to help you register safely!"; } };
-        function aiSpeak(message) { clearTimeout(aiTimeout); aiBubble.innerHTML = message; aiBubble.classList.add('show'); aiTimeout = setTimeout(() => { aiBubble.classList.remove('show'); }, 4000); }
+        function aiSpeak(message) { clearTimeout(aiTimeout); aiBubble.innerHTML = message; aiBubble.classList.add('show'); aiTimeout = setTimeout(() => { aiBubble.classList.remove('show'); }, 6000); }
 
         window.selectRecipient = (card) => {
             if (isSubmitting) return;
@@ -295,20 +295,27 @@
 
         async function loadState() {
             let currency = sessionStorage.getItem('signupCurrency');
-            try {
-                const userRef = doc(db, 'users', currentUser.uid);
-                const snap = await getDoc(userRef);
+            const userRef = doc(db, 'users', currentUser.uid);
+            
+            // REAL-TIME LISTENER: This listens for the admin approving the payment
+            onSnapshot(userRef, (snap) => {
                 if (snap.exists()) {
                     userDocData = snap.data();
                     if (!currency) currency = userDocData.currency || 'ZMW';
+                    
                     updateUIState(userDocData);
-                } else { window.location.replace('register.html'); return; }
-            } catch (e) { console.error('Failed to load user state', e); }
 
-            if (paymentFormCard.style.display !== 'none') {
-                setupPaymentNetwork();
-                fetchExchangeRate(currency);
-            }
+                    if (paymentFormCard.style.display !== 'none' && !isPaymentSetup) {
+                        setupPaymentNetwork();
+                        fetchExchangeRate(currency);
+                        isPaymentSetup = true;
+                    }
+                } else { 
+                    window.location.replace('register.html'); 
+                }
+            }, (error) => {
+                console.error('Failed to load user state', error);
+            });
         }
 
         function setupPaymentNetwork() {
@@ -387,8 +394,12 @@
                 startCountdown(submitTimeMs); aiSpeak("Your payment is under review. Please wait.");
             } else if (data.status === 'approved') {
                 backBtn.style.display = 'none'; verificationCard.style.display = 'block'; statusBanner.classList.add('approved');
-                statusBanner.innerHTML = `Your payment has been approved! Please enter your 6-digit verification code below to activate your account.`;
-                aiSpeak("Payment approved! Enter the code the AI gave you.");
+                
+                // AI SHOWS THE CODE HERE
+                const codeToShow = data.verificationCode || '******';
+                statusBanner.innerHTML = `Your payment has been approved! Your code is <b style="font-size: 18px; color: #fff;">${codeToShow}</b>. Enter it below to activate your account.`;
+                aiSpeak(`Hello 👋 your payment is approved! Here is your code: <b>${codeToShow}</b>`);
+                
             } else if (data.status === 'activated') {
                 backBtn.style.display = 'none'; startCard.style.display = 'block'; statusBanner.classList.add('activated');
                 statusBanner.innerHTML = `Your account is fully activated. Welcome to JAKIPOT!`;
@@ -434,7 +445,6 @@
                 xhr.onerror = () => reject(new Error('Network error')); xhr.timeout = 60000;
                 const fd = new FormData();
                 fd.append('file', file); fd.append('upload_preset', CLOUDINARY.uploadPreset); fd.append('folder', `${CLOUDINARY.folder}/${currentUser.uid}`);
-                // access_mode parameter removed for unsigned upload compatibility
                 xhr.send(fd);
             });
         }
@@ -453,9 +463,8 @@
             try {
                 const uploadResult = await uploadScreenshot(screenshotFile);
 
-                // CRITICAL FIX: Add type: 'activation' so Admin Dashboard distinguishes this from real deposits
                 const depositRef = await addDoc(collection(db, 'deposits'), {
-                    type: 'activation', // <--- THIS TELLS ADMIN DASHBOARD IT'S AN ACTIVATION FEE
+                    type: 'activation', 
                     uid: currentUser.uid, email: currentUser.email, network: localStorage.getItem('lastPaymentNetwork'),
                     recipient: selectedRecipient, amountUSD: 0.25, amountZMW: 5, amountConverted: exchangeRate ? (0.25 * exchangeRate).toFixed(2) : null,
                     currency: sessionStorage.getItem('signupCurrency') || userDocData.currency || 'ZMW', smsText: smsText, screenshot: uploadResult,
@@ -467,7 +476,8 @@
                 await addDoc(collection(db, 'security_logs'), { event: 'payment_submitted', uid: currentUser.uid, depositId: depositRef.id, amountUSD: 0.25, timestamp: serverTimestamp() });
 
                 document.getElementById('loading-overlay').classList.remove('show');
-                updateUIState({ status: 'pending_review', updatedAt: new Date() });
+                isSubmitting = false; submitBtn.disabled = false;
+                // updateUIState will be triggered automatically by the onSnapshot listener
             } catch (err) {
                 console.error('[Payment Error]', err);
                 document.getElementById('loading-overlay').classList.remove('show'); isSubmitting = false; submitBtn.disabled = false;
@@ -508,7 +518,8 @@
                     await setDoc(doc(db, 'users', currentUser.uid), { status: 'activated', updatedAt: serverTimestamp() }, { merge: true });
                     await addDoc(collection(db, 'security_logs'), { event: 'account_activated', uid: currentUser.uid, timestamp: serverTimestamp() });
                     document.getElementById('loading-overlay').classList.remove('show');
-                    updateUIState({ status: 'activated' });
+                    document.getElementById('verify-btn').disabled = false;
+                    // updateUIState will be triggered automatically by the onSnapshot listener
                 } else {
                     codeError.innerText = "Invalid code. Please check and try again.";
                     codeInputs.forEach(i => { i.value = ''; i.classList.remove('filled'); }); codeInputs[0].focus();

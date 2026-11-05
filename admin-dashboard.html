@@ -70,14 +70,8 @@
 
         /* Image Preview */
         .img-preview-box {
-            margin-top: 10px;
-            display: none;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--border-light);
-            background: #000;
-            position: relative;
-            height: 160px;
+            margin-top: 10px; display: none; border-radius: 12px; overflow: hidden;
+            border: 1px solid var(--border-light); background: #000; position: relative; height: 160px;
         }
         .img-preview-box.show { display: block; }
         .img-preview-box img { width: 100%; height: 100%; object-fit: cover; }
@@ -87,11 +81,8 @@
             padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800;
         }
 
-        /* ==========================================
-           CHAT STYLES (Premium)
-           ========================================== */
+        /* CHAT STYLES */
         .chat-container { display: flex; height: calc(100vh - 220px); background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-light); overflow: hidden; }
-        
         .chat-sidebar { width: 300px; border-right: 1px solid var(--border-light); overflow-y: auto; background: rgba(0,0,0,0.2); flex-shrink: 0; }
         .chat-sidebar::-webkit-scrollbar { width: 4px; }
         .chat-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
@@ -152,9 +143,7 @@
         .chat-history {
             flex: 1; padding: 20px; overflow-y: auto;
             display: flex; flex-direction: column; gap: 10px;
-            background-image: 
-                linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), 
-                url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
+            background-image: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
             background-size: cover; background-position: center;
         }
         .chat-history::-webkit-scrollbar { width: 4px; }
@@ -205,6 +194,7 @@
     <nav class="nav-bar">
         <div class="nav-tab active" onclick="switchTab('dashboard', this)">📊 Overview</div>
         <div class="nav-tab" onclick="switchTab('activations', this)">🚀 Activations</div>
+        <div class="nav-tab" onclick="switchTab('kyc', this)">🛡️ KYC</div>
         <div class="nav-tab" onclick="switchTab('users', this)">👥 Users</div>
         <div class="nav-tab" onclick="switchTab('deposits', this)">💰 Deposits</div>
         <div class="nav-tab" onclick="switchTab('withdrawals', this)">🏦 Withdrawals</div>
@@ -254,6 +244,17 @@
         <div class="tab-panel" id="tab-activations">
             <div class="page-title">Pending Activations ($0.25)</div>
             <div class="list-container" id="activations-list"></div>
+
+            <!-- NEW SECTION: Approved but waiting for code entry -->
+            <div class="page-title" style="margin-top: 40px; color: var(--gold);">Approved - Awaiting Code Entry</div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px; margin-top: -15px;">If a user lost their code or the 7-day timer expired, you can regenerate a new code for them here.</p>
+            <div class="list-container" id="approved-activations-list"></div>
+        </div>
+
+        <!-- KYC TAB -->
+        <div class="tab-panel" id="tab-kyc">
+            <div class="page-title">KYC Document Reviews</div>
+            <div class="list-container" id="kyc-list"></div>
         </div>
 
         <div class="tab-panel" id="tab-users">
@@ -286,7 +287,6 @@
                     </div>
                 </div>
                 
-                <!-- Live Image Preview -->
                 <div class="img-preview-box" id="plan-img-preview">
                     <span class="img-preview-badge">LIVE PREVIEW</span>
                     <img id="plan-img-preview-tag" src="" alt="Plan preview" onerror="this.parentElement.classList.remove('show')">
@@ -454,13 +454,9 @@
         let currentChatName = 'Chat';
         let currentChatAvatar = '';
         
-        // USER CACHE for avatars
         const userCache = {};
-        
-        // Live chat group state
         let lastChatGroupsSnapshot = null;
 
-        // Engine state
         let engineRunning = false;
         let currentRoundIndex = 0;
         let liveMultiplier = 1.00;
@@ -488,9 +484,6 @@
             }
         });
 
-        // ==========================================
-        // IMAGE PREVIEW FOR PLANS
-        // ==========================================
         window.previewPlanImage = () => {
             const url = document.getElementById('plan-img').value.trim();
             const wrap = document.getElementById('plan-img-preview');
@@ -504,15 +497,11 @@
             }
         };
 
-        // ==========================================
-        // LOAD ALL USERS INTO CACHE (for chat avatars)
-        // ==========================================
         function loadUsersCache() {
             onSnapshot(collection(db, 'users'), (snap) => {
                 snap.forEach(doc => {
                     userCache[doc.id] = doc.data();
                 });
-                // Re-render chat sidebar if we have chat groups
                 if (lastChatGroupsSnapshot) {
                     renderChatSidebar();
                 }
@@ -548,7 +537,63 @@
                 });
             });
 
-            // ACTIVATIONS (type: activation)
+            // KYC DOCUMENTS LISTENER
+            onSnapshot(query(collection(db, 'kyc_documents'), where('status', '==', 'pending_review')), async (snap) => {
+                const list = document.getElementById('kyc-list');
+                if (!list) return;
+                list.innerHTML = '';
+                
+                if(snap.empty) {
+                    list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No pending KYC documents.</div>';
+                    return;
+                }
+
+                for (const doc of snap.docs) {
+                    const d = doc.data();
+                    let userName = "Unknown User";
+                    try {
+                        const uSnap = await getDoc(doc(db, 'users', d.uid));
+                        if (uSnap.exists()) userName = uSnap.data().fullName || "No Name";
+                    } catch (e) { }
+
+                    const frontImg = d.nrcFront?.secure_url || (d.nrcFront ? `https://res.cloudinary.com/jakipot/image/upload/${d.nrcFront.publicId}.${d.nrcFront.format}` : '#');
+                    const backImg = d.nrcBack ? (d.nrcBack.secure_url || `https://res.cloudinary.com/jakipot/image/upload/${d.nrcBack.publicId}.${d.nrcBack.format}`) : null;
+                    const selfieImg = d.selfie?.secure_url || (d.selfie ? `https://res.cloudinary.com/jakipot/image/upload/${d.selfie.publicId}.${d.selfie.format}` : '#');
+
+                    list.innerHTML += `
+                        <div class="row-card" style="align-items: flex-start; flex-direction: column; padding: 20px;">
+                            <div style="display: flex; justify-content: space-between; width: 100%; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
+                                <div class="row-info">
+                                    <div class="row-title" style="color: var(--cyan);">${userName}</div>
+                                    <div class="row-sub">Doc Type: <span style="text-transform: uppercase;">${d.docType}</span></div>
+                                </div>
+                                <div class="row-actions">
+                                    <button class="btn btn-approve" onclick="approveKyc('${d.uid}')">✅ Approve KYC</button>
+                                    <button class="btn btn-reject" onclick="rejectKyc('${d.uid}')">❌ Reject KYC</button>
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; width: 100%; background: #060b19; padding: 15px; border-radius: 8px;">
+                                <div>
+                                    <div style="font-size: 11px; color: var(--gold); font-weight: 800; margin-bottom: 5px;">FRONT</div>
+                                    ${frontImg !== '#' ? `<a href="${frontImg}" target="_blank"><img src="${frontImg}" style="width: 100%; border-radius: 6px; border: 1px solid #334155;"></a>` : 'Missing'}
+                                </div>
+                                ${backImg ? `
+                                <div>
+                                    <div style="font-size: 11px; color: var(--gold); font-weight: 800; margin-bottom: 5px;">BACK</div>
+                                    <a href="${backImg}" target="_blank"><img src="${backImg}" style="width: 100%; border-radius: 6px; border: 1px solid #334155;"></a>
+                                </div>
+                                ` : '<div></div>'}
+                                <div>
+                                    <div style="font-size: 11px; color: var(--gold); font-weight: 800; margin-bottom: 5px;">SELFIE</div>
+                                    ${selfieImg !== '#' ? `<a href="${selfieImg}" target="_blank"><img src="${selfieImg}" style="width: 100%; border-radius: 6px; border: 1px solid #334155;"></a>` : 'Missing'}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            // PENDING ACTIVATIONS (type: activation)
             onSnapshot(query(collection(db, 'deposits'), where('status', '==', 'pending'), where('type', '==', 'activation')), async (snap) => {
                 const list = document.getElementById('activations-list');
                 const dashStat = document.getElementById('stat-activations');
@@ -570,7 +615,7 @@
                         if (uSnap.exists()) userName = uSnap.data().fullName || "No Name";
                     } catch (e) { }
 
-                    let screenshotUrl = d.screenshotUrl || (d.screenshot ? `https://res.cloudinary.com/jakipot/image/upload/${d.screenshot.publicId}.${d.screenshot.format}` : '#');
+                    let screenshotUrl = d.screenshotUrl || (d.screenshot?.secure_url) || (d.screenshot ? `https://res.cloudinary.com/jakipot/image/upload/${d.screenshot.publicId}.${d.screenshot.format}` : '#');
 
                     list.innerHTML += `
                         <div class="row-card" style="align-items: flex-start; flex-direction: column; padding: 20px;">
@@ -592,6 +637,34 @@
                         </div>
                     `;
                 }
+            });
+
+            // APPROVED USERS AWAITING CODE ENTRY (This is the new listener)
+            onSnapshot(query(collection(db, 'users'), where('status', '==', 'approved')), (snap) => {
+                const list = document.getElementById('approved-activations-list');
+                if (!list) return;
+                list.innerHTML = '';
+                
+                if (snap.empty) {
+                    list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No users awaiting activation.</div>';
+                    return;
+                }
+
+                snap.forEach(doc => {
+                    const u = doc.data();
+                    list.innerHTML += `
+                        <div class="row-card">
+                            <div class="row-info">
+                                <div class="row-title">${u.fullName || 'User'}</div>
+                                <div class="row-sub">Phone: <span>${u.phone || 'N/A'}</span></div>
+                                <div class="row-sub">Current Code: <span style="color: var(--gold); font-family: monospace; font-size: 16px;">${u.verificationCode || 'None'}</span></div>
+                            </div>
+                            <div class="row-actions">
+                                <button class="btn btn-neutral" onclick="regenerateUserCode('${doc.id}')">🔄 Regenerate Code</button>
+                            </div>
+                        </div>
+                    `;
+                });
             });
 
             // DEPOSITS (type: deposit)
@@ -664,23 +737,19 @@
                 });
             });
 
-            // CHAT GROUPS LISTENER - sorted in memory (handles missing fields)
+            // CHAT GROUPS LISTENER
             onSnapshot(collection(db, 'chat_groups'), (snap) => {
                 lastChatGroupsSnapshot = snap;
                 renderChatSidebar();
             });
         }
 
-        // ==========================================
-        // 🎨 RENDER CHAT SIDEBAR (with Global + Users)
-        // ==========================================
         function renderChatSidebar() {
             if (!lastChatGroupsSnapshot) return;
             
             const list = document.getElementById('chat-user-list');
             list.innerHTML = '';
 
-            // 1. GLOBAL COMMUNITY (always pinned)
             list.innerHTML += `
                 <div class="chat-user-item global-chat-item" id="chat-item-global_chat" onclick="openChat('global_chat', 'Global Community', '')">
                     <div class="chat-avatar-circle global">🌍</div>
@@ -691,7 +760,6 @@
                 </div>
             `;
 
-            // 2. PRIVATE CHATS (real users)
             const chats = [];
             lastChatGroupsSnapshot.forEach(doc => {
                 const data = doc.data();
@@ -709,7 +777,6 @@
             }
 
             chats.forEach(chat => {
-                // Extract other user's UID from groupId
                 let otherUid = null;
                 if (chat.id.startsWith('private_')) {
                     const uids = chat.id.replace('private_', '').split('_');
@@ -763,6 +830,22 @@
             }
         };
 
+        // NEW FUNCTION: Regenerate Code for already approved users
+        window.regenerateUserCode = async (uid) => {
+            if (!confirm("Are you sure you want to generate a brand new code for this user?")) return;
+            try {
+                const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+                await updateDoc(doc(db, 'users', uid), { 
+                    verificationCode: newCode, 
+                    updatedAt: serverTimestamp() 
+                });
+                alert(`✅ New Activation Code Generated: ${newCode}\n\nTell the user to check their screen or send it to them.`);
+            } catch (error) {
+                console.error(error);
+                alert("Failed to regenerate code.");
+            }
+        };
+
         window.rejectDeposit = async (depositId) => {
             if(!confirm("Reject this request?")) return;
             try {
@@ -774,6 +857,23 @@
         window.toggleBlock = async (uid, currentStatus) => {
             const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
             await updateDoc(doc(db, 'users', uid), { status: newStatus });
+        };
+
+        window.approveKyc = async (uid) => {
+            try {
+                await updateDoc(doc(db, 'kyc_documents', uid), { status: 'approved' });
+                await updateDoc(doc(db, 'users', uid), { kycStatus: 'verified' });
+                alert("KYC Approved!");
+            } catch (e) { alert("Failed to approve KYC"); }
+        };
+
+        window.rejectKyc = async (uid) => {
+            if(!confirm("Reject this KYC?")) return;
+            try {
+                await updateDoc(doc(db, 'kyc_documents', uid), { status: 'rejected' });
+                await updateDoc(doc(db, 'users', uid), { kycStatus: 'rejected' });
+                alert("KYC Rejected.");
+            } catch (e) { alert("Failed to reject KYC"); }
         };
 
         window.openBalanceModal = (uid, currentBal) => {
@@ -801,6 +901,7 @@
             } catch (e) { alert("Failed. Check console."); }
         };
 
+        // 🚨 ADDED: Referral Logic (K20 bonus) inside the batch
         window.approveDeposit = async (depositId, uid, amount) => {
             try {
                 const batch = writeBatch(db);
@@ -809,9 +910,43 @@
                 const txRef = doc(collection(db, 'transactions'));
                 batch.update(walletRef, { balance: increment(amount), lastTxId: txRef.id });
                 batch.set(txRef, { uid: uid, type: 'deposit', amount: amount, status: 'completed', createdAt: serverTimestamp() });
+
+                // REFERRAL LOGIC (Trigger only if deposit is K30+)
+                if (amount >= 30) {
+                    const userSnap = await getDoc(doc(db, 'users', uid));
+                    if (userSnap.exists() && userSnap.data().referredBy) {
+                        const referredByCode = userSnap.data().referredBy;
+                        
+                        const q = query(collection(db, 'users'), where('myReferralCode', '==', referredByCode), limit(1));
+                        const referrerSnap = await getDocs(q);
+                        
+                        if (!referrerSnap.empty) {
+                            const referrerUid = referrerSnap.docs[0].id;
+                            
+                            const refQuery = query(collection(db, 'referrals'), where('referredUid', '==', uid));
+                            const existingRef = await getDocs(refQuery);
+                            
+                            if (existingRef.empty) {
+                                const refDocRef = doc(collection(db, 'referrals'));
+                                batch.set(refDocRef, {
+                                    referrerUid: referrerUid,
+                                    referredUid: uid,
+                                    referredName: userSnap.data().fullName || 'User',
+                                    bonusAmount: 20,
+                                    status: 'completed',
+                                    createdAt: serverTimestamp()
+                                });
+                            }
+                        }
+                    }
+                }
+
                 await batch.commit();
-                alert("Deposit Approved!");
-            } catch (e) { alert("Failed to approve."); }
+                alert("Deposit Approved and Referral Processed!");
+            } catch (e) { 
+                console.error(e); 
+                alert("Failed to approve."); 
+            }
         };
 
         window.approveWithdrawal = async (withdrawId) => {
@@ -1043,7 +1178,7 @@
         };
 
         // ==========================================
-        // CHAT SYSTEM - FIXED
+        // CHAT SYSTEM
         // ==========================================
         window.openChat = (chatId, userName, userAvatar) => {
             currentChatId = chatId;
@@ -1054,7 +1189,6 @@
             const activeItem = document.getElementById(`chat-item-${chatId}`);
             if(activeItem) activeItem.classList.add('active');
 
-            // Update header
             const header = document.getElementById('chat-header');
             header.style.display = 'flex';
             document.getElementById('chat-header-name').innerText = chatId === 'global_chat' ? '🌍 ' + userName : userName;
@@ -1076,7 +1210,6 @@
             
             if (unsubscribeChat) unsubscribeChat();
 
-            // Query messages - sorted by timestamp (for old) OR createdAt (for legacy)
             const q = query(collection(db, 'chat_messages'), where('groupId', '==', chatId), limit(200));
             
             unsubscribeChat = onSnapshot(q, (snap) => {
@@ -1088,7 +1221,6 @@
                     return;
                 }
 
-                // Sort messages manually in case of mixed timestamp fields
                 const msgs = [];
                 snap.forEach(doc => {
                     const m = doc.data();
@@ -1098,7 +1230,6 @@
                 msgs.sort((a, b) => a._time - b._time);
 
                 msgs.forEach(msg => {
-                    // Handle both old (senderId) and new (uid) field names
                     const senderUid = msg.uid || msg.senderId;
                     const isAdmin = senderUid === currentAdmin.uid;
                     const text = msg.textContent || msg.text || '';
@@ -1116,7 +1247,6 @@
                         contentHtml = text;
                     }
 
-                    // Show sender name in global chat for other users
                     const showSenderName = !isAdmin && chatId === 'global_chat';
 
                     history.innerHTML += `
@@ -1139,7 +1269,6 @@
             input.value = '';
 
             try {
-                // Use consistent field names as user side
                 await addDoc(collection(db, 'chat_messages'), {
                     groupId: currentChatId,
                     uid: currentAdmin.uid,
@@ -1149,7 +1278,6 @@
                     timestamp: serverTimestamp()
                 });
 
-                // Update chat_group summary
                 await setDoc(doc(db, 'chat_groups', currentChatId), {
                     lastMessage: 'Admin: ' + text,
                     lastMessageTime: serverTimestamp()
