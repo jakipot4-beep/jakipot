@@ -126,7 +126,7 @@
         </button>
         
         <div class="chat-title-area" id="profile-link" onclick="viewProfile()">
-            <div class="chat-avatar-header" id="header-avatar"></div>
+            <div class="chat-avatar-header" id="header-avatar">?</div>
             <div class="chat-title-text">
                 <h3 id="header-name">Chat</h3>
                 <p id="header-status">Online</p>
@@ -179,7 +179,7 @@
             measurementId: "G-L1CLB5TDHV"
         };
 
-        const CLOUDINARY = { cloudName: 'c2n8j0v', uploadPreset: 'doravica_unsigned' };
+        const CLOUDINARY = { cloudName: 'jakipot', uploadPreset: 'jakipot_unsigned' };
         const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB Watchdog
 
         const app = initializeApp(firebaseConfig);
@@ -195,7 +195,7 @@
         let audioChunks = [];
         let isRecording = false;
 
-        //  WATCHDOG STATE
+        // 🐕 WATCHDOG STATE
         let lastMessageTime = 0;
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -207,7 +207,7 @@
             window.location.replace('chat-rooms.html');
         }
 
-        //  WATCHDOG: Log Security Events
+        // 🐕 WATCHDOG: Log Security Events
         async function logSecurityEvent(event, details = {}) {
             try {
                 await addDoc(collection(db, 'security_logs'), {
@@ -221,7 +221,7 @@
             } catch (e) { console.warn('Guardian log failed', e); }
         }
 
-        //  WATCHDOG: Ensure chat membership exists before sending messages
+        // 🐕 WATCHDOG: Ensure chat membership exists before sending messages
         // This is REQUIRED by the strict Firestore rules
         async function ensureChatMembership() {
             if (!currentUser || !activeRoomId) return;
@@ -264,7 +264,7 @@
             
             if (activeRoomId === 'global_chat') {
                 document.getElementById('header-status').innerText = 'Global Community';
-                document.getElementById('header-avatar').innerText = ''; // FIXED ENCODING
+                document.getElementById('header-avatar').innerText = '🌍'; // FIXED ENCODING
             } else if (otherUid) {
                 onSnapshot(doc(db, 'users', otherUid), (otherDoc) => {
                     if (otherDoc.exists()) {
@@ -346,7 +346,7 @@
             });
         }
 
-        //  WATCHDOG: Spam Sender Guard on Text Messages
+        // 🐕 WATCHDOG: Spam Sender Guard on Text Messages
         window.sendMessage = async () => {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
@@ -374,7 +374,7 @@
 
         window.handleEnter = (e) => { if (e.key === 'Enter') sendMessage(); };
 
-        //  WATCHDOG: File Size Check on Image Upload
+        // 🐕 WATCHDOG: File Size Check on Image Upload
         window.uploadImage = async (input) => {
             const file = input.files[0];
             if (!file) return;
@@ -416,7 +416,7 @@
             input.value = '';
         };
 
-        //  WATCHDOG: Recording Spam / File Size Check
+        // 🐕 WATCHDOG: Recording Spam / File Size Check
         window.toggleRecording = async () => {
             if (isRecording) {
                 mediaRecorder.stop();

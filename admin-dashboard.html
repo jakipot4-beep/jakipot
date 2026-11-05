@@ -570,7 +570,7 @@
                         if (uSnap.exists()) userName = uSnap.data().fullName || "No Name";
                     } catch (e) { }
 
-                    let screenshotUrl = d.screenshotUrl || (d.screenshot ? `https://res.cloudinary.com/c2n8j0v/image/upload/${d.screenshot.publicId}.${d.screenshot.format}` : '#');
+                    let screenshotUrl = d.screenshotUrl || (d.screenshot ? `https://res.cloudinary.com/jakipot/image/upload/${d.screenshot.publicId}.${d.screenshot.format}` : '#');
 
                     list.innerHTML += `
                         <div class="row-card" style="align-items: flex-start; flex-direction: column; padding: 20px;">

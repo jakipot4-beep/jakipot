@@ -127,7 +127,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const CLOUDINARY = { cloudName: 'c2n8j0v', uploadPreset: 'doravica_unsigned', folder: 'jakipot/deposits' };
+        const CLOUDINARY = { cloudName: 'jakipot', uploadPreset: 'jakipot_unsigned', folder: 'jakipot/deposits' };
         const ALLOWED_METHODS = ['MTN', 'Airtel', 'Other Country'];
 
         let currentUser = null;
