@@ -98,6 +98,14 @@
             measurementId: "G-L1CLB5TDHV"
         };
 
+        const CURRENCY_MAP = { 
+            'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 
+            'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'TZS': 'TSh', 
+            'UGX': 'USh', 'BWP': 'P', 'MWK': 'MK', 'MZN': 'MT', 
+            'NAD': 'N$', 'AOA': 'Kz', 'PHP': '₱', 'IDR': 'Rp', 
+            'PKR': '₨', 'BDT': '৳'
+        };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -107,7 +115,7 @@
         let investmentData = null;
         let canvas, ctx, timerInterval = null, graphInterval = null;
         let isCompleted = false;
-        const currencySymbol = 'K'; // Base currency for the graph labels
+        let currencySymbol = 'K'; // Default, updated via Firestore
 
         let chartPoints = [], currentPrice = 100.00, basePrice = 100.00, momentum = 0, maxPrice = 105.00, minPrice = 95.00;
 
@@ -121,7 +129,6 @@
         }
 
         window.addEventListener('load', async () => {
-            // 1. Get ID from URL
             const urlParams = new URLSearchParams(window.location.search);
             investmentId = urlParams.get('id');
 
@@ -131,11 +138,20 @@
                 return;
             }
 
-            // 2. Authorize User & Fetch Data
             onAuthStateChanged(auth, async (user) => {
                 if (!user) { window.location.replace('login.html'); return; }
                 currentUser = user;
 
+                // 1. Get User Currency
+                try {
+                    const userSnap = await getDoc(doc(db, 'users', user.uid));
+                    if (userSnap.exists()) {
+                        const cCode = userSnap.data().currency || 'ZMW';
+                        currencySymbol = CURRENCY_MAP[cCode] || cCode;
+                    }
+                } catch (e) { console.warn("Could not fetch currency", e); }
+
+                // 2. Get Investment Data
                 const invRef = doc(db, 'user_trending_investments', investmentId);
                 const invSnap = await getDoc(invRef);
 
@@ -147,7 +163,14 @@
 
                 investmentData = invSnap.data();
 
-                // 3. Setup UI
+                // 3. Check if already claimed (Prevents double claims on refresh)
+                if (investmentData.status === 'claimed') {
+                    alert("You have already claimed the funds for this trend.");
+                    window.location.href = 'trending-machine.html';
+                    return;
+                }
+
+                // 4. Setup UI
                 document.getElementById('asset-name').innerText = `${investmentData.countryName} Market`;
                 document.getElementById('flag-wrap').innerHTML = getFlagSVG(investmentData.countryCode || 'un');
 
@@ -156,7 +179,7 @@
                 resizeCanvas();
                 window.addEventListener('resize', resizeCanvas);
 
-                // 4. Start Logic
+                // 5. Start Logic
                 checkStatus();
                 if (!isCompleted) startGraphEngine();
             });
@@ -178,7 +201,6 @@
             const now = Date.now();
 
             if (now >= endTime) {
-                // Completed
                 isCompleted = true;
                 if (graphInterval) clearInterval(graphInterval);
                 if (timerInterval) clearInterval(timerInterval);
@@ -197,7 +219,6 @@
                 const btnRed = document.getElementById('btn-red');
                 const btnGreen = document.getElementById('btn-green');
                 
-                // --- LOGIC FOR RED AND GREEN BUTTONS (Threshold 2500) ---
                 if (finalAmount <= 2500) {
                     btnRed.className = 'btn btn-red big';
                     btnRed.innerHTML = `CLAIM FAIR PROFIT<br>${currencySymbol}${finalAmount.toFixed(2)}`;
@@ -290,6 +311,7 @@
                 alert("Claim failed. Please try again.");
                 btnRed.disabled = false;
                 btnGreen.disabled = false;
+                document.getElementById('status-text').style.display = 'none';
             }
         };
 

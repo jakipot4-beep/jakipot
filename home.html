@@ -287,11 +287,11 @@
     </nav>
 
     <script type="module">
-        // 🛑 FIXED: Changed from 13.2.0 to 10.8.0
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, query, orderBy, limit, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // 🔒 LOCKED TO 13.1.0 AS REQUESTED
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app-check.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, collection, query, orderBy, limit, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
@@ -309,9 +309,16 @@
             folder: 'jakipot/profiles'
         };
 
+        const CURRENCY_MAP = { 
+            'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 
+            'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'TZS': 'TSh', 
+            'UGX': 'USh', 'BWP': 'P', 'MWK': 'MK', 'MZN': 'MT', 
+            'NAD': 'N$', 'AOA': 'Kz', 'PHP': '₱', 'IDR': 'Rp', 
+            'PKR': '₨', 'BDT': '৳'
+        };
+
         const app = initializeApp(firebaseConfig);
         
-        // 🛑 FIXED: Added App Check
         initializeAppCheck(app, { 
             provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), 
             isTokenAutoRefreshEnabled: true 
@@ -321,6 +328,7 @@
         const db = getFirestore(app);
 
         let currentUserUid = null;
+        let currencySymbol = '$'; // Default
 
         onAuthStateChanged(auth, (user) => {
             if (!user) {
@@ -333,6 +341,10 @@
                 if (userDoc.exists()) {
                     const data = userDoc.data();
                     const name = data.fullName || 'User';
+                    
+                    // Currency Support
+                    const currencyCode = data.currency || 'USD';
+                    currencySymbol = CURRENCY_MAP[currencyCode] || currencyCode;
                     
                     document.getElementById('profile-name').innerText = name;
                     document.getElementById('menu-name').innerText = name;
@@ -408,7 +420,8 @@
             multiplier += (Math.random() * 0.01) + 0.01;
             
             document.getElementById('trend-multiplier').innerText = multiplier.toFixed(2) + 'x';
-            document.getElementById('trend-win').innerText = `+$${(multiplier * 15).toFixed(2)}`;
+            // UPDATE: Use the user's currency symbol
+            document.getElementById('trend-win').innerText = `${currencySymbol}${(multiplier * 15).toFixed(2)}`;
 
             points.push({
                 x: points.length * 2, 
@@ -443,7 +456,8 @@
                     points = [];
                     isCrashed = false;
                     document.getElementById('trend-multiplier').innerText = '1.00x';
-                    document.getElementById('trend-win').innerText = '+$0.00';
+                    // UPDATE: Reset with user's currency symbol
+                    document.getElementById('trend-win').innerText = `${currencySymbol}0.00`;
                     clearInterval(trendInterval);
                     trendInterval = setInterval(drawTrend, 150);
                 }, 3000);

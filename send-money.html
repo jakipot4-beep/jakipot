@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Free Send Money - Jakipot</title>
+    <style>
+        :root {
+            --bg-deep: #040b16; --bg-card: #0f172a; --bg-elevated: #1e293b;
+            --cyan: #00D9FF; --emerald: #10b981; --gold: #fbbf24;
+            --text-white: #ffffff; --text-muted: #8b9bb4; --border-light: rgba(255, 255, 255, 0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg-deep); color: var(--text-white); min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .top-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border-light); }
+        .back-btn { background: transparent; border: none; color: var(--cyan); font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .header-title { font-size: 16px; font-weight: 900; text-transform: uppercase; }
+
+        .content { padding: 20px; max-width: 600px; margin: 0 auto; width: 100%; }
+        .hero { text-align: center; margin-bottom: 25px; }
+        .hero h1 { font-size: 24px; font-weight: 900; color: var(--white); margin-bottom: 8px; }
+        .hero p { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+
+        .tab-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 14px; background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 12px; color: var(--text-muted); font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .tab-btn.active { background: rgba(16, 185, 129, 0.1); border-color: var(--emerald); color: var(--emerald); }
+
+        .app-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px; padding: 20px; margin-bottom: 20px; display: none; }
+        .app-card.active { display: block; animation: fade 0.3s ease; }
+        .app-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border-light); padding-bottom: 15px; }
+        .app-logo { width: 50px; height: 50px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: 900; }
+        .mtn-logo { background: rgba(255, 204, 0, 0.15); color: #ffcc00; border: 1px solid rgba(255, 204, 0, 0.3); }
+        .airtel-logo { background: rgba(227, 27, 35, 0.15); color: #ff6b6b; border: 1px solid rgba(227, 27, 35, 0.3); }
+        .app-info h3 { font-size: 16px; font-weight: 800; }
+        .app-info p { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+
+        .step { display: flex; gap: 15px; margin-bottom: 15px; }
+        .step-number { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-elevated); color: var(--cyan); display: flex; justify-content: center; align-items: center; font-size: 13px; font-weight: 900; flex-shrink: 0; border: 1px solid var(--border-light); }
+        .step-content { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+        .step-content b { color: var(--white); }
+        .step-content .ussd { background: var(--bg-elevated); padding: 3px 8px; border-radius: 6px; font-family: monospace; font-size: 14px; color: var(--emerald); font-weight: 700; letter-spacing: 1px; }
+
+        .alert { background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px; padding: 15px; margin-top: 20px; display: flex; gap: 12px; }
+        .alert svg { width: 20px; height: 20px; fill: var(--gold); flex-shrink: 0; }
+        .alert p { font-size: 12px; color: #fef3c7; line-height: 1.5; }
+        .alert b { color: var(--gold); }
+
+        @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <header class="top-header">
+        <button class="back-btn" onclick="window.location.href='wallet.html'">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+            Back
+        </button>
+        <div class="header-title">Free Transfers</div>
+        <div style="width: 24px;"></div>
+    </header>
+
+    <div class="content">
+        <div class="hero">
+            <h1>Send Money For Free 🇿🇲</h1>
+            <p>Learn how to send money to your friends and family across Zambia without paying transfer fees using your mobile money network.</p>
+        </div>
+
+        <div class="tab-container">
+            <button class="tab-btn active" onclick="switchTab('mtn')">MTN MoMo</button>
+            <button class="tab-btn" onclick="switchTab('airtel')">Airtel Money</button>
+        </div>
+
+        <!-- MTN GUIDE -->
+        <div class="app-card active" id="card-mtn">
+            <div class="app-header">
+                <div class="app-logo mtn-logo">MTN</div>
+                <div class="app-info">
+                    <h3>MTN MoMo</h3>
+                    <p>Zero fees for same-network transfers</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">Dial <span class="ussd">*303#</span> on your phone and press call.</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">Select option <b>1. Send Money</b> from the menu.</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">Enter the recipient's <b>MTN phone number</b> (e.g., 096/076).</div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">Enter the amount you want to send. <b>Check if the fee shows K0.00</b> before confirming.</div>
+            </div>
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-content">Enter your MTN MoMo PIN to authorize the transfer.</div>
+            </div>
+
+            <div class="alert">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                <p><b>Important:</b> MTN often waives fees for transactions under a certain amount (e.g., K50 or K100) or for same-network transfers. Always review the confirmation screen to ensure you are not charged a fee.</p>
+            </div>
+        </div>
+
+        <!-- AIRTEL GUIDE -->
+        <div class="app-card" id="card-airtel">
+            <div class="app-header">
+                <div class="app-logo airtel-logo">Airtel</div>
+                <div class="app-info">
+                    <h3>Airtel Money</h3>
+                    <p>Affordable & free options</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">Dial <span class="ussd">*115#</span> on your phone and press call.</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">Select option <b>1. Send Money</b>.</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">Enter the recipient's <b>Airtel phone number</b> (e.g., 097/077).</div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">Enter the amount. Airtel sometimes offers free transfers for specific amounts or promotions.</div>
+            </div>
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-content">Enter your Airtel Money PIN to authorize.</div>
+            </div>
+
+            <div class="alert">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                <p><b>Important:</b> Airtel Money frequently runs "Zero Fee" promotions for specific transaction brackets (e.g., sending K10 to K100). Watch out for the SMS confirmation showing the exact fee before you input your PIN.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.switchTab = (network) => {
+            // Update Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update Cards
+            document.querySelectorAll('.app-card').forEach(card => card.classList.remove('active'));
+            document.getElementById(`card-${network}`).classList.add('active');
+        };
+    </script>
+</body>
+</html>

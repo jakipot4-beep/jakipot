@@ -25,17 +25,42 @@
         
         .method-card { background: var(--bg-card); border: 2px solid var(--border-light); border-radius: 16px; padding: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; }
         .method-card:hover, .method-card:active { border-color: var(--cyan); background: rgba(0, 217, 255, 0.05); }
+        .method-card.disabled { pointer-events: none; opacity: 0.5; }
         
         .method-icon { width: 50px; height: 50px; border-radius: 12px; display: grid; place-items: center; font-weight: 900; font-size: 12px; }
         .mtn-bg { background: var(--mtn-yellow); color: #000; }
         .airtel-bg { background: var(--airtel-red); color: #fff; }
-        .other-bg { background: var(--bg-elevated); color: var(--cyan); border: 1px solid var(--cyan); }
+        .other-bg { background: var(--bg-elevated); color: var(--cyan); border: 1px solid var(--cyan); font-size: 24px; }
 
         .method-info h4 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
         .method-info p { font-size: 12px; color: var(--text-muted); }
+
+        /* --- SECURE ROUTING LOADER --- */
+        #route-loader { position: fixed; inset: 0; background: rgba(4, 11, 22, 0.98); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(10px); transition: opacity 0.3s ease; text-align: center; padding: 20px; }
+        #route-loader.active { display: flex; }
+        
+        .shield-spinner { width: 80px; height: 80px; position: relative; margin-bottom: 25px; display: flex; justify-content: center; align-items: center; }
+        .shield-spinner svg { width: 50px; height: 50px; fill: var(--cyan); filter: drop-shadow(0 0 10px var(--cyan)); animation: pulse 1.5s infinite; }
+        .shield-spinner::before { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px dashed rgba(0, 217, 255, 0.3); animation: spinRadar 4s linear infinite; }
+        
+        .loader-title { font-size: 18px; font-weight: 900; color: var(--white); margin-bottom: 10px; letter-spacing: 1px; }
+        .loader-text { font-size: 13px; color: var(--cyan); font-weight: 700; animation: blink 1.5s infinite; }
+
+        @keyframes spinRadar { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
+
+    <!-- ROUTE LOADER -->
+    <div id="route-loader">
+        <div class="shield-spinner">
+            <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+        </div>
+        <div class="loader-title">Securing Payment Route</div>
+        <div class="loader-text" id="loader-text">Connecting to Secure Gateway...</div>
+    </div>
 
     <header class="top-header">
         <button class="back-btn" onclick="window.location.href='deposit.html'"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
@@ -63,7 +88,7 @@
         </div>
 
         <div class="method-card" onclick="selectMethod('Other Country')">
-            <div class="method-icon other-bg">🌍</div>
+            <div class="method-icon other-bg"></div>
             <div class="method-info">
                 <h4>Other Country / International</h4>
                 <p>Use Remitly, WorldRemit, or Western Union</p>
@@ -71,15 +96,87 @@
         </div>
     </main>
 
-    <script>
+    <script type="module">
+        // LOCKED TO 13.1.0 AS REQUESTED
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", authDomain: "jakipot.firebaseapp.com", projectId: "jakipot", storageBucket: "jakipot.firebasestorage.app", messagingSenderId: "396191754293", appId: "1:396191754293:web:5b11a11d82e773d19ee97c" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let isNavigating = false; // Watchdog 3: Spam clicking prevention
+        const ALLOWED_METHODS = ['MTN', 'Airtel', 'Other Country']; // Watchdog 2: Whitelist
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            currentUser = user;
+
+            //  WATCHDOG 1: Session Integrity Check
+            const depAmount = sessionStorage.getItem('dep_amount');
+            const depPhone = sessionStorage.getItem('dep_phone');
+            
+            if (!depAmount || !depPhone) {
+                logSecurityEvent('bypass_attempt_deposit2', { 
+                    reason: 'Missing deposit amount or phone in session',
+                    url: window.location.href
+                });
+                alert("Session expired. Please enter your deposit amount again.");
+                window.location.replace('deposit.html');
+            }
+        });
+
+        async function logSecurityEvent(event, details = {}) {
+            try {
+                await addDoc(collection(db, 'security_logs'), {
+                    event: event,
+                    uid: currentUser?.uid || 'unknown',
+                    page: 'deposit2.html',
+                    timestamp: serverTimestamp(),
+                    ...details
+                });
+            } catch (e) { console.warn('Guardian log failed', e); }
+        }
+
         window.selectMethod = (method) => {
+            if (!currentUser || isNavigating) return;
+
+            //  WATCHDOG 2: Method Whitelist Validation
+            if (!ALLOWED_METHODS.includes(method)) {
+                alert("Security Error: Invalid payment method.");
+                logSecurityEvent('invalid_deposit_method', { attempted: method });
+                return;
+            }
+
+            //  WATCHDOG 3: Spam Click Prevention
+            isNavigating = true;
+            document.querySelectorAll('.method-card').forEach(c => c.classList.add('disabled'));
+
             sessionStorage.setItem('dep_method', method);
+
+            // Show Loader
+            const loader = document.getElementById('route-loader');
+            const loaderText = document.getElementById('loader-text');
             
             if (method === 'Other Country') {
-                window.location.href = 'app.html';
+                loaderText.innerText = "Preparing International Gateway...";
             } else {
-                window.location.href = 'deposit3.html';
+                loaderText.innerText = `Connecting to ${method} Gateway...`;
             }
+            
+            loader.classList.add('active');
+
+            // Redirect after 1.5 seconds (Gives user a sense of secure connection)
+            setTimeout(() => {
+                if (method === 'Other Country') {
+                    window.location.href = 'app.html';
+                } else {
+                    window.location.href = 'deposit3.html';
+                }
+            }, 1500);
         };
     </script>
 </body>

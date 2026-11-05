@@ -8,7 +8,7 @@
     <style>
         :root {
             --bg-deep: #040b16; --bg-card: #0f172a; --bg-elevated: #1e293b;
-            --cyan: #00D9FF; --emerald: #10b981; --gold: #fbbf24;
+            --cyan: #00D9FF; --emerald: #10b981; --gold: #fbbf24; --danger: #ef4444;
             --text-white: #ffffff; --text-muted: #8b9bb4; --border-light: rgba(255, 255, 255, 0.08);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -34,9 +34,32 @@
 
         .btn-next { width: 100%; padding: 18px; border-radius: 14px; border: none; background: var(--cyan); color: #000; font-size: 16px; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 20px rgba(0, 217, 255, 0.3); margin-top: auto; }
         .btn-next:active { transform: scale(0.98); }
+        .btn-next:disabled { background: #334155; color: var(--text-muted); cursor: not-allowed; box-shadow: none; }
+
+        /* --- WORLD FINANCIAL GATEWAY LOADER --- */
+        #gateway-loader { position: fixed; inset: 0; background: rgba(4, 11, 22, 0.98); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(10px); transition: opacity 0.5s ease; text-align: center; padding: 20px; }
+        #gateway-loader.hidden { opacity: 0; pointer-events: none; }
+        
+        .radar-spinner { width: 80px; height: 80px; border-radius: 50%; border: 2px solid rgba(0, 217, 255, 0.1); position: relative; margin-bottom: 25px; display: flex; justify-content: center; align-items: center; }
+        .radar-spinner::before { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid transparent; border-top-color: var(--cyan); border-right-color: var(--emerald); animation: spinRadar 1.5s linear infinite; }
+        .radar-spinner::after { content: '🌍'; font-size: 32px; animation: pulse 1.5s infinite; }
+        
+        .loader-title { font-size: 18px; font-weight: 900; color: var(--white); margin-bottom: 10px; letter-spacing: 1px; }
+        .loader-text { font-size: 13px; color: var(--cyan); font-weight: 700; animation: blink 1.5s infinite; }
+
+        @keyframes spinRadar { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
+
+    <!-- GATEWAY LOADER -->
+    <div id="gateway-loader">
+        <div class="radar-spinner"></div>
+        <div class="loader-title">Connecting to World Financial Gateway</div>
+        <div class="loader-text">Preparing your secure payment gateway...</div>
+    </div>
 
     <header class="top-header">
         <button class="back-btn" onclick="window.location.href='wallet.html'"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
@@ -59,43 +82,114 @@
             <div class="phone-label">This is the number linked to your account.</div>
         </div>
 
-        <button class="btn-next" onclick="goToNext()">NEXT →</button>
+        <button class="btn-next" id="btn-next" onclick="goToNext()">NEXT →</button>
     </main>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // LOCKED TO 13.1.0 AS REQUESTED
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", authDomain: "jakipot.firebaseapp.com", projectId: "jakipot", storageBucket: "jakipot.firebasestorage.app", messagingSenderId: "396191754293", appId: "1:396191754293:web:5b11a11d82e773d19ee97c" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const CURRENCY_MAP = { 'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵' };
+        let currentUser = null;
+        let originalPhone = ""; // Used for Watchdog 1
+        let lastClickTime = 0;  // Used for Watchdog 2
+
+        const CURRENCY_MAP = { 
+            'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 
+            'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'TZS': 'TSh', 
+            'UGX': 'USh', 'BWP': 'P', 'MWK': 'MK', 'MZN': 'MT', 
+            'NAD': 'N$', 'AOA': 'Kz', 'PHP': '₱', 'IDR': 'Rp', 
+            'PKR': '₨', 'BDT': '৳'
+        };
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.replace('login.html'); return; }
+            currentUser = user;
+            
             const snap = await getDoc(doc(db, 'users', user.uid));
             if (snap.exists()) {
                 const data = snap.data();
                 document.getElementById('currency-symbol').innerText = CURRENCY_MAP[data.currency] || 'K';
-                if (data.phone) document.getElementById('deposit-phone').value = data.phone;
+                
+                if (data.phone) {
+                    originalPhone = data.phone;
+                    document.getElementById('deposit-phone').value = originalPhone;
+                }
             }
+
+            // Simulate Gateway Connection (Show loader for 2.5 seconds)
+            setTimeout(() => {
+                const loader = document.getElementById('gateway-loader');
+                loader.classList.add('hidden');
+                setTimeout(() => loader.style.display = 'none', 500);
+            }, 2500);
         });
 
+        // Watchdog: Log security events to Firestore
+        async function logSecurityEvent(event, details = {}) {
+            try {
+                await addDoc(collection(db, 'security_logs'), {
+                    event: event,
+                    uid: currentUser?.uid || 'unknown',
+                    page: 'deposit.html',
+                    timestamp: serverTimestamp(),
+                    ...details
+                });
+            } catch (e) { console.warn('Guardian log failed', e); }
+        }
+
         window.goToNext = () => {
+            const btn = document.getElementById('btn-next');
             const amount = parseFloat(document.getElementById('deposit-amount').value);
             const phone = document.getElementById('deposit-phone').value;
 
-            if (!amount || amount < 10) { alert("Minimum deposit is 10."); return; }
-            if (!phone) { alert("Phone number is required."); return; }
+            // 🐕 WATCHDOG 2: Spam Click Detection (Prevents double clicking)
+            const now = Date.now();
+            if (now - lastClickTime < 800) { 
+                logSecurityEvent('spam_click_deposit', { amount: amount });
+                btn.disabled = true;
+                btn.innerText = "PLEASE WAIT...";
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerText = "NEXT →";
+                }, 2000);
+                return;
+            }
+            lastClickTime = now;
 
+            // 🐕 WATCHDOG 1: Phone Number Tampering Detection
+            // If a hacker removes 'readonly' in inspect element and changes the phone number
+            if (phone !== originalPhone) {
+                alert("Security Error: Phone number tampering detected. Action blocked.");
+                logSecurityEvent('tampered_phone_deposit', { original: originalPhone, attempted: phone });
+                return;
+            }
+
+            // 🐕 WATCHDOG 3: Invalid Inputs
+            if (!amount || isNaN(amount) || amount < 10) { alert("Minimum deposit is 10."); return; }
+            if (amount > 1000000) { 
+                alert("Maximum deposit limit exceeded. Please contact support for large deposits.");
+                logSecurityEvent('high_deposit_attempt', { amount: amount });
+                return;
+            }
+
+            // Clean data
             sessionStorage.setItem('dep_amount', amount);
             sessionStorage.setItem('dep_phone', phone);
             sessionStorage.setItem('dep_currency', document.getElementById('currency-symbol').innerText);
 
-            window.location.href = 'deposit2.html';
+            btn.innerText = "CONNECTING...";
+            btn.disabled = true;
+
+            setTimeout(() => {
+                window.location.href = 'deposit2.html';
+            }, 500);
         };
     </script>
 </body>

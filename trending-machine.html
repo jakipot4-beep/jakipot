@@ -9,7 +9,7 @@
         :root {
             --bg-deep: #040b16; --bg-card: #0f172a; --bg-elevated: #1e293b;
             --cyan: #00D9FF; --cyan-glow: rgba(0, 217, 255, 0.3);
-            --emerald: #10b981; --danger: #ef4444; --text-white: #ffffff;
+            --emerald: #10b981; --danger: #ef4444; --gold: #fbbf24; --text-white: #ffffff;
             --text-muted: #8b9bb4; --border-light: rgba(255, 255, 255, 0.08);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -92,9 +92,10 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, addDoc, collection, serverTimestamp, increment, writeBatch, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // LOCKED TO 13.1.0 AS REQUESTED
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, addDoc, collection, serverTimestamp, increment, writeBatch, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
@@ -104,6 +105,15 @@
             messagingSenderId: "396191754293",
             appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
             measurementId: "G-L1CLB5TDHV"
+        };
+
+        // FIXED: Added the missing Currency Map
+        const CURRENCY_MAP = { 
+            'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 
+            'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'TZS': 'TSh', 
+            'UGX': 'USh', 'BWP': 'P', 'MWK': 'MK', 'MZN': 'MT', 
+            'NAD': 'N$', 'AOA': 'Kz', 'PHP': '₱', 'IDR': 'Rp', 
+            'PKR': '₨', 'BDT': '৳'
         };
 
         const app = initializeApp(firebaseConfig);
@@ -123,7 +133,6 @@
         let activeInvestmentsMap = {}; 
 
         // --- EXTENSIVE COUNTRY FLAG MAP ---
-        // Admin just types "Zambia" -> code finds "zm" -> draws flag
         const COUNTRY_FLAGS = {
             "zambia": "zm", "nigeria": "ng", "usa": "us", "united states": "us", "uk": "uk", "united kingdom": "uk",
             "japan": "jp", "brazil": "br", "south africa": "za", "kenya": "ke", "ghana": "gh", "india": "in",
@@ -133,7 +142,6 @@
         };
 
         function getFlagSVG(input) {
-            // Look up the country name in the map, default to a globe icon if not found
             let code = COUNTRY_FLAGS[input.toLowerCase().trim()] || "un";
             
             switch(code) {
@@ -152,7 +160,7 @@
                 case 'de': return `<svg viewBox="0 0 60 40"><rect fill="#000" width="60" height="13.33"/><rect fill="#DD0000" y="13.33" width="60" height="13.33"/><rect fill="#FFCE00" y="26.66" width="60" height="13.33"/></svg>`;
                 case 'fr': return `<svg viewBox="0 0 60 40"><rect fill="#002395" width="20" height="40"/><rect fill="#fff" x="20" width="20" height="40"/><rect fill="#ED2939" x="40" width="20" height="40"/></svg>`;
                 case 'cn': return `<svg viewBox="0 0 60 40"><rect fill="#DE2910" width="60" height="40"/><polygon points="10,8 13,18 23,18 15,24 18,34 10,28 2,34 5,24 -3,18 7,18" fill="#FFDE00"/></svg>`;
-                default: return `<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="18" fill="#334155"/><path d="M15,15 Q30,5 45,15 M15,25 Q30,35 45,25" stroke="#fff" stroke-width="2" fill="none"/></svg>`; // Generic Globe
+                default: return `<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="18" fill="#334155"/><path d="M15,15 Q30,5 45,15 M15,25 Q30,35 45,25" stroke="#fff" stroke-width="2" fill="none"/></svg>`;
             }
         }
 

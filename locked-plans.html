@@ -27,7 +27,6 @@
             background-image: radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.05) 0%, transparent 50%);
         }
 
-        /* HEADER */
         .top-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 15px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border-light);
@@ -38,16 +37,10 @@
         .header-title { font-size: 16px; font-weight: 900; color: var(--white); letter-spacing: 1.5px; text-transform: uppercase; }
         .wallet-balance { font-size: 14px; font-weight: 800; color: var(--gold); background: var(--bg-elevated); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(251,191,36,0.3); }
 
-        /* CONTENT AREA */
         .content-area { flex: 1; padding: 15px; overflow-y: auto; padding-bottom: 50px; }
         .section-title { font-size: 14px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; padding-left: 5px; }
 
-        /* 2x2 MARKETPLACE GRID */
-        .plans-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 12px; 
-        }
+        .plans-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
         .plan-card {
             background: var(--bg-card); border: 1px solid var(--border-light);
@@ -55,25 +48,13 @@
             position: relative; overflow: hidden; transition: transform 0.2s;
         }
         .plan-card:active { transform: scale(0.97); }
-        
-        .plan-card.invested {
-            border-color: var(--emerald);
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
-        }
+        .plan-card.invested { border-color: var(--emerald); box-shadow: 0 0 15px rgba(16, 185, 129, 0.15); }
 
-        /* Image Header */
-        .plan-image-wrap {
-            width: 100%; height: 85px; position: relative; background: #000;
-        }
-        .plan-image {
-            width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: opacity 0.3s;
-        }
+        .plan-image-wrap { width: 100%; height: 85px; position: relative; background: #000; }
+        .plan-image { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: opacity 0.3s; }
         .plan-card:active .plan-image { opacity: 1; }
-        .image-overlay {
-            position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 0%, var(--bg-card) 100%);
-        }
+        .image-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 0%, var(--bg-card) 100%); }
 
-        /* Plan Content Area */
         .plan-content { padding: 0 12px 12px 12px; display: flex; flex-direction: column; flex: 1; }
         .plan-name { font-size: 13px; font-weight: 900; color: var(--white); margin-bottom: 8px; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.5px; }
 
@@ -83,7 +64,6 @@
         .info-value.gold { color: var(--gold); }
         .info-value.highlight { color: var(--emerald); }
 
-        /* Total Income Bar */
         .total-income-bar {
             background: rgba(0, 217, 255, 0.05); border: 1px solid rgba(0, 217, 255, 0.15);
             border-radius: 8px; padding: 6px; margin-top: auto; margin-bottom: 10px;
@@ -92,7 +72,6 @@
         .ti-label { font-size: 8px; font-weight: 800; color: var(--cyan); text-transform: uppercase; margin-bottom: 2px; }
         .ti-value { font-size: 13px; font-weight: 900; color: var(--cyan); text-shadow: 0 0 10px var(--cyan-glow); }
 
-        /* Invest Button */
         .btn-invest {
             width: 100%; padding: 9px; border-radius: 8px; border: none;
             background: var(--cyan); color: #000; font-size: 11px; font-weight: 900; 
@@ -100,18 +79,13 @@
             box-shadow: 0 4px 10px var(--cyan-glow);
         }
         .btn-invest:active { transform: scale(0.95); }
-        .btn-invest.invested {
-            background: rgba(16, 185, 129, 0.15); color: var(--emerald);
-            border: 1px solid var(--emerald); cursor: not-allowed; box-shadow: none;
-        }
+        .btn-invest.invested { background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid var(--emerald); cursor: not-allowed; box-shadow: none; }
         .btn-invest:disabled { opacity: 0.7; cursor: not-allowed; }
 
-        /* Loader */
         .loader-wrap { display: flex; justify-content: center; padding: 40px; grid-column: span 2; }
         .spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--cyan); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* SUCCESS OVERLAY & FIREWORKS */
         #fireworks-canvas { position: fixed; inset: 0; z-index: 9998; pointer-events: none; display: none; }
 
         .success-overlay {
@@ -166,7 +140,6 @@
         </div>
     </main>
 
-    <!-- SUCCESS OVERLAY -->
     <div class="success-overlay" id="success-overlay">
         <div class="success-card">
             <div class="success-icon">🎇</div>
@@ -184,11 +157,11 @@
         </div>
     </div>
 
-    <!-- FIREBASE LOGIC -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, collection, query, where, onSnapshot, writeBatch, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // LOCKED TO 13.1.0
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, collection, query, where, onSnapshot, writeBatch, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
@@ -209,7 +182,7 @@
         let userCurrency = 'ZMW';
         let currencySymbol = 'K';
         let availablePlans = [];
-        let investedPlanIds = new Set(); // Tracks which plans the user already bought
+        let investedPlanIds = new Set(); 
         let isProcessing = false;
 
         const CURRENCY_MAP = {
@@ -220,12 +193,10 @@
             'PKR': '₨', 'BDT': '৳'
         };
 
-        // 1. Auth & Real-time Listeners
         onAuthStateChanged(auth, (user) => {
             if (!user) { window.location.replace('login.html'); return; }
             currentUser = user;
 
-            // Listen to User Profile (For Currency)
             onSnapshot(doc(db, 'users', user.uid), (snap) => {
                 if (snap.exists()) {
                     userCurrency = snap.data().currency || 'ZMW';
@@ -234,7 +205,6 @@
                 }
             });
 
-            // Listen to Wallet Balance
             onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
                 if (snap.exists()) {
                     userBalance = snap.data().balance || 0;
@@ -242,7 +212,6 @@
                 }
             });
 
-            // Listen to User's Existing Investments (to disable "Invest" button if already bought)
             const invQ = query(collection(db, 'user_investments'), where('uid', '==', user.uid), where('status', '==', 'active'));
             onSnapshot(invQ, (snap) => {
                 investedPlanIds.clear();
@@ -250,7 +219,6 @@
                 renderPlans();
             });
 
-            // Listen to Available Plans
             const plansQ = query(collection(db, 'plans'), where('isActive', '==', true));
             onSnapshot(plansQ, (snap) => {
                 availablePlans = [];
@@ -264,7 +232,6 @@
             renderPlans();
         }
 
-        // 2. Render Plans
         function renderPlans() {
             const grid = document.getElementById('plans-grid');
             
@@ -320,7 +287,6 @@
             });
         }
 
-        // 3. Secure Investment Transaction
         window.investInPlan = async (planId) => {
             if (!currentUser || isProcessing) return;
 
@@ -333,12 +299,11 @@
             }
 
             isProcessing = true;
-            renderPlans(); // Disables buttons
+            renderPlans(); 
 
             try {
                 const batch = writeBatch(db);
 
-                // 1. Deduct Wallet
                 const walletRef = doc(db, 'wallets', currentUser.uid);
                 const txRef = doc(collection(db, 'transactions'));
                 
@@ -347,7 +312,6 @@
                     lastTxId: txRef.id 
                 });
 
-                // 2. Create Ledger Receipt
                 batch.set(txRef, {
                     uid: currentUser.uid, 
                     type: 'investment', 
@@ -356,7 +320,6 @@
                     createdAt: serverTimestamp()
                 });
 
-                // 3. Create User Investment Document (Order)
                 const startDate = new Date();
                 const endDate = new Date();
                 endDate.setDate(startDate.getDate() + plan.durationDays);
@@ -372,12 +335,12 @@
                     totalReturn: plan.dailyIncome * plan.durationDays,
                     status: 'active',
                     startDate: serverTimestamp(),
+                    lastClaimedAt: serverTimestamp(), // CRITICAL FIX: Prevents permission error on first claim
                     endDate: endDate
                 });
 
                 await batch.commit();
 
-                // Success!
                 showSuccessModal(plan);
 
             } catch (e) {
@@ -388,7 +351,6 @@
             }
         };
 
-        // 4. Success Modal & Fireworks
         function showSuccessModal(plan) {
             const totalIncome = plan.dailyIncome * plan.durationDays;
             
@@ -407,7 +369,6 @@
             }, 4000);
         }
 
-        // --- FIREWORKS ENGINE ---
         const canvas = document.getElementById('fireworks-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];

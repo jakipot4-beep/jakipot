@@ -24,130 +24,64 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
         body { 
-            background: var(--bg-dark); 
-            color: var(--white); 
-            min-height: 100vh; 
-            display: flex; 
-            flex-direction: column;
-            align-items: center; 
-            padding: 20px; 
+            background: var(--bg-dark); color: var(--white); min-height: 100vh; 
+            display: flex; flex-direction: column; align-items: center; padding: 20px; 
             overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.05) 0%, transparent 40%);
+            background-image: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.05) 0%, transparent 40%);
         }
 
-        /* Navigation */
-        .nav-bar {
-            width: 100%; max-width: 500px;
-            display: flex; justify-content: flex-start; align-items: center;
-            margin-top: 10px; margin-bottom: 25px;
-            animation: slideDownFade 0.6s ease;
-        }
-        .back-link {
-            color: var(--text-muted); text-decoration: none; font-size: 14px;
-            display: flex; align-items: center; gap: 5px; transition: color 0.3s;
-        }
+        .nav-bar { width: 100%; max-width: 500px; display: flex; justify-content: flex-start; align-items: center; margin-top: 10px; margin-bottom: 25px; animation: slideDownFade 0.6s ease; }
+        .back-link { color: var(--text-muted); text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 5px; transition: color 0.3s; }
         .back-link:hover { color: var(--emerald); }
 
-        /* Header */
         .header { text-align: center; margin-bottom: 25px; animation: slideUpFade 0.7s ease; }
         .header h1 { font-size: 22px; font-weight: 900; letter-spacing: 1px; color: var(--white); }
-        .header p { 
-            font-size: 14px; color: var(--light-blue); margin-top: 8px; 
-            font-weight: 500; max-width: 340px; line-height: 1.4; margin-left: auto; margin-right: auto;
-        }
+        .header p { font-size: 14px; color: var(--light-blue); margin-top: 8px; font-weight: 500; max-width: 340px; line-height: 1.4; margin-left: auto; margin-right: auto; }
 
-        /* Cards */
-        .card {
-            background: var(--bg-card); padding: 25px 20px; border-radius: 20px;
-            width: 100%; max-width: 500px; box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-            border: 1px solid var(--border-color); animation: slideUpFade 0.7s ease 0.1s forwards;
-            opacity: 0; transform: translateY(20px); margin-bottom: 20px;
-        }
+        .card { background: var(--bg-card); padding: 25px 20px; border-radius: 20px; width: 100%; max-width: 500px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid var(--border-color); animation: slideUpFade 0.7s ease 0.1s forwards; opacity: 0; transform: translateY(20px); margin-bottom: 20px; }
 
-        /* Status Banners */
-        .status-banner {
-            display: none; padding: 20px 15px; border-radius: 12px; margin-bottom: 20px;
-            font-size: 14px; font-weight: 600; line-height: 1.6; text-align: center;
-        }
+        .status-banner { display: none; padding: 20px 15px; border-radius: 12px; margin-bottom: 20px; font-size: 14px; font-weight: 600; line-height: 1.6; text-align: center; }
         .status-banner.pending { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #fcd34d; display: block; }
         .status-banner.approved { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #6ee7b7; display: block; }
         .status-banner.activated { background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); color: #bae6fd; display: block; }
         
-        .countdown-timer {
-            font-size: 20px; font-weight: 900; color: var(--white);
-            letter-spacing: 1px; margin: 10px 0; display: block;
-            text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
-        }
+        .countdown-timer { font-size: 20px; font-weight: 900; color: var(--white); letter-spacing: 1px; margin: 10px 0; display: block; text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
 
-        /* Fee Display */
-        .fee-card {
-            text-align: center; background: var(--bg-elevated); border-radius: 14px;
-            padding: 20px; margin-bottom: 25px; border: 1px solid var(--border-color);
-        }
+        .fee-card { text-align: center; background: var(--bg-elevated); border-radius: 14px; padding: 20px; margin-bottom: 15px; border: 1px solid var(--border-color); }
         .fee-card h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 5px; }
         .fee-amount { font-size: 32px; font-weight: 900; color: var(--emerald); margin-bottom: 5px; }
         .fee-converted { font-size: 14px; color: var(--light-blue); font-weight: 600; margin-bottom: 10px; }
         .fee-rate { font-size: 10px; color: var(--text-muted); }
 
-        /* Payment Instructions */
-        .instruction-note {
-            background: rgba(56, 189, 248, 0.1); border-left: 3px solid var(--light-blue);
-            padding: 10px 12px; border-radius: 0 8px 8px 0; margin-bottom: 15px;
-            font-size: 12px; color: #bae6fd; line-height: 1.4;
-        }
+        .instruction-note { background: rgba(56, 189, 248, 0.1); border-left: 3px solid var(--light-blue); padding: 10px 12px; border-radius: 0 8px 8px 0; margin-bottom: 15px; font-size: 12px; color: #bae6fd; line-height: 1.4; }
+        
+        /* NEW: International Guide */
+        .intl-note { background: rgba(16, 185, 129, 0.1); border-left: 3px solid var(--emerald); padding: 10px 12px; border-radius: 0 8px 8px 0; margin-bottom: 20px; font-size: 12px; color: #d1fae5; line-height: 1.4; }
 
-        /* Payment Details */
-        .payment-method-header {
-            display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
-            padding-bottom: 15px; border-bottom: 1px solid var(--border-color);
-        }
-        .method-logo { 
-            width: 40px; height: 40px; border-radius: 8px; display: grid; place-items: center; 
-            font-weight: 900; font-size: 10px; color: #000;
-        }
+        .payment-method-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+        .method-logo { width: 40px; height: 40px; border-radius: 8px; display: grid; place-items: center; font-weight: 900; font-size: 10px; color: #000; }
         .method-logo.mtn { background: var(--mtn-yellow); color: #000; }
         .method-logo.airtel { background: var(--airtel-red); color: var(--white); }
         .payment-method-header h3 { font-size: 16px; font-weight: 800; }
 
         .recipient-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        .recipient-card {
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--bg-elevated); padding: 15px; border-radius: 12px;
-            border: 2px solid var(--border-color); cursor: pointer; transition: all 0.2s;
-        }
+        .recipient-card { display: flex; justify-content: space-between; align-items: center; background: var(--bg-elevated); padding: 15px; border-radius: 12px; border: 2px solid var(--border-color); cursor: pointer; transition: all 0.2s; }
         .recipient-card.selected { border-color: var(--emerald); background: rgba(16,185,129,0.05); }
         .recipient-info h4 { font-size: 14px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
         .recipient-info p { font-size: 16px; font-weight: 800; color: var(--light-blue); letter-spacing: 1px; }
         .recipient-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #475569; }
         .recipient-card.selected .recipient-radio { background: var(--emerald); border-color: var(--emerald); box-shadow: inset 0 0 0 3px var(--bg-elevated); }
 
-        .copy-btn {
-            width: 100%; padding: 12px; background: rgba(56, 189, 248, 0.1); color: var(--light-blue);
-            border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; font-weight: 700;
-            font-size: 13px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;
-            margin-bottom: 15px; transition: background 0.2s;
-        }
+        .copy-btn { width: 100%; padding: 12px; background: rgba(56, 189, 248, 0.1); color: var(--light-blue); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 15px; transition: background 0.2s; }
         .copy-btn:hover { background: rgba(56, 189, 248, 0.2); }
         .copy-btn svg { width: 16px; height: 16px; fill: var(--light-blue); }
 
-        /* Forms */
         .section-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; margin-top: 20px; }
         
-        .textarea-field {
-            width: 100%; padding: 15px; border-radius: 12px; background: var(--bg-elevated);
-            border: 1.5px solid var(--border-color); color: var(--white); font-size: 14px;
-            resize: vertical; min-height: 100px; font-family: inherit; transition: border-color 0.2s;
-        }
+        .textarea-field { width: 100%; padding: 15px; border-radius: 12px; background: var(--bg-elevated); border: 1.5px solid var(--border-color); color: var(--white); font-size: 14px; resize: vertical; min-height: 100px; font-family: inherit; transition: border-color 0.2s; }
         .textarea-field:focus { outline: none; border-color: var(--emerald); }
 
-        /* Upload Box */
-        .upload-box {
-            border: 2px dashed #334155; border-radius: 14px; padding: 20px 15px;
-            background: rgba(255,255,255,0.02); cursor: pointer; text-align: center;
-            transition: all 0.25s; position: relative; margin-bottom: 15px; overflow: hidden;
-        }
+        .upload-box { border: 2px dashed #334155; border-radius: 14px; padding: 20px 15px; background: rgba(255,255,255,0.02); cursor: pointer; text-align: center; transition: all 0.25s; position: relative; margin-bottom: 15px; overflow: hidden; }
         .upload-box:hover { border-color: var(--emerald); }
         .upload-box.has-file { border-style: solid; border-color: var(--emerald); padding: 0; }
         .upload-label { display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--text-muted); font-size: 13px; }
@@ -158,68 +92,36 @@
         .upload-box:hover .preview-overlay { opacity: 1; }
         .replace-text { color: var(--white); font-weight: 700; font-size: 13px; background: rgba(0,0,0,0.7); padding: 6px 12px; border-radius: 20px; }
 
-        /* Verification Code Section */
         #verification-card { display: none; margin-top: 20px; }
         .code-info { font-size: 13px; color: var(--light-blue); margin-bottom: 15px; line-height: 1.5; text-align: center; }
         .code-inputs { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
-        .code-box {
-            width: 45px; height: 55px; background: var(--bg-elevated); border: 2px solid var(--border-color);
-            border-radius: 10px; text-align: center; font-size: 24px; font-weight: 800; color: var(--white);
-            caret-color: var(--emerald);
-        }
+        .code-box { width: 45px; height: 55px; background: var(--bg-elevated); border: 2px solid var(--border-color); border-radius: 10px; text-align: center; font-size: 24px; font-weight: 800; color: var(--white); caret-color: var(--emerald); }
         .code-box:focus { outline: none; border-color: var(--emerald); box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
         .code-box.filled { border-color: var(--emerald); }
 
-        /* Buttons */
-        .btn-primary {
-            width: 100%; padding: 16px; background: var(--emerald); color: var(--white);
-            border: none; border-radius: 12px; font-size: 15px; font-weight: 800;
-            cursor: pointer; margin-top: 15px; transition: background 0.3s, transform 0.2s;
-            box-shadow: 0 4px 15px var(--emerald-glow); display: flex; justify-content: center; align-items: center;
-        }
+        .btn-primary { width: 100%; padding: 16px; background: var(--emerald); color: var(--white); border: none; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 15px; transition: background 0.3s, transform 0.2s; box-shadow: 0 4px 15px var(--emerald-glow); display: flex; justify-content: center; align-items: center; }
         .btn-primary:hover:not(:disabled) { background: #059669; transform: translateY(-2px); }
         .btn-primary:active:not(:disabled) { transform: scale(0.98); }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; background: #334155; box-shadow: none; }
 
-        /* Error */
         .error { color: var(--danger); margin-top: 12px; font-size: 13px; text-align: center; min-height: 18px; font-weight: 500; }
 
-        /* Loader */
-        #loading-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-            background: rgba(6,11,25,0.98); z-index: 9999;
-            flex-direction: column; justify-content: center; align-items: center;
-            backdrop-filter: blur(8px);
-        }
+        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(6,11,25,0.98); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
         #loading-overlay.show { display: flex; }
         .bird-container { position: relative; width: 100%; height: 100px; overflow: hidden; margin-bottom: 20px; }
         .flying-bird { position: absolute; font-size: 60px; top: 50%; left: -20%; transform: translateY(-50%); animation: flyAcross 2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
         .loading-title { color: var(--white); font-size: 18px; font-weight: 800; margin-bottom: 8px; }
         .loading-text { color: var(--light-blue); font-size: 14px; font-weight: 600; animation: blink 1.5s infinite; }
 
-        /* =========================================
-           META-STYLE AI WIDGET
-           ========================================= */
-        .ai-fab {
-            position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px;
-            border-radius: 50%; background: var(--bg-card); display: flex; justify-content: center; align-items: center;
-            cursor: pointer; z-index: 1000; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
-            border: 2px solid var(--emerald); transition: transform 0.2s, box-shadow 0.2s;
-        }
+        .ai-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: var(--bg-card); display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 1000; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); border: 2px solid var(--emerald); transition: transform 0.2s, box-shadow 0.2s; }
         .ai-fab:hover { transform: scale(1.05); box-shadow: 0 6px 25px rgba(16, 185, 129, 0.6); }
         .ai-fab:active { transform: scale(0.92); }
         .ai-ring { width: 36px; height: 36px; border-radius: 50%; background: conic-gradient(from 0deg, transparent, var(--emerald), var(--light-blue), var(--emerald), transparent); animation: spin 3s linear infinite; position: relative; }
         .ai-ring::after { content: ''; position: absolute; inset: 4px; background: var(--bg-card); border-radius: 50%; }
-        .ai-bubble {
-            position: fixed; bottom: 95px; right: 25px; max-width: 280px; background: var(--bg-card);
-            color: var(--white); padding: 14px 18px; border-radius: 18px 18px 0 18px; font-size: 13.5px;
-            line-height: 1.5; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(16, 185, 129, 0.3);
-            z-index: 999; opacity: 0; transform: translateY(10px); transition: opacity 0.3s, transform 0.3s; pointer-events: none;
-        }
+        .ai-bubble { position: fixed; bottom: 95px; right: 25px; max-width: 280px; background: var(--bg-card); color: var(--white); padding: 14px 18px; border-radius: 18px 18px 0 18px; font-size: 13.5px; line-height: 1.5; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(16, 185, 129, 0.3); z-index: 999; opacity: 0; transform: translateY(10px); transition: opacity 0.3s, transform 0.3s; pointer-events: none; }
         .ai-bubble.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
         .ai-bubble::before { content: ''; position: absolute; bottom: -8px; right: 20px; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid var(--bg-card); }
 
-        /* Animations */
         @keyframes slideUpFade { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
         @keyframes slideDownFade { 0% { opacity: 0; transform: translateY(-10px); } 100% { opacity: 1; transform: translateY(0); } }
         @keyframes flyAcross { 0% { left: -20%; transform: translateY(-50%) scale(0.8) rotate(10deg); } 50% { transform: translateY(-60%) scale(1.1) rotate(-5deg); } 100% { left: 120%; transform: translateY(-50%) scale(0.8) rotate(10deg); } }
@@ -230,7 +132,8 @@
 <body>
 
     <div class="nav-bar">
-        <a href="verify.html" class="back-link" id="back-btn">
+        <!-- FIXED: Points back to activation.html -->
+        <a href="activation.html" class="back-link" id="back-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
             Back
         </a>
@@ -241,13 +144,10 @@
         <p>Complete your activation payment and submit your confirmation for review.</p>
     </div>
 
-    <!-- Status Banner -->
     <div id="status-banner" class="status-banner"></div>
 
-    <!-- Submission Form -->
     <div id="payment-form-card" class="card">
         
-        <!-- Fee Card -->
         <div class="fee-card">
             <h3>Activation Fee</h3>
             <div class="fee-amount" id="fee-amount">$0.25 USD</div>
@@ -259,19 +159,17 @@
             <b>Important:</b> The activation fee is <b>$0.25 USD</b> (equivalent to <b>K5 ZMW</b>). Please send the exact amount shown above.
         </div>
 
-        <!-- Dynamic Payment Details -->
-        <div id="payment-details">
-            <div class="payment-method-header" id="payment-header">
-                <!-- Populated by JS -->
-            </div>
-            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Select any of the numbers below to send the activation fee:</p>
-            
-            <div class="recipient-list" id="recipient-list">
-                <!-- Populated by JS -->
-            </div>
+        <!-- NEW: Reminder for International Users -->
+        <div class="intl-note">
+            <b>Sending from outside Zambia?</b> No problem. Use apps like <b>Remitly, WorldRemit, or Western Union</b> to send the fee directly to the mobile money number below. Simply select "Mobile Money" as the delivery method in their app.
         </div>
 
-        <!-- Copy Button -->
+        <div id="payment-details">
+            <div class="payment-method-header" id="payment-header"></div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Select any of the numbers below to send the activation fee:</p>
+            <div class="recipient-list" id="recipient-list"></div>
+        </div>
+
         <button class="copy-btn" id="copy-btn" onclick="copyNumber()" disabled>
             <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <span id="copy-text">SELECT NUMBER TO COPY</span>
@@ -298,7 +196,6 @@
         <div id="error-msg" class="error"></div>
     </div>
 
-    <!-- Verification Section (Hidden until approved) -->
     <div id="verification-card" class="card">
         <div class="section-title" style="margin-top: 0; text-align: center;">PAYMENT VERIFICATION CODE</div>
         <p class="code-info">Hey 👋 Once your payment has been approved, your verification code will appear here in your notifications. Enter the code to activate your account.</p>
@@ -316,7 +213,6 @@
         <div id="code-error" class="error"></div>
     </div>
 
-    <!-- Activated Section -->
     <div id="start-card" class="card" style="display: none; text-align: center;">
         <div style="width: 80px; height: 80px; margin: 0 auto 15px auto; background: rgba(16,185,129,0.1); border-radius: 50%; display: grid; place-items: center;">
             <svg viewBox="0 0 24 24" style="width: 40px; height: 40px; fill: var(--emerald);"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
@@ -327,7 +223,6 @@
         <button class="btn-primary" id="start-btn" onclick="startApp()">START JAKIPOT →</button>
     </div>
 
-    <!-- Loading Overlay -->
     <div id="loading-overlay">
         <div class="bird-container">
             <div class="flying-bird">🐦</div>
@@ -336,7 +231,6 @@
         <div class="loading-text" id="loading-text">Please wait...</div>
     </div>
 
-    <!-- META-STYLE AI WIDGET -->
     <div id="ai-fab" class="ai-fab" onclick="toggleAI()">
         <div class="ai-ring"></div>
     </div>
@@ -344,7 +238,6 @@
         Hello 👋 friend, complete your activation payment to join us.
     </div>
 
-    <!-- Firebase & Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
@@ -352,104 +245,36 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
-            authDomain: "jakipot.firebaseapp.com",
-            projectId: "jakipot",
-            storageBucket: "jakipot.firebasestorage.app",
-            messagingSenderId: "396191754293",
-            appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
-            measurementId: "G-L1CLB5TDHV"
-        };
-
-        const CLOUDINARY = {
-            cloudName: 'c2n8j0v',
-            uploadPreset: 'doravica_unsigned',
-            folder: 'jakipot/payments',
-            maxBytes: 5 * 1024 * 1024,
-            allowedTypes: ['image/jpeg', 'image/jpg', 'image/png']
-        };
+        const firebaseConfig = { apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", authDomain: "jakipot.firebaseapp.com", projectId: "jakipot", storageBucket: "jakipot.firebasestorage.app", messagingSenderId: "396191754293", appId: "1:396191754293:web:5b11a11d82e773d19ee97c", measurementId: "G-L1CLB5TDHV" };
+        const CLOUDINARY = { cloudName: 'c2n8j0v', uploadPreset: 'doravica_unsigned', folder: 'jakipot/payments', maxBytes: 5 * 1024 * 1024, allowedTypes: ['image/jpeg', 'image/jpg', 'image/png'] };
 
         const app = initializeApp(firebaseConfig);
-        try { getAnalytics(app); } catch (e) { console.warn('[Analytics]', e?.message); }
-
+        try { getAnalytics(app); } catch (e) { }
         const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
         if (isLocal) self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-        try {
-            initializeAppCheck(app, {
-                provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'),
-                isTokenAutoRefreshEnabled: true
-            });
-        } catch (e) { console.warn('[AppCheck]', e?.message); }
+        try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), isTokenAutoRefreshEnabled: true }); } catch (e) { }
 
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        const auth = getAuth(app); const db = getFirestore(app);
 
-        // State
-        let currentUser = null;
-        let userDocData = null;
-        let selectedRecipient = null;
-        let screenshotFile = null;
-        let isSubmitting = false;
-        let exchangeRate = null;
-        let countdownInterval = null;
+        let currentUser = null; let userDocData = null; let selectedRecipient = null; let screenshotFile = null; let isSubmitting = false; let exchangeRate = null; let countdownInterval = null;
 
-        // Elements
-        const errorDiv = document.getElementById('error-msg');
-        const codeError = document.getElementById('code-error');
-        const submitBtn = document.getElementById('submit-btn');
-        const statusBanner = document.getElementById('status-banner');
-        const paymentFormCard = document.getElementById('payment-form-card');
-        const verificationCard = document.getElementById('verification-card');
-        const startCard = document.getElementById('start-card');
-        const backBtn = document.getElementById('back-btn');
+        const errorDiv = document.getElementById('error-msg'); const codeError = document.getElementById('code-error'); const submitBtn = document.getElementById('submit-btn');
+        const statusBanner = document.getElementById('status-banner'); const paymentFormCard = document.getElementById('payment-form-card'); const verificationCard = document.getElementById('verification-card');
+        const startCard = document.getElementById('start-card'); const backBtn = document.getElementById('back-btn');
 
-        // ==========================================
-        // AI WIDGET LOGIC
-        // ==========================================
-        const aiBubble = document.getElementById('ai-bubble');
-        let aiTimeout;
-
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                aiBubble.classList.add('show');
-            }, 1500);
-            setTimeout(() => {
-                aiBubble.classList.remove('show');
-            }, 8000);
-        });
-
-        window.toggleAI = () => {
-            aiBubble.classList.toggle('show');
-            if(aiBubble.classList.contains('show')) {
-                aiBubble.innerHTML = "I am Jakipot AI. I am here to help you register safely!";
-            }
-        };
-
-        function aiSpeak(message) {
-            clearTimeout(aiTimeout);
-            aiBubble.innerHTML = message;
-            aiBubble.classList.add('show');
-            aiTimeout = setTimeout(() => {
-                aiBubble.classList.remove('show');
-            }, 4000);
-        }
+        const aiBubble = document.getElementById('ai-bubble'); let aiTimeout;
+        window.addEventListener('load', () => { setTimeout(() => { aiBubble.classList.add('show'); }, 1500); setTimeout(() => { aiBubble.classList.remove('show'); }, 8000); });
+        window.toggleAI = () => { aiBubble.classList.toggle('show'); if(aiBubble.classList.contains('show')) { aiBubble.innerHTML = "I am Jakipot AI. I am here to help you register safely!"; } };
+        function aiSpeak(message) { clearTimeout(aiTimeout); aiBubble.innerHTML = message; aiBubble.classList.add('show'); aiTimeout = setTimeout(() => { aiBubble.classList.remove('show'); }, 4000); }
 
         window.selectRecipient = (card) => {
             if (isSubmitting) return;
-            
             document.querySelectorAll('.recipient-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
-            
-            selectedRecipient = {
-                name: card.getAttribute('data-name'),
-                number: card.getAttribute('data-number')
-            };
-
+            selectedRecipient = { name: card.getAttribute('data-name'), number: card.getAttribute('data-number') };
             const copyBtn = document.getElementById('copy-btn');
             copyBtn.disabled = false;
             document.getElementById('copy-text').innerText = `COPY ${selectedRecipient.number}`;
-            
             aiSpeak(`Send the exact amount shown above to ${selectedRecipient.name}.`);
         };
 
@@ -459,124 +284,63 @@
                 const originalText = document.getElementById('copy-text').innerText;
                 document.getElementById('copy-text').innerText = "COPIED! ✓";
                 aiSpeak("Number copied! Now go to your mobile money app.");
-                setTimeout(() => {
-                    document.getElementById('copy-text').innerText = originalText;
-                }, 2000);
+                setTimeout(() => { document.getElementById('copy-text').innerText = originalText; }, 2000);
             });
         };
 
-        document.getElementById('upload-box').addEventListener('click', () => {
-            aiSpeak("Paste your payment SMS and upload the screenshot here.");
-        });
+        document.getElementById('upload-box').addEventListener('click', () => { aiSpeak("Paste your payment SMS and upload the screenshot here."); });
 
-        // ==========================================
-        // AUTH & STATE GUARD
-        // ==========================================
         onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.replace('login.html');
-                return;
-            }
+            if (!user) { window.location.replace('login.html'); return; }
             currentUser = user;
             await loadState();
         });
 
         async function loadState() {
             let currency = sessionStorage.getItem('signupCurrency');
-
-            // Fetch User Status from Firestore
             try {
                 const userRef = doc(db, 'users', currentUser.uid);
                 const snap = await getDoc(userRef);
                 if (snap.exists()) {
                     userDocData = snap.data();
-                    
                     if (!currency) currency = userDocData.currency || 'ZMW';
-
                     updateUIState(userDocData);
-                } else {
-                    window.location.replace('register.html');
-                    return;
-                }
-            } catch (e) {
-                console.error('Failed to load user state', e);
-            }
+                } else { window.location.replace('register.html'); return; }
+            } catch (e) { console.error('Failed to load user state', e); }
 
             if (paymentFormCard.style.display !== 'none') {
-                setupPaymentNetwork(); // <--- Set up the single network here
+                setupPaymentNetwork();
                 fetchExchangeRate(currency);
             }
         }
 
-        // ==========================================
-        // DYNAMIC PAYMENT NETWORK SWITCHER
-        // ==========================================
         function setupPaymentNetwork() {
-            // 1. Get the last shown network, default to 'airtel' so MTN shows first
             let lastNetwork = localStorage.getItem('lastPaymentNetwork') || 'airtel';
-            
-            // 2. Determine the next network to show
             let currentNetwork = lastNetwork === 'mtn' ? 'airtel' : 'mtn';
-            
-            // 3. Save this new network so the next refresh shows the OTHER one
             localStorage.setItem('lastPaymentNetwork', currentNetwork);
 
-            // 4. Define the data
             const networks = {
-                mtn: {
-                    name: "MTN Mobile Money",
-                    logoClass: "mtn",
-                    logoText: "MTN",
-                    numbers: [
-                        { name: "JOHN KABWE", number: "0963070992" },
-                        { name: "JEREMIAH ILUNGA", number: "0961033976" }
-                    ]
-                },
-                airtel: {
-                    name: "Airtel Money",
-                    logoClass: "airtel",
-                    logoText: "airtel",
-                    numbers: [
-                        { name: "AIRTEL ACCOUNT", number: "0571518417" }
-                    ]
-                }
+                mtn: { name: "MTN Mobile Money", logoClass: "mtn", logoText: "MTN", numbers: [{ name: "JOHN KABWE", number: "0963070992" }, { name: "JEREMIAH ILUNGA", number: "0961033976" }] },
+                airtel: { name: "Airtel Money", logoClass: "airtel", logoText: "airtel", numbers: [{ name: "AIRTEL ACCOUNT", number: "0571518417" }] }
             };
 
             const networkData = networks[currentNetwork];
+            document.getElementById('payment-header').innerHTML = `<div class="method-logo ${networkData.logoClass}">${networkData.logoText}</div><h3>${networkData.name}</h3>`;
 
-            // 5. Update the Header
-            document.getElementById('payment-header').innerHTML = `
-                <div class="method-logo ${networkData.logoClass}">${networkData.logoText}</div>
-                <h3>${networkData.name}</h3>
-            `;
-
-            // 6. Render the Numbers
             const listContainer = document.getElementById('recipient-list');
             listContainer.innerHTML = ''; 
 
-            networkData.numbers.forEach((num, index) => {
+            networkData.numbers.forEach((num) => {
                 const card = document.createElement('div');
                 card.className = 'recipient-card';
                 card.setAttribute('data-name', num.name);
                 card.setAttribute('data-number', num.number);
                 card.onclick = function() { window.selectRecipient(this); };
-                
-                card.innerHTML = `
-                    <div class="recipient-info">
-                        <h4>${num.name}</h4>
-                        <p>${num.number}</p>
-                    </div>
-                    <div class="recipient-radio"></div>
-                `;
+                card.innerHTML = `<div class="recipient-info"><h4>${num.name}</h4><p>${num.number}</p></div><div class="recipient-radio"></div>`;
                 listContainer.appendChild(card);
-
-                // If it's the only number for Airtel, auto-select it
-                if (networkData.numbers.length === 1) {
-                    window.selectRecipient(card);
-                }
+                if (networkData.numbers.length === 1) { window.selectRecipient(card); }
             });
 
-            // Reset copy button if auto-selected
             if (networkData.numbers.length === 1) {
                 aiSpeak(`Please send the exact amount to ${networkData.name}.`);
             } else {
@@ -586,373 +350,185 @@
             }
         }
 
-        // 2. Exchange Rate Logic (Base is $0.25 USD)
         async function fetchExchangeRate(targetCurrency) {
-            const currencySymbols = {
-                'ZMW': 'K', 'NGN': '₦', 'USD': '$', 'EUR': '€', 'GBP': '£', 
-                'ZAR': 'R', 'KES': 'KSh', 'GHS': '₵', 'TZS': 'TSh', 
-                'UGX': 'USh', 'BWP': 'P', 'MWK': 'MK', 'MZN': 'MT', 
-                'NAD': 'N$', 'AOA': 'Kz', 'PHP': '₱', 'IDR': 'Rp', 
-                'PKR': '₨', 'BDT': '৳'
-            };
+            const currencySymbols = { 'ZMW': 'K', 'NGN': '₦', 'USD': '$', 'EUR': '€', 'GBP': '£', 'ZAR': 'R', 'KES': 'KSh', 'GHS': '₵', 'TZS': 'TSh', 'UGX': 'USh', 'BWP': 'P', 'MWK': 'MK', 'MZN': 'MT', 'NAD': 'N$', 'AOA': 'Kz', 'PHP': '₱', 'IDR': 'Rp', 'PKR': '₨', 'BDT': '৳' };
             const symbol = currencySymbols[targetCurrency] || targetCurrency;
-            const BASE_FEE_USD = 0.25;
-            const FIXED_ZMW = 5;
+            const BASE_FEE_USD = 0.25; const FIXED_ZMW = 5;
 
             try {
                 const res = await fetch('https://open.er-api.com/v6/latest/USD');
                 const data = await res.json();
-                
                 if (data.result === 'success' && data.rates[targetCurrency]) {
                     exchangeRate = data.rates[targetCurrency];
-                    
-                    const feeAmountEl = document.getElementById('fee-amount');
-                    const feeConvertedEl = document.getElementById('fee-converted');
-                    const exchangeRateEl = document.getElementById('exchange-rate');
-
+                    const feeAmountEl = document.getElementById('fee-amount'); const feeConvertedEl = document.getElementById('fee-converted'); const exchangeRateEl = document.getElementById('exchange-rate');
                     if (targetCurrency === 'ZMW') {
-                        feeAmountEl.innerText = `K${FIXED_ZMW} ZMW`;
-                        feeConvertedEl.innerText = `≈ $${BASE_FEE_USD} USD`;
-                        exchangeRateEl.innerText = `1 USD = ${data.rates['ZMW']} ZMW`;
+                        feeAmountEl.innerText = `K${FIXED_ZMW} ZMW`; feeConvertedEl.innerText = `≈ $${BASE_FEE_USD} USD`; exchangeRateEl.innerText = `1 USD = ${data.rates['ZMW']} ZMW`;
                     } else if (targetCurrency === 'USD') {
-                        feeAmountEl.innerText = `$${BASE_FEE_USD} USD`;
-                        feeConvertedEl.innerText = `≈ K${FIXED_ZMW} ZMW`;
-                        exchangeRateEl.innerText = `Base Activation Fee`;
+                        feeAmountEl.innerText = `$${BASE_FEE_USD} USD`; feeConvertedEl.innerText = `≈ K${FIXED_ZMW} ZMW`; exchangeRateEl.innerText = `Base Activation Fee`;
                     } else {
                         const converted = (BASE_FEE_USD * exchangeRate).toFixed(2);
-                        feeAmountEl.innerText = `${symbol}${Number(converted).toLocaleString()}`;
-                        feeConvertedEl.innerText = `≈ $${BASE_FEE_USD} USD`;
-                        exchangeRateEl.innerText = `1 USD = ${exchangeRate.toFixed(4)} ${targetCurrency}`;
+                        feeAmountEl.innerText = `${symbol}${Number(converted).toLocaleString()}`; feeConvertedEl.innerText = `≈ $${BASE_FEE_USD} USD`; exchangeRateEl.innerText = `1 USD = ${exchangeRate.toFixed(4)} ${targetCurrency}`;
                     }
-                } else {
-                    throw new Error('Rate not found');
-                }
+                } else { throw new Error('Rate not found'); }
             } catch (err) {
-                console.warn('Exchange rate failed, falling back to base', err);
-                document.getElementById('fee-amount').innerText = `$${BASE_FEE_USD} USD`;
-                document.getElementById('fee-converted').innerText = `≈ K${FIXED_ZMW} ZMW`;
-                document.getElementById('exchange-rate').innerText = 'Please send exactly $0.25 USD (K5 ZMW)';
+                document.getElementById('fee-amount').innerText = `$${BASE_FEE_USD} USD`; document.getElementById('fee-converted').innerText = `≈ K${FIXED_ZMW} ZMW`; document.getElementById('exchange-rate').innerText = 'Please send exactly $0.25 USD (K5 ZMW)';
             }
         }
 
-        // 3. UI State Management & Countdown
         function updateUIState(data) {
             if (countdownInterval) clearInterval(countdownInterval);
-
-            paymentFormCard.style.display = 'none';
-            verificationCard.style.display = 'none';
-            startCard.style.display = 'none';
-            statusBanner.className = 'status-banner';
-            statusBanner.innerText = '';
-            backBtn.style.display = 'flex';
+            paymentFormCard.style.display = 'none'; verificationCard.style.display = 'none'; startCard.style.display = 'none';
+            statusBanner.className = 'status-banner'; statusBanner.innerText = ''; backBtn.style.display = 'flex';
 
             if (!data.status || data.status === 'incomplete' || data.status === 'pending_payment') {
                 paymentFormCard.style.display = 'block';
-            }
-            else if (data.status === 'pending_review') {
-                backBtn.style.display = 'none';
-                statusBanner.classList.add('pending');
-                
+            } else if (data.status === 'pending_review') {
+                backBtn.style.display = 'none'; statusBanner.classList.add('pending');
                 let submitTimeMs = Date.now();
-                if (data.updatedAt && typeof data.updatedAt.toMillis === 'function') {
-                    submitTimeMs = data.updatedAt.toMillis();
-                } else if (data.updatedAt instanceof Date) {
-                    submitTimeMs = data.updatedAt.getTime();
-                }
-
-                statusBanner.innerHTML = `
-                    <b>Your payment is under review!</b><br><br>
-                    This request will expire in:<br>
-                    <span id="countdown" class="countdown-timer">Calculating...</span>
-                    Once our administrators approve your payment, the AI will generate your 6-digit code. <b>Fill the code that the AI gives you</b> to activate your account.
-                `;
-                
-                startCountdown(submitTimeMs);
-                aiSpeak("Your payment is under review. Please wait.");
-            } 
-            else if (data.status === 'approved') {
-                backBtn.style.display = 'none';
-                verificationCard.style.display = 'block';
-                statusBanner.classList.add('approved');
+                if (data.updatedAt && typeof data.updatedAt.toMillis === 'function') { submitTimeMs = data.updatedAt.toMillis(); } else if (data.updatedAt instanceof Date) { submitTimeMs = data.updatedAt.getTime(); }
+                statusBanner.innerHTML = `<b>Your payment is under review!</b><br><br>This request will expire in:<br><span id="countdown" class="countdown-timer">Calculating...</span>Once our administrators approve your payment, the AI will generate your 6-digit code. <b>Fill the code that the AI gives you</b> to activate your account.`;
+                startCountdown(submitTimeMs); aiSpeak("Your payment is under review. Please wait.");
+            } else if (data.status === 'approved') {
+                backBtn.style.display = 'none'; verificationCard.style.display = 'block'; statusBanner.classList.add('approved');
                 statusBanner.innerHTML = `Your payment has been approved! Please enter your 6-digit verification code below to activate your account.`;
                 aiSpeak("Payment approved! Enter the code the AI gave you.");
-            } 
-            else if (data.status === 'activated') {
-                backBtn.style.display = 'none';
-                startCard.style.display = 'block';
-                statusBanner.classList.add('activated');
+            } else if (data.status === 'activated') {
+                backBtn.style.display = 'none'; startCard.style.display = 'block'; statusBanner.classList.add('activated');
                 statusBanner.innerHTML = `Your account is fully activated. Welcome to JAKIPOT!`;
                 aiSpeak("Welcome to Jakipot! Let's get started.");
             }
         }
 
         function startCountdown(startTimeMs) {
-            const expiryTimeMs = startTimeMs + (7 * 24 * 60 * 60 * 1000); // Exactly 7 days
-            
+            const expiryTimeMs = startTimeMs + (7 * 24 * 60 * 60 * 1000); 
             const timerUpdate = () => {
-                const now = Date.now();
-                const diff = expiryTimeMs - now;
-                const el = document.getElementById('countdown');
-                
+                const now = Date.now(); const diff = expiryTimeMs - now; const el = document.getElementById('countdown');
                 if (!el) return;
-
-                if (diff <= 0) {
-                    clearInterval(countdownInterval);
-                    el.innerText = "EXPIRED";
-                    el.style.color = "var(--danger)";
-                    return;
-                }
-                
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-                const mins = Math.floor((diff / 1000 / 60) % 60);
-                const secs = Math.floor((diff / 1000) % 60);
-                
+                if (diff <= 0) { clearInterval(countdownInterval); el.innerText = "EXPIRED"; el.style.color = "var(--danger)"; return; }
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24)); const hours = Math.floor((diff / (1000 * 60 * 60)) % 24); const mins = Math.floor((diff / 1000 / 60) % 60); const secs = Math.floor((diff / 1000) % 60);
                 el.innerText = `${days}d ${hours}h ${mins}m ${secs}s`;
             };
-
-            timerUpdate();
-            countdownInterval = setInterval(timerUpdate, 1000);
+            timerUpdate(); countdownInterval = setInterval(timerUpdate, 1000);
         }
 
-        // 5. Screenshot Upload UI
-        window.triggerUpload = () => {
-            if (isSubmitting) return;
-            document.getElementById('screenshot-input').click();
-        };
-
+        window.triggerUpload = () => { if (isSubmitting) return; document.getElementById('screenshot-input').click(); };
         document.getElementById('screenshot-input').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            errorDiv.innerText = "";
-
-            if (!CLOUDINARY.allowedTypes.includes(file.type)) {
-                errorDiv.innerText = 'Only JPG, JPEG, or PNG allowed.';
-                return;
-            }
-            if (file.size > CLOUDINARY.maxBytes) {
-                errorDiv.innerText = 'File too large. Max 5MB.';
-                return;
-            }
-
+            const file = e.target.files[0]; if (!file) return; errorDiv.innerText = "";
+            if (!CLOUDINARY.allowedTypes.includes(file.type)) { errorDiv.innerText = 'Only JPG, JPEG, or PNG allowed.'; return; }
+            if (file.size > CLOUDINARY.maxBytes) { errorDiv.innerText = 'File too large. Max 5MB.'; return; }
             screenshotFile = file;
             const url = URL.createObjectURL(file);
-            document.getElementById('screenshot-img').src = url;
-            document.getElementById('upload-preview').style.display = 'block';
-            document.getElementById('upload-label').style.display = 'none';
-            document.getElementById('upload-box').classList.add('has-file');
+            document.getElementById('screenshot-img').src = url; document.getElementById('upload-preview').style.display = 'block';
+            document.getElementById('upload-label').style.display = 'none'; document.getElementById('upload-box').classList.add('has-file');
             e.target.value = ''; 
-            
             aiSpeak("Screenshot attached! Paste the SMS text and click Submit.");
         });
 
-        // 6. Cloudinary Upload
         function uploadScreenshot(file) {
             return new Promise((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
                 xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`);
-
                 xhr.onload = () => {
                     if (xhr.status >= 200 && xhr.status < 300) {
                         const data = JSON.parse(xhr.responseText);
-                        resolve({
-                            publicId: data.public_id,
-                            format: data.format,
-                            bytes: data.bytes
-                        });
-                    } else {
-                        let msg = 'Upload failed';
-                        try { msg = JSON.parse(xhr.responseText).error?.message || msg; } catch (_) {}
-                        reject(new Error(msg));
-                    }
+                        resolve({ publicId: data.public_id, format: data.format, bytes: data.bytes });
+                    } else { reject(new Error('Upload failed')); }
                 };
-
-                xhr.onerror = () => reject(new Error('Network error'));
-                xhr.timeout = 60000;
-
+                xhr.onerror = () => reject(new Error('Network error')); xhr.timeout = 60000;
                 const fd = new FormData();
-                fd.append('file', file);
-                fd.append('upload_preset', CLOUDINARY.uploadPreset);
-                fd.append('folder', `${CLOUDINARY.folder}/${currentUser.uid}`);
-                fd.append('access_mode', 'authenticated');
-                
+                fd.append('file', file); fd.append('upload_preset', CLOUDINARY.uploadPreset); fd.append('folder', `${CLOUDINARY.folder}/${currentUser.uid}`); fd.append('access_mode', 'authenticated');
                 xhr.send(fd);
             });
         }
 
-        // 7. Submit Payment
         window.submitPayment = async () => {
-            if (isSubmitting) return;
-            errorDiv.innerText = "";
-
+            if (isSubmitting) return; errorDiv.innerText = "";
             const smsText = document.getElementById('payment-sms').value.trim();
+            if (!selectedRecipient) { errorDiv.innerText = "Please select a recipient."; return; }
+            if (!smsText) { errorDiv.innerText = "Please paste your payment SMS confirmation."; return; }
+            if (!screenshotFile) { errorDiv.innerText = "Please upload a payment screenshot."; return; }
 
-            if (!selectedRecipient) {
-                errorDiv.innerText = "Please select a recipient.";
-                return;
-            }
-            if (!smsText) {
-                errorDiv.innerText = "Please paste your payment SMS confirmation.";
-                return;
-            }
-            if (!screenshotFile) {
-                errorDiv.innerText = "Please upload a payment screenshot.";
-                return;
-            }
-
-            isSubmitting = true;
-            submitBtn.disabled = true;
-            document.getElementById('loading-overlay').classList.add('show');
-            document.getElementById('loading-title').innerText = "Submitting Payment";
-            document.getElementById('loading-text').innerText = "Securing your documents...";
+            isSubmitting = true; submitBtn.disabled = true;
+            document.getElementById('loading-overlay').classList.add('show'); document.getElementById('loading-title').innerText = "Submitting Payment"; document.getElementById('loading-text').innerText = "Securing your documents...";
             aiSpeak("Uploading your payment details securely...");
 
             try {
                 const uploadResult = await uploadScreenshot(screenshotFile);
 
+                // FIXED: Changed status to 'pending' to match security rules
                 const depositRef = await addDoc(collection(db, 'deposits'), {
-                    uid: currentUser.uid,
-                    email: currentUser.email,
-                    network: localStorage.getItem('lastPaymentNetwork'), // Save which network they saw
-                    recipient: selectedRecipient,
-                    amountUSD: 0.25,
-                    amountZMW: 5,
-                    amountConverted: exchangeRate ? (0.25 * exchangeRate).toFixed(2) : null,
-                    currency: sessionStorage.getItem('signupCurrency') || userDocData.currency || 'ZMW',
-                    smsText: smsText,
-                    screenshot: uploadResult,
-                    status: 'pending_review',
+                    uid: currentUser.uid, email: currentUser.email, network: localStorage.getItem('lastPaymentNetwork'),
+                    recipient: selectedRecipient, amountUSD: 0.25, amountZMW: 5, amountConverted: exchangeRate ? (0.25 * exchangeRate).toFixed(2) : null,
+                    currency: sessionStorage.getItem('signupCurrency') || userDocData.currency || 'ZMW', smsText: smsText, screenshot: uploadResult,
+                    status: 'pending', // <--- FIXED HERE
                     createdAt: serverTimestamp()
                 });
 
-                await setDoc(doc(db, 'users', currentUser.uid), {
-                    status: 'pending_review',
-                    signupStage: 'payment_submitted',
-                    updatedAt: serverTimestamp()
-                }, { merge: true });
-
-                await addDoc(collection(db, 'security_logs'), {
-                    event: 'payment_submitted',
-                    uid: currentUser.uid,
-                    depositId: depositRef.id,
-                    amountUSD: 0.25,
-                    timestamp: serverTimestamp()
-                });
+                await setDoc(doc(db, 'users', currentUser.uid), { status: 'pending_review', signupStage: 'payment_submitted', updatedAt: serverTimestamp() }, { merge: true });
+                await addDoc(collection(db, 'security_logs'), { event: 'payment_submitted', uid: currentUser.uid, depositId: depositRef.id, amountUSD: 0.25, timestamp: serverTimestamp() });
 
                 document.getElementById('loading-overlay').classList.remove('show');
                 updateUIState({ status: 'pending_review', updatedAt: new Date() });
-
             } catch (err) {
                 console.error('[Payment Error]', err);
-                document.getElementById('loading-overlay').classList.remove('show');
-                isSubmitting = false;
-                submitBtn.disabled = false;
+                document.getElementById('loading-overlay').classList.remove('show'); isSubmitting = false; submitBtn.disabled = false;
                 errorDiv.innerText = err.message || 'Submission failed. Please try again.';
                 aiSpeak("Oops, something went wrong. Please try again.");
             }
         };
 
-        // 8. Code Verification Logic
         const codeInputs = document.querySelectorAll('.code-box');
         codeInputs.forEach((input, index) => {
             input.addEventListener('input', (e) => {
                 e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                if (e.target.value.length === 1) {
-                    e.target.classList.add('filled');
-                    if (index < 5) codeInputs[index + 1].focus();
-                } else {
-                    e.target.classList.remove('filled');
-                }
+                if (e.target.value.length === 1) { e.target.classList.add('filled'); if (index < 5) codeInputs[index + 1].focus(); } else { e.target.classList.remove('filled'); }
                 codeError.innerText = "";
             });
-
             input.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' && !e.target.value && index > 0) {
-                    codeInputs[index - 1].focus();
-                    codeInputs[index - 1].value = '';
-                    codeInputs[index - 1].classList.remove('filled');
-                }
+                if (e.key === 'Backspace' && !e.target.value && index > 0) { codeInputs[index - 1].focus(); codeInputs[index - 1].value = ''; codeInputs[index - 1].classList.remove('filled'); }
             });
-
             input.addEventListener('paste', (e) => {
                 e.preventDefault();
                 const digits = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '').slice(0, 6);
-                for (let i = 0; i < digits.length; i++) {
-                    if (codeInputs[i]) {
-                        codeInputs[i].value = digits[i];
-                        codeInputs[i].classList.add('filled');
-                    }
-                }
+                for (let i = 0; i < digits.length; i++) { if (codeInputs[i]) { codeInputs[i].value = digits[i]; codeInputs[i].classList.add('filled'); } }
                 if (digits.length > 0) codeInputs[Math.min(digits.length, 5)].focus();
             });
         });
 
         window.verifyCode = async () => {
             codeError.innerText = "";
-            let enteredCode = "";
-            codeInputs.forEach(input => enteredCode += input.value);
-
-            if (enteredCode.length !== 6) {
-                codeError.innerText = "Please enter all 6 digits.";
-                return;
-            }
+            let enteredCode = ""; codeInputs.forEach(input => enteredCode += input.value);
+            if (enteredCode.length !== 6) { codeError.innerText = "Please enter all 6 digits."; return; }
 
             document.getElementById('verify-btn').disabled = true;
-            document.getElementById('loading-overlay').classList.add('show');
-            document.getElementById('loading-title').innerText = "Verifying";
-            document.getElementById('loading-text').innerText = "Checking activation code...";
+            document.getElementById('loading-overlay').classList.add('show'); document.getElementById('loading-title').innerText = "Verifying"; document.getElementById('loading-text').innerText = "Checking activation code...";
             aiSpeak("Verifying your code...");
 
             try {
                 if (userDocData && userDocData.verificationCode === enteredCode) {
-                    await setDoc(doc(db, 'users', currentUser.uid), {
-                        status: 'activated',
-                        updatedAt: serverTimestamp()
-                    }, { merge: true });
-
-                    await addDoc(collection(db, 'security_logs'), {
-                        event: 'account_activated',
-                        uid: currentUser.uid,
-                        timestamp: serverTimestamp()
-                    });
-
+                    await setDoc(doc(db, 'users', currentUser.uid), { status: 'activated', updatedAt: serverTimestamp() }, { merge: true });
+                    await addDoc(collection(db, 'security_logs'), { event: 'account_activated', uid: currentUser.uid, timestamp: serverTimestamp() });
                     document.getElementById('loading-overlay').classList.remove('show');
                     updateUIState({ status: 'activated' });
                 } else {
                     codeError.innerText = "Invalid code. Please check and try again.";
-                    codeInputs.forEach(i => { i.value = ''; i.classList.remove('filled'); });
-                    codeInputs[0].focus();
-                    
-                    await addDoc(collection(db, 'security_logs'), {
-                        event: 'failed_verification_code',
-                        uid: currentUser.uid,
-                        timestamp: serverTimestamp()
-                    });
-
-                    document.getElementById('loading-overlay').classList.remove('show');
-                    document.getElementById('verify-btn').disabled = false;
+                    codeInputs.forEach(i => { i.value = ''; i.classList.remove('filled'); }); codeInputs[0].focus();
+                    await addDoc(collection(db, 'security_logs'), { event: 'failed_verification_code', uid: currentUser.uid, timestamp: serverTimestamp() });
+                    document.getElementById('loading-overlay').classList.remove('show'); document.getElementById('verify-btn').disabled = false;
                     aiSpeak("That code is incorrect. Please check with the admin.");
                 }
             } catch (err) {
-                console.error('[Verify Error]', err);
-                codeError.innerText = "Verification failed. Please try again.";
-                document.getElementById('loading-overlay').classList.remove('show');
-                document.getElementById('verify-btn').disabled = false;
+                console.error('[Verify Error]', err); codeError.innerText = "Verification failed. Please try again.";
+                document.getElementById('loading-overlay').classList.remove('show'); document.getElementById('verify-btn').disabled = false;
             }
         };
 
-        // 9. Start App
         window.startApp = () => {
             document.getElementById('loading-overlay').classList.add('show');
-            document.getElementById('loading-title').innerText = "Welcome to JAKIPOT";
-            document.getElementById('loading-text').innerText = "Loading your dashboard...";
+            document.getElementById('loading-title').innerText = "Welcome to JAKIPOT"; document.getElementById('loading-text').innerText = "Loading your dashboard...";
             aiSpeak("Welcome to Jakipot! Loading your dashboard...");
-            
-            setTimeout(() => {
-                window.location.replace('home.html');
-            }, 2000);
+            setTimeout(() => { window.location.replace('home.html'); }, 2000);
         };
-
     </script>
 </body>
 </html>

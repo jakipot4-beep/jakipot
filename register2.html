@@ -42,25 +42,13 @@
         .flying-bird { position: absolute; font-size: 60px; top: 50%; left: -20%; transform: translateY(-50%); animation: flyAcross 2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
         .loading-text { color: var(--light-blue); font-size: 16px; font-weight: 600; animation: blink 1.5s infinite; text-align: center; padding: 0 20px; }
         
-        /* =========================================
-           META-STYLE AI WIDGET
-           ========================================= */
-        .ai-fab {
-            position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px;
-            border-radius: 50%; background: var(--bg-card); display: flex; justify-content: center; align-items: center;
-            cursor: pointer; z-index: 1000; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
-            border: 2px solid var(--emerald); transition: transform 0.2s, box-shadow 0.2s;
-        }
+        /* AI WIDGET */
+        .ai-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: var(--bg-card); display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 1000; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); border: 2px solid var(--emerald); transition: transform 0.2s, box-shadow 0.2s; }
         .ai-fab:hover { transform: scale(1.05); box-shadow: 0 6px 25px rgba(16, 185, 129, 0.6); }
         .ai-fab:active { transform: scale(0.92); }
         .ai-ring { width: 36px; height: 36px; border-radius: 50%; background: conic-gradient(from 0deg, transparent, var(--emerald), var(--light-blue), var(--emerald), transparent); animation: spin 3s linear infinite; position: relative; }
         .ai-ring::after { content: ''; position: absolute; inset: 4px; background: var(--bg-card); border-radius: 50%; }
-        .ai-bubble {
-            position: fixed; bottom: 95px; right: 25px; max-width: 280px; background: var(--bg-card);
-            color: var(--white); padding: 14px 18px; border-radius: 18px 18px 0 18px; font-size: 13.5px;
-            line-height: 1.5; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(16, 185, 129, 0.3);
-            z-index: 999; opacity: 0; transform: translateY(10px); transition: opacity 0.3s, transform 0.3s; pointer-events: none;
-        }
+        .ai-bubble { position: fixed; bottom: 95px; right: 25px; max-width: 280px; background: var(--bg-card); color: var(--white); padding: 14px 18px; border-radius: 18px 18px 0 18px; font-size: 13.5px; line-height: 1.5; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(16, 185, 129, 0.3); z-index: 999; opacity: 0; transform: translateY(10px); transition: opacity 0.3s, transform 0.3s; pointer-events: none; }
         .ai-bubble.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
         .ai-bubble::before { content: ''; position: absolute; bottom: -8px; right: 20px; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid var(--bg-card); }
 
@@ -106,7 +94,7 @@
         <div class="loading-text">Creating your secure account...</div>
     </div>
 
-    <!-- META-STYLE AI WIDGET -->
+    <!-- AI WIDGET -->
     <div id="ai-fab" class="ai-fab" onclick="toggleAI()">
         <div class="ai-ring"></div>
     </div>
@@ -115,6 +103,7 @@
     </div>
 
     <script type="module">
+        // LOCKED TO 13.1.0 AS REQUESTED
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
@@ -136,54 +125,29 @@
         let isSubmitting = false;
         let currentUser = null;
 
-        // ==========================================
         // AI WIDGET LOGIC
-        // ==========================================
         const aiBubble = document.getElementById('ai-bubble');
         let aiTimeout;
-
         window.addEventListener('load', () => {
-            setTimeout(() => {
-                aiBubble.classList.add('show');
-            }, 1500);
-            setTimeout(() => {
-                aiBubble.classList.remove('show');
-            }, 8000);
+            setTimeout(() => { aiBubble.classList.add('show'); }, 1500);
+            setTimeout(() => { aiBubble.classList.remove('show'); }, 8000);
         });
-
         window.toggleAI = () => {
             aiBubble.classList.toggle('show');
-            if(aiBubble.classList.contains('show')) {
-                aiBubble.innerHTML = "I am Jakipot AI. I am here to help you register safely!";
-            }
+            if(aiBubble.classList.contains('show')) { aiBubble.innerHTML = "I am Jakipot AI. I am here to help you register safely!"; }
         };
-
         function aiSpeak(message) {
             clearTimeout(aiTimeout);
             aiBubble.innerHTML = message;
             aiBubble.classList.add('show');
-            aiTimeout = setTimeout(() => {
-                aiBubble.classList.remove('show');
-            }, 4000);
+            aiTimeout = setTimeout(() => { aiBubble.classList.remove('show'); }, 4000);
         }
+        document.getElementById('first-name').addEventListener('focus', () => { aiSpeak("Please enter your real first name as it appears on your ID."); });
+        document.getElementById('last-name').addEventListener('focus', () => { aiSpeak("Please enter your real last name."); });
+        document.getElementById('country-select').addEventListener('focus', () => { aiSpeak("Select the country where you currently live."); });
+        document.getElementById('currency-select').addEventListener('focus', () => { aiSpeak("Choose the currency you want to use in your JAKIPOT account."); });
 
-        // Sense inputs
-        document.getElementById('first-name').addEventListener('focus', () => {
-            aiSpeak("Please enter your real first name as it appears on your ID.");
-        });
-        document.getElementById('last-name').addEventListener('focus', () => {
-            aiSpeak("Please enter your real last name.");
-        });
-        document.getElementById('country-select').addEventListener('focus', () => {
-            aiSpeak("Select the country where you currently live.");
-        });
-        document.getElementById('currency-select').addEventListener('focus', () => {
-            aiSpeak("Choose the currency you want to use in your JAKIPOT account.");
-        });
-
-        // ==========================================
         // REGISTRATION LOGIC
-        // ==========================================
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             const method = sessionStorage.getItem('signupMethod');
@@ -260,6 +224,7 @@
         });
         currencySelect.addEventListener('change', () => { currencySelect.dataset.touched = "true"; });
 
+        // BOT PROTECTION CHECKS
         function isSuspiciousName(name) {
             const n = name.toLowerCase().trim();
             if (n.length < 2 || n.length > 50) return true;
@@ -282,6 +247,7 @@
             if (!lastName || lastName.length < 2) { errorDiv.innerText = 'Please enter your valid last name.'; return; }
             if (!country) { errorDiv.innerText = 'Please select your country.'; return; }
             if (!currency) { errorDiv.innerText = 'Please select your preferred currency.'; return; }
+            
             if (isSuspiciousName(firstName) || isSuspiciousName(lastName)) {
                 errorDiv.innerText = "Please enter your real, genuine names. Automated entries are blocked.";
                 return;
@@ -306,7 +272,7 @@
 
             try {
                 // 1. Create User in Auth (If Email Registration)
-                if (method === 'email') {
+                if (method === 'email' && !user) {
                     if (!email || !password) throw new Error("Missing email or password. Please start over.");
                     const cred = await createUserWithEmailAndPassword(auth, email, password);
                     user = cred.user;
@@ -317,7 +283,7 @@
                 // 2. Update Auth Profile Name
                 await updateProfile(user, { displayName: `${firstName} ${lastName}` });
 
-                // 3. Create User Document in Firestore
+                // 3. Create User Document in Firestore (ADDED role: 'user' TO MATCH SECURITY RULES)
                 const userRef = doc(db, 'users', user.uid);
                 await setDoc(userRef, {
                     uid: user.uid,
@@ -330,6 +296,7 @@
                     currency: currency,
                     referredBy: referral || null,
                     authMethod: method,
+                    role: 'user',            // <--- THIS FIXES THE ERROR
                     status: 'incomplete',
                     kycStatus: 'unverified',
                     signupStage: 'proof',
@@ -337,14 +304,22 @@
                     updatedAt: serverTimestamp()
                 }, { merge: true });
 
-                // 4. Save to Session for later pages
+                // 4. Create the initial empty Wallet for this user (Prevents errors on wallet.html)
+                const walletRef = doc(db, 'wallets', user.uid);
+                await setDoc(walletRef, {
+                    balance: 0,
+                    currency: currency,
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+
+                // 5. Save to Session for later pages
                 sessionStorage.setItem('signupFirstName', firstName);
                 sessionStorage.setItem('signupLastName', lastName);
                 sessionStorage.setItem('signupFullName', `${firstName} ${lastName}`);
                 sessionStorage.setItem('signupCountry', country);
                 sessionStorage.setItem('signupCurrency', currency);
 
-                // 5. Redirect
+                // 6. Redirect to Next Step (Proof/KYC)
                 setTimeout(() => {
                     window.location.replace('proof.html');
                 }, 1500);

@@ -35,6 +35,7 @@
 
         .btn-next { width: 100%; padding: 18px; border-radius: 14px; border: none; background: var(--cyan); color: #000; font-size: 16px; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 20px rgba(0, 217, 255, 0.3); margin-top: auto; }
         .btn-next:active { transform: scale(0.98); }
+        .btn-next:disabled { background: var(--danger); color: #fff; cursor: not-allowed; box-shadow: none; }
 
         /* --- PIN MODAL --- */
         .pin-overlay { position: fixed; inset: 0; background: rgba(4, 11, 22, 0.9); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: flex-end; z-index: 100; opacity: 0; transition: opacity 0.3s; }
@@ -95,7 +96,7 @@
     <div class="pin-overlay" id="pin-overlay">
         <div class="pin-card">
             <div class="pin-title">Security Check</div>
-            <div class="pin-sub">Enter your 4-digit PIN to authorize this withdrawal.</div>
+            <div class="pin-sub" id="pin-sub-text">Enter your 4-digit PIN to authorize this withdrawal.</div>
             
             <div class="pin-container" id="pin-container">
                 <input type="password" inputmode="numeric" maxlength="1" class="pin-box" data-index="0" autocomplete="off">
@@ -107,7 +108,7 @@
             <div class="error-msg" id="pin-error"></div>
 
             <div class="pin-actions">
-                <button class="btn-pin btn-cancel" onclick="closePinModal()">Cancel</button>
+                <button class="btn-pin btn-cancel" id="btn-cancel-pin" onclick="closePinModal()">Cancel</button>
                 <button class="btn-pin btn-confirm" id="btn-confirm-pin" onclick="processWithdrawal()" disabled>Confirm</button>
             </div>
         </div>
@@ -119,9 +120,10 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, collection, writeBatch, serverTimestamp, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // LOCKED TO 13.1.0
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, collection, writeBatch, serverTimestamp, increment, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", 
@@ -142,6 +144,11 @@
         let currentCurrencyCode = 'ZMW';
         let isProcessing = false;
 
+        // WATCHDOG STATE
+        const WATCHDOG_KEY = 'jakipot_withdraw_fails';
+        let failedAttempts = parseInt(localStorage.getItem(WATCHDOG_KEY) || '0');
+        let lockoutInterval = null;
+
         const CURRENCY_MAP = { 
             'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 
             'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'TZS': 'TSh', 
@@ -157,6 +164,9 @@
                 return; 
             }
             currentUser = user;
+
+            // Check Watchdog Status Immediately
+            checkWatchdog();
 
             // Fetch Currency & Phone
             onSnapshot(doc(db, 'users', user.uid), (snap) => {
@@ -181,12 +191,49 @@
             });
         });
 
+        // 🐕 WATCHDOG LOGIC
+        function checkWatchdog() {
+            const withdrawBtn = document.getElementById('btn-withdraw');
+            if (failedAttempts >= 5) {
+                withdrawBtn.disabled = true;
+                withdrawBtn.innerText = "ACCOUNT LOCKED (CONTACT SUPPORT)";
+                withdrawBtn.style.background = "var(--danger)";
+            }
+        }
+
+        async function logSecurityEvent(event, details = {}) {
+            try {
+                await addDoc(collection(db, 'security_logs'), {
+                    event: event,
+                    uid: currentUser?.uid || 'unknown',
+                    timestamp: serverTimestamp(),
+                    ...details
+                });
+            } catch (e) { console.warn('Watchdog log failed', e); }
+        }
+
+        function registerFailedAttempt() {
+            failedAttempts++;
+            localStorage.setItem(WATCHDOG_KEY, failedAttempts);
+            
+            if (failedAttempts >= 5) {
+                checkWatchdog();
+                closePinModal();
+                alert("Too many failed attempts. Your withdrawal access has been temporarily locked for security reasons. Please contact support.");
+                logSecurityEvent('account_withdraw_lockout', { attempts: failedAttempts });
+            } else {
+                pinError.innerText = `Incorrect PIN. You have ${5 - failedAttempts} attempts left.`;
+            }
+        }
+
         // 2. PIN Modal Logic
         const pinBoxes = document.querySelectorAll('.pin-box');
         const pinError = document.getElementById('pin-error');
         const btnConfirmPin = document.getElementById('btn-confirm-pin');
 
         window.openPinModal = () => {
+            if (failedAttempts >= 5) return; // Safety check
+
             const amount = parseFloat(document.getElementById('withdraw-amount').value);
             const phone = document.getElementById('withdraw-phone').value;
 
@@ -194,7 +241,6 @@
             if (amount > userBalance) { alert("Insufficient wallet balance."); return; }
             if (!phone) { alert("Please enter a destination phone number."); return; }
 
-            // Reset UI
             pinBoxes.forEach(box => { box.value = ''; box.classList.remove('filled'); });
             pinError.innerText = '';
             btnConfirmPin.disabled = true;
@@ -261,10 +307,8 @@
                 const amount = parseFloat(document.getElementById('withdraw-amount').value);
                 const phone = document.getElementById('withdraw-phone').value;
                 
-                // Hash the PIN
                 const pinHash = await hashPin(pin, currentUser.uid);
 
-                // Prepare Batch
                 const batch = writeBatch(db);
                 
                 // A. Deduct Wallet (Lock funds)
@@ -298,10 +342,12 @@
                     requestedAt: serverTimestamp()
                 });
 
-                // Commit (If PIN is wrong, the database rejects this instantly)
                 await batch.commit();
 
-                // Success
+                // SUCCESS: Reset Watchdog
+                localStorage.removeItem(WATCHDOG_KEY);
+                failedAttempts = 0;
+
                 document.getElementById('loading-overlay').classList.add('show');
                 setTimeout(() => {
                     window.location.href = 'history.html';
@@ -313,20 +359,38 @@
                 btnConfirmPin.disabled = false;
                 btnConfirmPin.innerText = "Confirm";
                 
-                // Check if the error is permission denied (meaning wrong PIN)
                 if (error.code === 'permission-denied') {
-                    pinError.innerText = "Incorrect PIN. Please try again.";
+                    // 🐕 TRIGGER WATCHDOG
+                    registerFailedAttempt();
+                    logSecurityEvent('failed_withdraw_pin', { attempts: failedAttempts, amount: amount });
+
+                    pinBoxes.forEach(box => { box.style.borderColor = 'var(--danger)'; });
+                    setTimeout(() => {
+                        pinBoxes.forEach(box => { box.style.borderColor = ''; box.value = ''; box.classList.remove('filled'); });
+                        pinBoxes[0].focus();
+                        btnConfirmPin.disabled = true;
+                    }, 1000);
+
+                    // If they hit 3 or 4 attempts, give a 30-second cooldown
+                    if (failedAttempts >= 3 && failedAttempts < 5) {
+                        let timeLeft = 30;
+                        btnConfirmPin.disabled = true;
+                        btnConfirmPin.innerText = `WAIT ${timeLeft}S`;
+                        
+                        clearInterval(lockoutInterval);
+                        lockoutInterval = setInterval(() => {
+                            timeLeft--;
+                            btnConfirmPin.innerText = `WAIT ${timeLeft}S`;
+                            if (timeLeft <= 0) {
+                                clearInterval(lockoutInterval);
+                                btnConfirmPin.innerText = "Confirm";
+                                btnConfirmPin.disabled = true; // Stays disabled until they type again
+                            }
+                        }, 1000);
+                    }
                 } else {
                     pinError.innerText = "Failed to submit. Check your connection.";
                 }
-                
-                // Flash red
-                pinBoxes.forEach(box => { box.style.borderColor = 'var(--danger)'; });
-                setTimeout(() => {
-                    pinBoxes.forEach(box => { box.style.borderColor = ''; box.value = ''; box.classList.remove('filled'); });
-                    pinBoxes[0].focus();
-                    btnConfirmPin.disabled = true;
-                }, 1000);
             }
         };
     </script>

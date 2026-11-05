@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Account Activation - Jakipot</title>
+    <style>
+        :root {
+            --bg-dark: #060b19; --bg-card: #111827; --bg-elevated: #0f172a;
+            --emerald: #10b981; --emerald-glow: rgba(16, 185, 129, 0.3); --light-blue: #38bdf8;
+            --white: #ffffff; --text-muted: #94a3b8; --danger: #ef4444; --border-color: #1e293b;
+            --mtn-yellow: #ffcc00; --airtel-red: #e31b23;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg-dark); color: var(--white); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-x: hidden; background-image: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.05) 0%, transparent 40%); }
+        .nav-bar { width: 100%; max-width: 500px; display: flex; justify-content: flex-start; align-items: center; margin-top: 10px; margin-bottom: 25px; animation: slideDownFade 0.6s ease; }
+        .back-link { color: var(--text-muted); text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 5px; transition: color 0.3s; }
+        .back-link:hover { color: var(--emerald); }
+        .header { text-align: center; margin-bottom: 25px; animation: slideUpFade 0.7s ease; }
+        .header h1 { font-size: 22px; font-weight: 900; letter-spacing: 1px; color: var(--white); }
+        .header p { font-size: 14px; color: var(--light-blue); margin-top: 8px; font-weight: 500; max-width: 340px; line-height: 1.4; margin-left: auto; margin-right: auto; }
+        .card { background: var(--bg-card); padding: 25px 20px; border-radius: 20px; width: 100%; max-width: 500px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid var(--border-color); animation: slideUpFade 0.7s ease 0.1s forwards; opacity: 0; transform: translateY(20px); }
+        .age-notice { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 15px; margin-bottom: 20px; display: flex; gap: 12px; align-items: flex-start; }
+        .age-notice svg { width: 20px; height: 20px; fill: var(--danger); flex-shrink: 0; }
+        .age-notice h3 { font-size: 14px; font-weight: 800; color: #fca5a5; margin-bottom: 4px; }
+        .age-notice p { font-size: 12px; color: #fecaca; line-height: 1.4; }
+        .checkbox-group { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 15px; cursor: pointer; background: var(--bg-elevated); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); transition: border-color 0.3s; }
+        .checkbox-group:hover { border-color: #334155; }
+        .checkbox-group input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--emerald); cursor: pointer; margin-top: 2px; flex-shrink: 0; }
+        .checkbox-group label { font-size: 13px; color: var(--text-muted); line-height: 1.5; cursor: pointer; }
+        .checkbox-group label b { color: var(--white); }
+        
+        /* Payment Information Notice */
+        .payment-info-notice { background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 14px; padding: 20px; margin-top: 25px; margin-bottom: 10px; text-align: center; }
+        .payment-info-notice h3 { font-size: 15px; font-weight: 800; color: var(--emerald); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .payment-info-notice p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+        .payment-info-notice .network-logos { display: flex; justify-content: center; gap: 15px; margin-top: 15px; }
+        .network-badge { padding: 8px 16px; border-radius: 8px; font-weight: 900; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+        .network-badge.mtn { background: rgba(255, 204, 0, 0.15); color: var(--mtn-yellow); border: 1px solid rgba(255, 204, 0, 0.3); }
+        .network-badge.airtel { background: rgba(227, 27, 35, 0.15); color: #ff6b6b; border: 1px solid rgba(227, 27, 35, 0.3); }
+
+        /* NEW: International Payment Guide */
+        .international-guide { margin-top: 15px; background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 14px; padding: 18px; }
+        .international-guide h4 { font-size: 14px; font-weight: 800; color: var(--light-blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .international-guide p { font-size: 12px; color: #bae6fd; line-height: 1.5; margin-bottom: 12px; }
+        .app-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .remit-app { background: var(--bg-elevated); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 800; color: var(--white); display: flex; align-items: center; gap: 6px; }
+        .remit-app span { font-size: 14px; }
+        .international-guide .note { font-size: 11px; color: var(--text-muted); margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px; }
+
+        .btn-continue { width: 100%; padding: 16px; background: var(--emerald); color: var(--white); border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 25px; transition: background 0.3s, transform 0.2s; box-shadow: 0 4px 15px var(--emerald-glow); display: flex; justify-content: center; align-items: center; }
+        .btn-continue:hover:not(:disabled) { background: #059669; transform: translateY(-2px); }
+        .btn-continue:disabled { opacity: 0.6; cursor: not-allowed; background: #334155; box-shadow: none; }
+        .error { color: var(--danger); margin-top: 12px; font-size: 13px; text-align: center; min-height: 18px; font-weight: 500; }
+        
+        #loading-overlay, #success-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(6,11,25,0.98); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(8px); text-align: center; padding: 20px; }
+        #loading-overlay.show, #success-overlay.show { display: flex; }
+        .bird-container { position: relative; width: 100%; height: 100px; overflow: hidden; margin-bottom: 20px; }
+        .flying-bird { position: absolute; font-size: 60px; top: 50%; left: -20%; transform: translateY(-50%); animation: flyAcross 2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .loading-title { color: var(--white); font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+        .loading-text { color: var(--light-blue); font-size: 14px; font-weight: 600; animation: blink 1.5s infinite; }
+        .success-check { width: 80px; height: 80px; margin-bottom: 15px; }
+        .success-check circle { stroke: var(--emerald); stroke-width: 3; fill: rgba(16,185,129,0.1); stroke-dasharray: 151; stroke-dashoffset: 151; animation: drawCircle 0.8s cubic-bezier(0.65,0,0.45,1) forwards; }
+        .success-check path { stroke: var(--emerald); stroke-width: 4; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 36; stroke-dashoffset: 36; animation: drawCheck 0.5s cubic-bezier(0.65,0,0.45,1) 0.6s forwards; }
+        .success-title { color: var(--white); font-size: 20px; font-weight: 900; margin-bottom: 8px; }
+        .success-text { color: var(--text-muted); font-size: 14px; line-height: 1.5; max-width: 300px; }
+        
+        .ai-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: var(--bg-card); display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 1000; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); border: 2px solid var(--emerald); transition: transform 0.2s, box-shadow 0.2s; }
+        .ai-fab:hover { transform: scale(1.05); box-shadow: 0 6px 25px rgba(16, 185, 129, 0.6); }
+        .ai-fab:active { transform: scale(0.92); }
+        .ai-ring { width: 36px; height: 36px; border-radius: 50%; background: conic-gradient(from 0deg, transparent, var(--emerald), var(--light-blue), var(--emerald), transparent); animation: spin 3s linear infinite; position: relative; }
+        .ai-ring::after { content: ''; position: absolute; inset: 4px; background: var(--bg-card); border-radius: 50%; }
+        .ai-bubble { position: fixed; bottom: 95px; right: 25px; max-width: 280px; background: var(--bg-card); color: var(--white); padding: 14px 18px; border-radius: 18px 18px 0 18px; font-size: 13.5px; line-height: 1.5; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(16, 185, 129, 0.3); z-index: 999; opacity: 0; transform: translateY(10px); transition: opacity 0.3s, transform 0.3s; pointer-events: none; }
+        .ai-bubble.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .ai-bubble::before { content: ''; position: absolute; bottom: -8px; right: 20px; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid var(--bg-card); }
+
+        @keyframes slideUpFade { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDownFade { 0% { opacity: 0; transform: translateY(-10px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes flyAcross { 0% { left: -20%; transform: translateY(-50%) scale(0.8) rotate(10deg); } 50% { transform: translateY(-60%) scale(1.1) rotate(-5deg); } 100% { left: 120%; transform: translateY(-50%) scale(0.8) rotate(10deg); } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes drawCircle { to { stroke-dashoffset: 0; } }
+        @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="password-set-up.html" class="back-link">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+            Back
+        </a>
+    </div>
+    <div class="header">
+        <h1>ACCOUNT ACTIVATION</h1>
+        <p>Review the requirements and rules below to continue.</p>
+    </div>
+    <div class="card">
+        <div class="age-notice">
+            <svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+            <div>
+                <h3>AGE REQUIREMENT: 20 YEARS AND ABOVE</h3>
+                <p>You must confirm your age eligibility to proceed.</p>
+            </div>
+        </div>
+        <label class="checkbox-group">
+            <input type="checkbox" id="age-checkbox">
+            <span class="label-text">I confirm that I am <b>20 years old or older</b> and eligible to use this platform.</span>
+        </label>
+        <label class="checkbox-group">
+            <input type="checkbox" id="terms-checkbox">
+            <span class="label-text">I agree to the <b>payment terms and platform rules</b>. I confirm that I will verify all details before sending, and that payment does not guarantee profits or returns.</span>
+        </label>
+        
+        <div class="payment-info-notice">
+            <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg> Supported Payment Networks</h3>
+            <p>JAKIPOT accepts payments via mobile money in Zambia. You will get the exact recipient numbers on the next step.</p>
+            <div class="network-logos">
+                <div class="network-badge mtn">MTN MoMo</div>
+                <div class="network-badge airtel">Airtel Money</div>
+            </div>
+        </div>
+
+        <!-- NEW: International Guide -->
+        <div class="international-guide">
+            <h4>
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                Are you outside Zambia?
+            </h4>
+            <p>No problem! You can still pay your activation fee using international money transfer apps. They will deliver the funds directly to our Zambian Mobile Money agent.</p>
+            <div class="app-row">
+                <div class="remit-app"><span>🌍</span> Remitly</div>
+                <div class="remit-app"><span>🌍</span> WorldRemit</div>
+                <div class="remit-app"><span>🌍</span> Western Union</div>
+            </div>
+            <div class="note">
+                <b>How to do it:</b> Download one of these apps, select "Mobile Money" or "Airtel/MTN" as the delivery method, and enter the agent number we give you on the next page. 
+            </div>
+        </div>
+
+        <button class="btn-continue" id="submit-btn" onclick="submitActivation()" disabled>I AGREE & CONTINUE →</button>
+        <div id="error-msg" class="error"></div>
+    </div>
+    <div id="loading-overlay"><div class="bird-container"><div class="flying-bird">🐦</div></div><div class="loading-title">Processing Activation</div><div class="loading-text">Saving your preferences…</div></div>
+    <div id="success-overlay"><svg class="success-check" viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M14 27l8 8 16-16"/></svg><div class="success-title">Rules Accepted</div><div class="success-text">Redirecting you to the secure payment page…</div></div>
+    <div id="ai-fab" class="ai-fab" onclick="toggleAI()"><div class="ai-ring"></div></div>
+    <div id="ai-bubble" class="ai-bubble">Hello 👋 friend, please review our rules and supported networks to activate your account.</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
+        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app-check.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw", authDomain: "jakipot.firebaseapp.com", projectId: "jakipot", storageBucket: "jakipot.firebasestorage.app", messagingSenderId: "396191754293", appId: "1:396191754293:web:5b11a11d82e773d19ee97c", measurementId: "G-L1CLB5TDHV" };
+        const app = initializeApp(firebaseConfig);
+        try { getAnalytics(app); } catch (e) { }
+        const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        if (isLocal) self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+        try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), isTokenAutoRefreshEnabled: true }); } catch (e) { }
+
+        const auth = getAuth(app); const db = getFirestore(app);
+        const errorDiv = document.getElementById('error-msg'); const submitBtn = document.getElementById('submit-btn');
+        const ageCheckbox = document.getElementById('age-checkbox'); const termsCheckbox = document.getElementById('terms-checkbox');
+        let currentUser = null; let isSubmitting = false;
+
+        const aiBubble = document.getElementById('ai-bubble'); let aiTimeout;
+        window.addEventListener('load', () => { setTimeout(() => { aiBubble.classList.add('show'); }, 1500); setTimeout(() => { aiBubble.classList.remove('show'); }, 8000); });
+        window.toggleAI = () => { aiBubble.classList.toggle('show'); if(aiBubble.classList.contains('show')) { aiBubble.innerHTML = "I am Jakipot AI. I am here to help you register safely!"; } };
+        function aiSpeak(message) { clearTimeout(aiTimeout); aiBubble.innerHTML = message; aiBubble.classList.add('show'); aiTimeout = setTimeout(() => { aiBubble.classList.remove('show'); }, 4000); }
+
+        ageCheckbox.addEventListener('change', () => { if (ageCheckbox.checked) aiSpeak("Thank you for confirming your age."); });
+        termsCheckbox.addEventListener('change', () => { if (termsCheckbox.checked) aiSpeak("Terms accepted. You're almost ready!"); });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            currentUser = user;
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    if (data.status === 'activated') { window.location.replace('home.html'); } 
+                    else if (data.signupStage === 'payment') { window.location.replace('pay.html'); }
+                }
+            } catch (e) { console.warn("Could not check user state", e); }
+        });
+
+        ageCheckbox.addEventListener('change', () => { errorDiv.innerText = ""; updateSubmitState(); });
+        termsCheckbox.addEventListener('change', () => { errorDiv.innerText = ""; updateSubmitState(); });
+
+        function updateSubmitState() { submitBtn.disabled = !(ageCheckbox.checked && termsCheckbox.checked && !isSubmitting); }
+
+        async function logGuardianEvent(event, details = {}) {
+            try { await addDoc(collection(db, 'security_logs'), { event, uid: currentUser?.uid, timestamp: serverTimestamp(), ...details }); } catch (e) { }
+        }
+
+        window.submitActivation = async () => {
+            if (isSubmitting || !currentUser) return; errorDiv.innerText = "";
+            if (!ageCheckbox.checked) { errorDiv.innerText = "You must confirm you are 20 years or older."; return; }
+            if (!termsCheckbox.checked) { errorDiv.innerText = "You must agree to the payment terms."; return; }
+
+            isSubmitting = true; submitBtn.disabled = true;
+            document.getElementById('loading-overlay').classList.add('show');
+
+            try {
+                await setDoc(doc(db, 'users', currentUser.uid), { ageConfirmed: true, paymentTermsAccepted: true, signupStage: 'payment', updatedAt: serverTimestamp() }, { merge: true });
+                await logGuardianEvent('activation_completed');
+                document.getElementById('loading-overlay').classList.remove('show');
+                document.getElementById('success-overlay').classList.add('show');
+                setTimeout(() => { window.location.replace('pay.html'); }, 2500);
+            } catch (err) {
+                console.error(err); document.getElementById('loading-overlay').classList.remove('show');
+                isSubmitting = false; updateSubmitState();
+                errorDiv.innerText = "Could not save preferences. Please try again.";
+            }
+        };
+    </script>
+</body>
+</html>

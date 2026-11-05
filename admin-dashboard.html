@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,94 +7,59 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-deep: #040b16; 
-            --bg-card: #0f172a; 
-            --bg-elevated: #1e293b;
-            --cyan: #00D9FF; 
-            --emerald: #10b981; 
-            --gold: #fbbf24; 
-            --danger: #ef4444;
-            --text-white: #ffffff; 
-            --text-muted: #8b9bb4; 
-            --border-light: rgba(255, 255, 255, 0.08);
+            --bg-deep: #040b16; --bg-card: #0f172a; --bg-elevated: #1e293b;
+            --cyan: #00D9FF; --emerald: #10b981; --gold: #fbbf24; --danger: #ef4444;
+            --text-white: #ffffff; --text-muted: #8b9bb4; --border-light: rgba(255, 255, 255, 0.08);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg-deep); color: var(--text-white); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        /* TOP HEADER */
-        .top-header {
-            background: var(--bg-card); border-bottom: 1px solid var(--border-light);
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 20px; height: 70px; flex-shrink: 0;
-        }
+        .top-header { background: var(--bg-card); border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; height: 70px; flex-shrink: 0; }
         .logo-area { font-size: 20px; font-weight: 900; display: flex; align-items: center; gap: 10px; }
         .logo-area span { color: var(--cyan); }
         .admin-info { display: flex; align-items: center; gap: 15px; font-size: 14px; font-weight: 700; }
         .btn-logout { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 800; transition: 0.2s; }
         .btn-logout:hover { background: var(--danger); color: #fff; }
 
-        /* HORIZONTAL NAVIGATION */
-        .nav-bar {
-            display: flex; gap: 10px; padding: 15px 20px;
-            background: var(--bg-deep); border-bottom: 1px solid var(--border-light);
-            overflow-x: auto; scrollbar-width: none; flex-shrink: 0;
-        }
+        .nav-bar { display: flex; gap: 10px; padding: 15px 20px; background: var(--bg-deep); border-bottom: 1px solid var(--border-light); overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
         .nav-bar::-webkit-scrollbar { display: none; }
-        .nav-tab {
-            padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 800;
-            cursor: pointer; white-space: nowrap; transition: 0.2s; border: 1px solid transparent;
-            background: var(--bg-elevated); color: var(--text-muted);
-        }
+        .nav-tab { padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: 0.2s; border: 1px solid transparent; background: var(--bg-elevated); color: var(--text-muted); }
         .nav-tab:hover { background: #334155; color: var(--white); }
         .nav-tab.active { background: rgba(0, 217, 255, 0.15); color: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 217, 255, 0.2); }
 
-        /* MAIN CONTENT */
         .main-content { flex: 1; padding: 20px; overflow-y: auto; max-width: 1000px; margin: 0 auto; width: 100%; }
         .tab-panel { display: none; animation: fadeIn 0.3s ease; }
         .tab-panel.active { display: block; }
         .page-title { font-size: 22px; font-weight: 900; margin-bottom: 20px; color: var(--text-white); display: flex; align-items: center; gap: 10px; }
 
-        /* DASHBOARD STAT CARDS */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
-        .stat-card {
-            background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px;
-            padding: 20px; display: flex; justify-content: space-between; align-items: center;
-        }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
         .stat-info h4 { font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px; }
         .stat-info h2 { font-size: 36px; font-weight: 900; }
         .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: grid; place-items: center; font-size: 24px; }
 
-        /* ROW CARDS (For Users, Deposits, etc.) */
         .list-container { display: flex; flex-direction: column; gap: 12px; }
-        .row-card {
-            background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px;
-            padding: 20px; display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 15px; transition: transform 0.2s;
-        }
+        .row-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; transition: transform 0.2s; }
         .row-card:hover { border-color: #334155; }
-        
         .row-info { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 200px; }
         .row-title { font-size: 16px; font-weight: 800; color: var(--text-white); }
         .row-sub { font-size: 13px; color: var(--text-muted); font-weight: 600; }
         .row-sub span { color: var(--text-white); }
-
         .row-actions { display: flex; gap: 10px; align-items: center; }
 
-        /* BADGES */
         .badge { padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 900; text-transform: uppercase; }
         .badge-pending { background: rgba(251, 191, 36, 0.15); color: var(--gold); border: 1px solid rgba(251, 191, 36, 0.3); }
         .badge-active { background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
         .badge-blocked { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
 
-        /* BUTTONS */
         .btn { padding: 10px 16px; border-radius: 10px; border: none; font-size: 13px; font-weight: 800; cursor: pointer; transition: 0.2s; }
         .btn:active { transform: scale(0.95); }
         .btn-approve { background: var(--emerald); color: #fff; }
         .btn-reject { background: var(--danger); color: #fff; }
         .btn-neutral { background: var(--bg-elevated); color: var(--text-white); border: 1px solid var(--border-light); }
         .btn-neutral:hover { background: #334155; }
+        .btn-cyan { background: var(--cyan); color: #000; }
 
-        /* FORM CARDS */
         .form-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px; padding: 25px; margin-bottom: 20px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
@@ -103,7 +68,6 @@
         .input-group input, .input-group select { padding: 14px; border-radius: 10px; background: var(--bg-elevated); border: 1px solid var(--border-light); color: var(--text-white); font-size: 15px; outline: none; }
         .input-group input:focus, .input-group select:focus { border-color: var(--cyan); }
 
-        /* CHAT LAYOUT */
         .chat-container { display: flex; height: calc(100vh - 220px); background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-light); overflow: hidden; }
         .chat-sidebar { width: 280px; border-right: 1px solid var(--border-light); overflow-y: auto; background: rgba(0,0,0,0.2); }
         .chat-user-item { padding: 15px 20px; border-bottom: 1px solid var(--border-light); cursor: pointer; transition: 0.2s; }
@@ -120,24 +84,27 @@
         .chat-input:focus { border-color: var(--cyan); }
         .btn-send { padding: 0 25px; border-radius: 10px; border: none; background: var(--cyan); color: #000; font-weight: 900; cursor: pointer; font-size: 14px; }
 
-        /* MODAL */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 100; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: var(--bg-card); padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; border: 1px solid var(--border-light); text-align: center; }
         .modal-content h3 { font-size: 22px; font-weight: 900; margin-bottom: 10px; }
         .modal-content p { color: var(--text-muted); margin-bottom: 20px; font-size: 14px; }
 
-        /* CUSTOM SCROLLBAR FOR SEQUENCE BOX */
         .sequence-scroll-box::-webkit-scrollbar { width: 6px; }
         .sequence-scroll-box::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
         .sequence-scroll-box::-webkit-scrollbar-thumb { background: rgba(0, 217, 255, 0.4); border-radius: 4px; }
+
+        /* --- LIVE ENGINE STYLES --- */
+        .engine-status-box { background: #000; border: 1px solid var(--cyan); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0, 217, 255, 0.15); }
+        .engine-multiplier { font-size: 48px; font-weight: 900; color: var(--cyan); margin: 10px 0; font-variant-numeric: tabular-nums; }
+        .engine-round { font-size: 14px; font-weight: 800; color: var(--gold); text-transform: uppercase; }
+        .engine-state { font-size: 13px; font-weight: 700; color: var(--text-muted); margin-top: 5px; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <!-- TOP HEADER -->
     <header class="top-header">
         <div class="logo-area">🐦 JAKI<span>POT</span> Admin</div>
         <div class="admin-info">
@@ -146,20 +113,19 @@
         </div>
     </header>
 
-    <!-- HORIZONTAL NAVIGATION -->
     <nav class="nav-bar">
         <div class="nav-tab active" onclick="switchTab('dashboard', this)">📊 Overview</div>
+        <div class="nav-tab" onclick="switchTab('activations', this)">🚀 Activations</div>
         <div class="nav-tab" onclick="switchTab('users', this)">👥 Users</div>
         <div class="nav-tab" onclick="switchTab('deposits', this)">💰 Deposits</div>
         <div class="nav-tab" onclick="switchTab('withdrawals', this)">🏦 Withdrawals</div>
         <div class="nav-tab" onclick="switchTab('plans', this)">📈 Plans</div>
-        <div class="nav-tab" onclick="switchTab('machine', this)">🏭 Trending Machine</div> <!-- NEW TAB -->
-        <div class="nav-tab" onclick="switchTab('live-trending', this)">📉 Live Trending</div>
+        <div class="nav-tab" onclick="switchTab('machine', this)">🏭 Trending Machine</div>
+        <div class="nav-tab" onclick="switchTab('live-trending', this)">📉 Live Trending Engine</div>
         <div class="nav-tab" onclick="switchTab('chat', this)">💬 Live Chat</div>
         <div class="nav-tab" onclick="switchTab('settings', this)">⚙️ Settings</div>
     </nav>
 
-    <!-- MAIN CONTENT -->
     <main class="main-content">
         
         <!-- TAB: DASHBOARD -->
@@ -175,10 +141,10 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-info">
-                        <h4>Pending Deposits</h4>
-                        <h2 id="stat-deposits" style="color: var(--gold);">0</h2>
+                        <h4>Pending Activations</h4>
+                        <h2 id="stat-activations" style="color: var(--gold);">0</h2>
                     </div>
-                    <div class="stat-icon" style="background: rgba(251, 191, 36, 0.1); color: var(--gold);">💰</div>
+                    <div class="stat-icon" style="background: rgba(251, 191, 36, 0.1); color: var(--gold);">🚀</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-info">
@@ -188,6 +154,12 @@
                     <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">🏦</div>
                 </div>
             </div>
+        </div>
+
+        <!-- TAB: ACTIVATIONS -->
+        <div class="tab-panel" id="tab-activations">
+            <div class="page-title">Pending Activations</div>
+            <div class="list-container" id="activations-list"></div>
         </div>
 
         <!-- TAB: USERS -->
@@ -240,7 +212,7 @@
             </div>
         </div>
 
-        <!-- TAB: TRENDING MACHINE (NEW) -->
+        <!-- TAB: TRENDING MACHINE -->
         <div class="tab-panel" id="tab-machine">
             <div class="page-title">Create Trending Machine</div>
             
@@ -280,13 +252,22 @@
             <div class="list-container" id="machines-list"></div>
         </div>
 
-        <!-- TAB: LIVE TRENDING -->
+        <!-- TAB: LIVE TRENDING ENGINE -->
         <div class="tab-panel" id="tab-live-trending">
-            <div class="page-title">Live Trending Control</div>
+            <div class="page-title">Live Trending Engine</div>
             
+            <!-- THE GAME ENGINE -->
+            <div class="engine-status-box">
+                <div class="engine-round" id="engine-round-display">ROUND 0 / 20</div>
+                <div class="engine-multiplier" id="engine-multiplier-display">1.00x</div>
+                <div class="engine-state" id="engine-state-display">Engine is Offline</div>
+                
+                <button class="btn btn-approve" id="engine-toggle-btn" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;" onclick="toggleEngine()">START LIVE ENGINE</button>
+            </div>
+
             <div class="form-card">
                 <h3 style="margin-bottom: 10px; color: var(--cyan);">Auto-Crash Sequence (20 Rounds)</h3>
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Set crash points. They will shuffle automatically after 20 rounds.</p>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Set crash points. They will loop automatically after 20 rounds.</p>
                 
                 <div class="sequence-scroll-box" style="max-height: 220px; overflow-y: auto; padding-right: 8px; margin-bottom: 20px; border: 1px solid #1e293b; border-radius: 10px; padding: 10px;">
                     <div id="sequence-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
@@ -294,7 +275,7 @@
                     </div>
                 </div>
                 
-                <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px;" onclick="saveCrashSequence()">SAVE SEQUENCE</button>
+                <button class="btn btn-neutral" style="width: 100%; padding: 16px; font-size: 16px;" onclick="saveCrashSequence()">SAVE SEQUENCE (Restarts Game)</button>
             </div>
 
             <div class="form-card" style="border-color: rgba(239, 68, 68, 0.3);">
@@ -303,7 +284,7 @@
                     <label>Crash Current Round Now (e.g. 1.50)</label>
                     <input type="number" id="manual-crash" placeholder="1.50" step="0.01">
                 </div>
-                <button class="btn btn-reject" style="width: 100%; padding: 16px; font-size: 16px;" onclick="triggerCrash()">TRIGGER CRASH NOW</button>
+                <button class="btn btn-reject" style="width: 100%; padding: 16px; font-size: 16px;" onclick="triggerCrash()">FORCE CRASH NOW</button>
             </div>
         </div>
 
@@ -378,7 +359,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        // Corrected imports to 10.8.0
         import { getFirestore, doc, getDoc, setDoc, collection, query, where, orderBy, limit, onSnapshot, updateDoc, addDoc, writeBatch, increment, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -399,8 +379,17 @@
         let selectedUserId = null;
         let unsubscribeChat = null;
         let currentChatId = null;
+        
+        // ENGINE STATE VARIABLES
+        let engineRunning = false;
+        let currentRoundIndex = 0;
+        let liveMultiplier = 1.00;
+        let engineTimeout = null;
+        let engineInterval = null;
+        let currentRoundId = null;
+        let currentCrashPoint = 2.00;
+        let crashSequence = [];
 
-        // 1. Auth Guard
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.replace('login.html'); return; }
             const snap = await getDoc(doc(db, 'users', user.uid));
@@ -411,7 +400,7 @@
                 initDashboard();
                 loadCrashSequence(); 
                 loadSettings(); 
-                loadMachines(); // Load machines list
+                loadMachines();
             } else {
                 alert("Access Denied. You are not an Admin.");
                 window.location.replace('home.html'); 
@@ -447,30 +436,64 @@
                 });
             });
 
-            // Deposits List
-            onSnapshot(query(collection(db, 'deposits'), where('status', '==', 'pending')), (snap) => {
-                const list = document.getElementById('deposits-list');
-                list.innerHTML = '';
-                document.getElementById('stat-deposits').innerText = snap.size;
-                
-                if(snap.empty) list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No pending deposits.</div>';
+            // PENDING ACTIVATIONS
+            onSnapshot(query(collection(db, 'deposits'), where('status', '==', 'pending')), async (snap) => {
+                const list = document.getElementById('activations-list');
+                const dashStat = document.getElementById('stat-activations');
+                if (!list) return;
 
-                snap.forEach(doc => {
+                list.innerHTML = '';
+                dashStat.innerText = snap.size;
+
+                if(snap.empty) {
+                    list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No pending activations.</div>';
+                    return;
+                }
+
+                for (const doc of snap.docs) {
                     const d = doc.data();
+                    let userName = "Unknown User";
+                    let userEmail = d.email || "N/A";
+                    
+                    try {
+                        const uSnap = await getDoc(doc(db, 'users', d.uid));
+                        if (uSnap.exists()) {
+                            const u = uSnap.data();
+                            userName = u.fullName || "No Name";
+                            userEmail = u.email || userEmail;
+                        }
+                    } catch (e) { }
+
+                    let screenshotUrl = '#';
+                    if (d.screenshot && d.screenshot.publicId) {
+                        screenshotUrl = `https://res.cloudinary.com/c2n8j0v/image/upload/${d.screenshot.publicId}.${d.screenshot.format}`;
+                    }
+
                     list.innerHTML += `
-                        <div class="row-card">
-                            <div class="row-info">
-                                <div class="row-title">Deposit Request</div>
-                                <div class="row-sub">Amount: <span style="color: var(--gold);">${d.amount}</span> | Method: <span>${d.method || 'Manual'}</span></div>
+                        <div class="row-card" style="align-items: flex-start; flex-direction: column; padding: 20px; background: #0f172a;">
+                            <div style="display: flex; justify-content: space-between; width: 100%; flex-wrap: wrap; gap: 15px;">
+                                <div class="row-info">
+                                    <div class="row-title" style="color: var(--cyan);">${userName}</div>
+                                    <div class="row-sub">Email: <span>${userEmail}</span> | Phone: <span>${d.recipient?.number || 'N/A'}</span></div>
+                                    <div class="row-sub" style="margin-top: 5px;">Paid: <span style="color: var(--emerald); font-size: 16px;">$${d.amountUSD} USD</span> (${d.currency} ${d.amountConverted || d.amountZMW})</div>
+                                    <div class="row-sub" style="margin-top: 5px;">Network: <span>${d.network ? d.network.toUpperCase() : 'MANUAL'}</span></div>
+                                </div>
+                                <div class="row-actions">
+                                    <button class="btn btn-cyan" onclick="generateActivationCode('${doc.id}', '${d.uid}')">🔑 Generate Code</button>
+                                    <button class="btn btn-reject" onclick="rejectActivation('${doc.id}')">❌ Reject</button>
+                                </div>
                             </div>
-                            <div class="row-actions">
-                                ${d.screenshotUrl ? `<a href="${d.screenshotUrl}" target="_blank" class="btn btn-neutral">🖼️ View Proof</a>` : ''}
-                                <button class="btn btn-approve" onclick="approveDeposit('${doc.id}', '${d.uid}', ${d.amount})">Approve</button>
-                                <button class="btn btn-reject" onclick="rejectDeposit('${doc.id}')">Reject</button>
+                            
+                            <div style="width: 100%; margin-top: 15px; background: #060b19; border-radius: 8px; padding: 15px; border: 1px solid #1e293b;">
+                                <div style="font-size: 12px; font-weight: 800; color: var(--gold); margin-bottom: 8px; text-transform: uppercase;">Payment SMS:</div>
+                                <div style="font-size: 13px; color: var(--text-white); white-space: pre-wrap; font-family: monospace; margin-bottom: 15px; background: #1e293b; padding: 10px; border-radius: 6px;">${d.smsText || 'No SMS provided'}</div>
+                                
+                                <div style="font-size: 12px; font-weight: 800; color: var(--gold); margin-bottom: 8px; text-transform: uppercase;">Screenshot Proof:</div>
+                                ${screenshotUrl !== '#' ? `<a href="${screenshotUrl}" target="_blank"><img src="${screenshotUrl}" style="max-width: 100%; max-height: 300px; border-radius: 8px; border: 1px solid #334155; object-fit: cover;" alt="Payment Proof" onerror="this.style.display='none'"></a>` : '<div style="color: var(--text-muted); font-size: 13px;">No screenshot uploaded</div>'}
                             </div>
                         </div>
                     `;
-                });
+                }
             });
 
             // Withdrawals List
@@ -516,13 +539,32 @@
             });
         }
 
-        // TAB SWITCHING
         window.switchTab = (tabId, element) => {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(m => m.classList.remove('active'));
             
             document.getElementById(`tab-${tabId}`).classList.add('active');
             element.classList.add('active');
+        };
+
+        // --- ACTIVATIONS ACTIONS ---
+        window.generateActivationCode = async (depositId, uid) => {
+            try {
+                const code = Math.floor(100000 + Math.random() * 900000).toString();
+                await updateDoc(doc(db, 'deposits', depositId), { status: 'approved', approvedAt: serverTimestamp() });
+                await updateDoc(doc(db, 'users', uid), { status: 'approved', verificationCode: code, updatedAt: serverTimestamp() });
+                alert(`✅ Activation Code Generated: ${code}\n\nSend this code to the user.`);
+            } catch (error) {
+                alert("Failed to generate code.");
+            }
+        };
+
+        window.rejectActivation = async (depositId) => {
+            if(!confirm("Reject this payment?")) return;
+            try {
+                await updateDoc(doc(db, 'deposits', depositId), { status: 'rejected' });
+                alert("Activation rejected.");
+            } catch (e) { alert("Failed to reject."); }
         };
 
         // --- USERS ACTIONS ---
@@ -538,9 +580,7 @@
             document.getElementById('balance-modal').classList.add('active');
         };
 
-        window.closeModal = () => {
-            document.getElementById('balance-modal').classList.remove('active');
-        };
+        window.closeModal = () => { document.getElementById('balance-modal').classList.remove('active'); };
 
         window.confirmBalanceAdjust = async () => {
             const amount = parseFloat(document.getElementById('balance-adjust-input').value);
@@ -550,45 +590,29 @@
                 const batch = writeBatch(db);
                 const walletRef = doc(db, 'wallets', selectedUserId);
                 const txRef = doc(collection(db, 'transactions'));
-
                 batch.update(walletRef, { balance: increment(amount), lastTxId: txRef.id });
-
-                batch.set(txRef, {
-                    uid: selectedUserId, type: 'admin_adjustment', amount: amount, status: 'completed', createdAt: serverTimestamp()
-                });
-
+                batch.set(txRef, { uid: selectedUserId, type: 'admin_adjustment', amount: amount, status: 'completed', createdAt: serverTimestamp() });
                 await batch.commit();
                 alert("Balance adjusted successfully!");
                 closeModal();
-            } catch (e) {
-                console.error(e);
-                alert("Failed. Check console for details.");
-            }
+            } catch (e) { alert("Failed. Check console."); }
         };
 
         // --- DEPOSIT ACTIONS ---
         window.approveDeposit = async (depositId, uid, amount) => {
             try {
                 const batch = writeBatch(db);
-                
                 batch.update(doc(db, 'deposits', depositId), { status: 'approved', approvedAt: serverTimestamp() });
-
                 const walletRef = doc(db, 'wallets', uid);
                 const txRef = doc(collection(db, 'transactions'));
                 batch.update(walletRef, { balance: increment(amount), lastTxId: txRef.id });
-
-                batch.set(txRef, {
-                    uid: uid, type: 'deposit', amount: amount, status: 'completed', createdAt: serverTimestamp()
-                });
-
+                batch.set(txRef, { uid: uid, type: 'deposit', amount: amount, status: 'completed', createdAt: serverTimestamp() });
                 await batch.commit();
                 alert("Deposit Approved!");
-            } catch (e) { console.error(e); alert("Failed to approve."); }
+            } catch (e) { alert("Failed to approve."); }
         };
 
-        window.rejectDeposit = async (depositId) => {
-            await updateDoc(doc(db, 'deposits', depositId), { status: 'rejected' });
-        };
+        window.rejectDeposit = async (depositId) => { await updateDoc(doc(db, 'deposits', depositId), { status: 'rejected' }); };
 
         // --- WITHDRAWAL ACTIONS ---
         window.approveWithdrawal = async (withdrawId) => {
@@ -599,20 +623,14 @@
         window.rejectWithdrawal = async (withdrawId, uid, amount) => {
             try {
                 const batch = writeBatch(db);
-                
                 batch.update(doc(db, 'withdrawals', withdrawId), { status: 'rejected' });
-
                 const walletRef = doc(db, 'wallets', uid);
                 const txRef = doc(collection(db, 'transactions'));
                 batch.update(walletRef, { balance: increment(amount), lastTxId: txRef.id });
-
-                batch.set(txRef, {
-                    uid: uid, type: 'withdrawal_refund', amount: amount, status: 'completed', createdAt: serverTimestamp()
-                });
-
+                batch.set(txRef, { uid: uid, type: 'withdrawal_refund', amount: amount, status: 'completed', createdAt: serverTimestamp() });
                 await batch.commit();
                 alert("Withdrawal Rejected and Refunded!");
-            } catch (e) { console.error(e); alert("Failed to refund."); }
+            } catch (e) { alert("Failed to refund."); }
         };
 
         // --- PLAN ACTIONS ---
@@ -622,18 +640,10 @@
             const invest = parseFloat(document.getElementById('plan-invest').value);
             const daily = parseFloat(document.getElementById('plan-daily').value);
             const duration = parseInt(document.getElementById('plan-duration').value);
-
             if (!name || !invest || !daily || !duration) { alert("Fill all fields"); return; }
-
-            await addDoc(collection(db, 'plans'), {
-                name, imageUrl: img, investAmount: invest, dailyIncome: daily, durationDays: duration, isActive: true
-            });
+            await addDoc(collection(db, 'plans'), { name, imageUrl: img, investAmount: invest, dailyIncome: daily, durationDays: duration, isActive: true });
             alert("Plan Created!");
-            document.getElementById('plan-name').value = '';
-            document.getElementById('plan-img').value = '';
-            document.getElementById('plan-invest').value = '';
-            document.getElementById('plan-daily').value = '';
-            document.getElementById('plan-duration').value = '';
+            document.getElementById('plan-name').value = ''; document.getElementById('plan-img').value = ''; document.getElementById('plan-invest').value = ''; document.getElementById('plan-daily').value = ''; document.getElementById('plan-duration').value = '';
         };
 
         // --- TRENDING MACHINE ACTIONS ---
@@ -642,12 +652,7 @@
             onSnapshot(q, (snap) => {
                 const list = document.getElementById('machines-list');
                 list.innerHTML = '';
-                
-                if(snap.empty) {
-                    list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No machines created yet.</div>';
-                    return;
-                }
-
+                if(snap.empty) { list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No machines created yet.</div>'; return; }
                 snap.forEach(doc => {
                     const m = doc.data();
                     list.innerHTML += `
@@ -656,9 +661,7 @@
                                 <div class="row-title">${m.countryName} Market (${m.durationDays} Days)</div>
                                 <div class="row-sub">Min: <span>${m.minAmount}</span> | Max: <span>${m.maxAmount}</span> | Mult: <span>${m.payoutMultiplier}x</span></div>
                             </div>
-                            <div class="row-actions">
-                                <button class="btn btn-reject" onclick="deleteMachine('${doc.id}')">Delete</button>
-                            </div>
+                            <div class="row-actions"><button class="btn btn-reject" onclick="deleteMachine('${doc.id}')">Delete</button></div>
                         </div>
                     `;
                 });
@@ -672,55 +675,31 @@
             const min = parseFloat(document.getElementById('machine-min').value);
             const max = parseFloat(document.getElementById('machine-max').value);
             const multiplier = parseFloat(document.getElementById('machine-multiplier').value);
-
-            if (!countryName || !countryCode || !duration || !min || !max || !multiplier) {
-                alert("Please fill all fields properly."); return;
-            }
-
-            await addDoc(collection(db, 'trending_machines'), {
-                countryName: countryName,
-                countryCode: countryCode,
-                durationDays: duration,
-                minAmount: min,
-                maxAmount: max,
-                payoutMultiplier: multiplier,
-                isActive: true,
-                createdAt: serverTimestamp()
-            });
-
+            if (!countryName || !countryCode || !duration || !min || !max || !multiplier) { alert("Please fill all fields."); return; }
+            await addDoc(collection(db, 'trending_machines'), { countryName, countryCode, durationDays: duration, minAmount: min, maxAmount: max, payoutMultiplier: multiplier, isActive: true, createdAt: serverTimestamp() });
             alert("Trending Machine Created!");
-            document.getElementById('machine-country-name').value = '';
-            document.getElementById('machine-country-code').value = '';
-            document.getElementById('machine-duration').value = '';
-            document.getElementById('machine-min').value = '';
-            document.getElementById('machine-max').value = '';
-            document.getElementById('machine-multiplier').value = '';
+            document.getElementById('machine-country-name').value = ''; document.getElementById('machine-country-code').value = ''; document.getElementById('machine-duration').value = ''; document.getElementById('machine-min').value = ''; document.getElementById('machine-max').value = ''; document.getElementById('machine-multiplier').value = '';
         };
 
         window.deleteMachine = async (id) => {
-            if(confirm("Are you sure you want to delete this machine?")) {
-                await deleteDoc(doc(db, 'trending_machines', id));
-                alert("Machine Deleted.");
-            }
+            if(confirm("Delete this machine?")) { await deleteDoc(doc(db, 'trending_machines', id)); alert("Machine Deleted."); }
         };
 
-        // --- LIVE TRENDING ACTIONS ---
+        // ==========================================
+        // 🟢 LIVE TRENDING ENGINE
+        // ==========================================
         async function loadCrashSequence() {
             const grid = document.getElementById('sequence-grid');
             grid.innerHTML = '';
-            
             const docSnap = await getDoc(doc(db, 'settings', 'crash_sequence'));
-            let sequence = docSnap.exists() ? docSnap.data().rounds : [];
-            
-            if (sequence.length < 20) {
-                sequence = Array(20).fill(2.00); 
-            }
+            crashSequence = docSnap.exists() ? docSnap.data().rounds : [];
+            if (crashSequence.length < 20) crashSequence = Array(20).fill(2.00); 
 
             for (let i = 0; i < 20; i++) {
                 grid.innerHTML += `
                     <div style="display: flex; flex-direction: column; align-items: center;">
                         <span style="font-size: 10px; color: var(--text-muted); margin-bottom: 4px;">R${i + 1}</span>
-                        <input type="number" id="crash-input-${i}" value="${sequence[i]}" step="0.01" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; text-align: center;">
+                        <input type="number" id="crash-input-${i}" value="${crashSequence[i]}" step="0.01" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; text-align: center;">
                     </div>
                 `;
             }
@@ -732,48 +711,136 @@
                 const val = parseFloat(document.getElementById(`crash-input-${i}`).value);
                 sequence.push(isNaN(val) || val < 1.01 ? 1.01 : val);
             }
-
-            await setDoc(doc(db, 'settings', 'crash_sequence'), {
-                rounds: sequence,
-                updatedAt: serverTimestamp()
-            });
-            
+            await setDoc(doc(db, 'settings', 'crash_sequence'), { rounds: sequence, updatedAt: serverTimestamp() });
             await setDoc(doc(db, 'settings', 'game_counter'), { index: 0 });
-
-            alert("Crash Sequence Saved! The game will follow these 20 rounds in order.");
+            loadCrashSequence();
+            alert("Sequence Saved! Engine Restarted from Round 1.");
+            if(engineRunning) { stopEngine(); setTimeout(startEngine, 1000); }
         };
+
+        window.toggleEngine = async () => {
+            if (engineRunning) { stopEngine(); } else { startEngine(); }
+        };
+
+        async function startEngine() {
+            if (engineRunning) return;
+            engineRunning = true;
+            document.getElementById('engine-toggle-btn').innerText = "STOP LIVE ENGINE";
+            document.getElementById('engine-toggle-btn').className = "btn btn-reject";
+            document.getElementById('engine-toggle-btn').style.cssText = "width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;";
+            
+            // Read sequence and start
+            await loadCrashSequence();
+            currentRoundIndex = 0;
+            runRound();
+        }
+
+        function stopEngine() {
+            engineRunning = false;
+            clearTimeout(engineTimeout);
+            clearInterval(engineInterval);
+            
+            document.getElementById('engine-toggle-btn').innerText = "START LIVE ENGINE";
+            document.getElementById('engine-toggle-btn').className = "btn btn-approve";
+            document.getElementById('engine-toggle-btn').style.cssText = "width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;";
+            document.getElementById('engine-state-display').innerText = "Engine is Offline";
+            document.getElementById('engine-state-display').style.color = "var(--text-muted)";
+        }
+
+        async function runRound() {
+            if (!engineRunning) return;
+            
+            if (currentRoundIndex >= crashSequence.length) {
+                currentRoundIndex = 0; // Loop back to start
+            }
+
+            const crashPoint = crashSequence[currentRoundIndex];
+            currentCrashPoint = crashPoint;
+            
+            // Update UI
+            document.getElementById('engine-round-display').innerText = `ROUND ${currentRoundIndex + 1} / 20`;
+            document.getElementById('engine-multiplier-display').innerText = "1.00x";
+            document.getElementById('engine-multiplier-display').style.color = "var(--cyan)";
+            document.getElementById('engine-state-display').innerText = "Waiting for players to bet...";
+            document.getElementById('engine-state-display').style.color = "var(--gold)";
+
+            try {
+                // 1. Create the round in Firestore
+                const roundRef = await addDoc(collection(db, 'live_trends'), {
+                    roundNumber: currentRoundIndex + 1,
+                    crashPoint: crashPoint,
+                    status: 'waiting',
+                    createdAt: serverTimestamp()
+                });
+                currentRoundId = roundRef.id;
+
+                // 2. Wait 10 seconds for bets
+                await new Promise(r => engineTimeout = setTimeout(r, 10000));
+                if (!engineRunning) return;
+
+                // 3. Start Flying
+                document.getElementById('engine-state-display').innerText = "Plane is flying!";
+                document.getElementById('engine-state-display').style.color = "var(--emerald)";
+                
+                await updateDoc(doc(db, 'live_trends', currentRoundId), { status: 'flying' });
+
+                liveMultiplier = 1.00;
+                let msSinceStart = 0;
+
+                // 4. Fly Loop (updates every 100ms)
+                return new Promise((resolve) => {
+                    engineInterval = setInterval(async () => {
+                        if (!engineRunning) { clearInterval(engineInterval); resolve(); return; }
+
+                        msSinceStart += 100;
+                        // Exponential growth formula for flight
+                        liveMultiplier = 1.00 + Math.pow(msSinceStart / 1000, 1.5) * 0.1; 
+
+                        document.getElementById('engine-multiplier-display').innerText = liveMultiplier.toFixed(2) + "x";
+
+                        if (liveMultiplier >= currentCrashPoint) {
+                            clearInterval(engineInterval);
+                            document.getElementById('engine-multiplier-display').style.color = "var(--danger)";
+                            document.getElementById('engine-multiplier-display').innerText = currentCrashPoint.toFixed(2) + "x CRASHED";
+                            
+                            // 5. Crash!
+                            await updateDoc(doc(db, 'live_trends', currentRoundId), { 
+                                status: 'crashed',
+                                crashedAt: serverTimestamp()
+                            });
+                            
+                            document.getElementById('engine-state-display').innerText = "Crashed! Waiting for next round...";
+                            
+                            // Wait 5 seconds before next round
+                            engineTimeout = setTimeout(() => {
+                                currentRoundIndex++;
+                                runRound();
+                            }, 5000);
+                            
+                            resolve();
+                        }
+                    }, 100);
+                });
+
+            } catch (e) {
+                console.error("Engine Error:", e);
+                document.getElementById('engine-state-display').innerText = "Error! Check network.";
+                engineTimeout = setTimeout(runRound, 5000); // Try again in 5s
+            }
+        }
 
         window.triggerCrash = async () => {
             const manualCrashInput = document.getElementById('manual-crash').value;
             const crashPoint = parseFloat(manualCrashInput);
 
-            if (isNaN(crashPoint) || crashPoint < 1.01) {
-                alert("Please enter a valid crash point (e.g., 1.50).");
-                return;
-            }
+            if (isNaN(crashPoint) || crashPoint < 1.01) { alert("Enter valid crash point."); return; }
+            if (!engineRunning || !currentRoundId) { alert("Engine must be running."); return; }
 
             try {
-                const q = query(collection(db, 'live_trends'), orderBy('createdAt', 'desc'), limit(1));
-                const snapshot = await getDocs(q);
-
-                if (snapshot.empty) {
-                    alert("No active game round found. Make sure the Live Trending page is open.");
-                    return;
-                }
-
-                const currentRoundDoc = snapshot.docs[0];
-                
-                await updateDoc(doc(db, 'live_trends', currentRoundDoc.id), {
-                    crashPoint: crashPoint
-                });
-
-                alert(`Success! The current round will now crash at ${crashPoint.toFixed(2)}x.`);
-                document.getElementById('manual-crash').value = '';
-
-            } catch (error) {
-                console.error(error);
-                alert("Failed to set crash point.");
-            }
+                currentCrashPoint = crashPoint;
+                await updateDoc(doc(db, 'live_trends', currentRoundId), { crashPoint: crashPoint });
+                alert(`Crash point forced to ${crashPoint.toFixed(2)}x!`);
+            } catch (error) { alert("Failed to set crash point."); }
         };
 
         // --- SETTINGS ACTIONS ---
@@ -791,21 +858,13 @@
             const minDep = parseFloat(document.getElementById('set-min-deposit').value);
             const minWith = parseFloat(document.getElementById('set-min-withdraw').value);
             const status = document.getElementById('set-game-status').value;
-
-            await setDoc(doc(db, 'settings', 'platform'), {
-                minDeposit: minDep,
-                minWithdrawal: minWith,
-                status: status,
-                updatedAt: serverTimestamp()
-            });
-
+            await setDoc(doc(db, 'settings', 'platform'), { minDeposit: minDep, minWithdrawal: minWith, status: status, updatedAt: serverTimestamp() });
             alert("Platform Settings Saved!");
         };
 
         // --- CHAT SYSTEM ---
         window.openChat = (chatId, userName) => {
             currentChatId = chatId;
-            
             document.querySelectorAll('.chat-user-item').forEach(el => el.classList.remove('active'));
             const activeItem = document.getElementById(`chat-item-${chatId}`);
             if(activeItem) activeItem.classList.add('active');
@@ -819,21 +878,15 @@
             unsubscribeChat = onSnapshot(q, (snap) => {
                 const history = document.getElementById('chat-history');
                 history.innerHTML = '';
-                
                 if (snap.empty) {
-                    history.innerHTML = `<div style="text-align: center; margin-top: 50px; color: var(--text-muted);">
-                        <div style="font-size: 30px; margin-bottom: 10px;">👋</div>
-                        Send a message to start the conversation.
-                    </div>`;
+                    history.innerHTML = `<div style="text-align: center; margin-top: 50px; color: var(--text-muted);"><div style="font-size: 30px; margin-bottom: 10px;">👋</div>Send a message to start the conversation.</div>`;
                     return;
                 }
-
                 snap.forEach(doc => {
                     const msg = doc.data();
                     const isAdmin = msg.senderId === currentAdmin.uid;
                     history.innerHTML += `<div class="msg ${isAdmin ? 'admin' : 'user'}">${msg.text}</div>`;
                 });
-                
                 history.scrollTop = history.scrollHeight;
             });
         };
@@ -841,25 +894,13 @@
         window.sendMessage = async () => {
             const text = document.getElementById('chat-input').value;
             if (!text || !currentChatId) return;
-
             const chatRef = doc(db, 'chat_groups', currentChatId);
             await updateDoc(chatRef, { lastMessage: text, lastMessageTime: serverTimestamp() });
-
-            await addDoc(collection(db, 'chat_messages'), {
-                groupId: currentChatId,
-                senderId: currentAdmin.uid,
-                senderName: 'Admin',
-                text: text,
-                createdAt: serverTimestamp()
-            });
-
+            await addDoc(collection(db, 'chat_messages'), { groupId: currentChatId, senderId: currentAdmin.uid, senderName: 'Admin', text: text, createdAt: serverTimestamp() });
             document.getElementById('chat-input').value = '';
         };
 
-        window.logout = async () => {
-            await signOut(auth);
-            window.location.replace('login.html');
-        };
+        window.logout = async () => { await signOut(auth); window.location.replace('login.html'); };
 
     </script>
 </body>
