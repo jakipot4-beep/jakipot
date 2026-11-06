@@ -244,7 +244,8 @@
             const fallbackImage = 'https://images.unsplash.com/photo-1621504450181-5d356f61d307?w=400&q=80';
 
             availablePlans.forEach(plan => {
-                const totalIncome = plan.dailyIncome * plan.durationDays;
+                // FIXED: Uses the Total Income set by Admin, or falls back to calculation
+                const totalIncome = plan.totalIncome || (plan.dailyIncome * plan.durationDays);
                 const isInvested = investedPlanIds.has(plan.id);
                 
                 const card = document.createElement('div');
@@ -293,13 +294,14 @@
             const plan = availablePlans.find(p => p.id === planId);
             if (!plan) return;
 
+            // Check balance
             if (userBalance < plan.investAmount) {
                 alert("Insufficient wallet balance to invest in this plan.");
                 return;
             }
 
             isProcessing = true;
-            renderPlans(); 
+            renderPlans(); // Disable buttons immediately
 
             try {
                 const batch = writeBatch(db);
@@ -307,6 +309,7 @@
                 const walletRef = doc(db, 'wallets', currentUser.uid);
                 const txRef = doc(collection(db, 'transactions'));
                 
+                // Deduct balance and create ledger
                 batch.update(walletRef, { 
                     balance: increment(-plan.investAmount),
                     lastTxId: txRef.id 
@@ -324,6 +327,7 @@
                 const endDate = new Date();
                 endDate.setDate(startDate.getDate() + plan.durationDays);
 
+                // Create investment record
                 const invRef = doc(collection(db, 'user_investments'));
                 batch.set(invRef, {
                     uid: currentUser.uid,
@@ -332,27 +336,32 @@
                     investAmount: plan.investAmount,
                     dailyIncome: plan.dailyIncome,
                     durationDays: plan.durationDays,
-                    totalReturn: plan.dailyIncome * plan.durationDays,
+                    totalReturn: plan.totalIncome || (plan.dailyIncome * plan.durationDays),
                     status: 'active',
                     startDate: serverTimestamp(),
-                    lastClaimedAt: serverTimestamp(), // CRITICAL FIX: Prevents permission error on first claim
+                    lastClaimedAt: serverTimestamp(), 
                     endDate: endDate
                 });
 
                 await batch.commit();
 
+                // Show success popup
                 showSuccessModal(plan);
 
             } catch (e) {
                 console.error(e);
-                alert("Investment failed. Please try again.");
+                alert("Investment failed. Please check your connection and try again.");
                 isProcessing = false;
                 renderPlans();
             }
         };
 
         function showSuccessModal(plan) {
-            const totalIncome = plan.dailyIncome * plan.durationDays;
+            // Reset processing state so buttons work if they come back
+            isProcessing = false;
+            renderPlans(); 
+
+            const totalIncome = plan.totalIncome || (plan.dailyIncome * plan.durationDays);
             
             document.getElementById('success-plan-name').innerText = plan.name;
             document.getElementById('success-invested').innerText = `${currencySymbol} ${plan.investAmount.toLocaleString()}`;
@@ -364,11 +373,13 @@
 
             startFireworks();
 
+            // Redirect to orders after 4 seconds
             setTimeout(() => {
                 window.location.href = 'orders.html';
             }, 4000);
         }
 
+        // --- FIREWORKS ANIMATION ---
         const canvas = document.getElementById('fireworks-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];

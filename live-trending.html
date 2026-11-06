@@ -222,7 +222,7 @@
         };
 
         let currentRoundId = null;
-        let gameStatus = 'waiting'; // waiting | running | crashed
+        let gameStatus = 'idle'; // idle | waiting | running | crashed
         let currentMultiplier = 1.00;
         let lastTickMultiplier = 1.00;
         let myBetId = null; 
@@ -242,6 +242,7 @@
         let activePlayers = [];
         let unsubscribeLiveBets = null;
         let countdownOverlayInterval = null;
+        let countdownTimeout = null;
 
         // ==========================================
         // SOUND ENGINE
@@ -477,8 +478,8 @@
                     const lastCreatedAt = state.lastCreatedAt?.toMillis() || 0;
                     
                     // Cooldown - prevent multiple rounds
-                    if (now - lastCreatedAt < 4000) {
-                        return;
+                    if (now - lastCreatedAt < 8000) {
+                        return; 
                     }
                     
                     // Read crash sequence within transaction
@@ -517,26 +518,24 @@
                 });
             } catch(e) {
                 console.warn("Round lock transaction failed:", e);
-                return;
+                return false;
             }
             
-            if (!shouldCreate) return;
+            if (!shouldCreate) return false;
             
             // Winner creates the round
             try {
-                const newRoundRef = await addDoc(collection(db, 'live_trends'), {
+                await addDoc(collection(db, 'live_trends'), {
                     status: 'waiting',
                     startTime: serverTimestamp(),
                     roundNumber: Date.now(),
                     crashPoint: nextCrashPoint,
                     createdAt: serverTimestamp()
                 });
-                
-                // Also update user counter so shuffle happens every 20
-                await updateDoc(stateRef, { index: nextCrashPoint >= 0 ? (await getDoc(stateRef)).data().index : 0 });
-                
+                return true;
             } catch(e) {
                 console.warn("Failed to create round doc:", e);
+                return false;
             }
         }
 
@@ -548,7 +547,6 @@
             
             onSnapshot(q, (snapshot) => {
                 if (snapshot.empty) {
-                    // No rounds exist - create one (transaction lock ensures only 1 client wins)
                     createNewRoundAtomic();
                     return;
                 }
@@ -559,7 +557,6 @@
                 const runStartTimeMs = startTimeMs + (timeToStart * 1000);
                 const now = Date.now();
                 
-                // New round detected
                 if (currentRoundId !== roundDoc.id) {
                     currentRoundId = roundDoc.id;
                     crashPoint = data.crashPoint;
@@ -569,6 +566,7 @@
                     points = [];
                     currentMultiplier = 1.00;
                     lastTickMultiplier = 1.00;
+                    gameStatus = 'idle';
                     
                     if (unsubscribeLiveBets) unsubscribeLiveBets();
                     subscribeToLiveBets(currentRoundId);
@@ -577,19 +575,23 @@
                 // Handle status from DB
                 if (data.status === 'crashed') {
                     if (gameStatus !== 'crashed') {
-                        gameStatus = 'crashed';
-                        cancelAnimationFrame(animationFrame);
-                        triggerCrashUI(data.crashPoint);
+                        triggerCrashUI(data.finalMultiplier || data.crashPoint);
                     }
-                } else if (now >= runStartTimeMs) {
-                    // Late joiner: round already running in DB
-                    if (gameStatus === 'waiting' || gameStatus === 'idle' || gameStatus === 'crashed') {
-                        startRound(runStartTimeMs);
+                } else if (data.status === 'running') {
+                    if (gameStatus === 'waiting' || gameStatus === 'idle') {
+                        startRound(data.startTime ? data.startTime.toMillis() + (timeToStart * 1000) : Date.now());
                     }
-                } else if (now >= startTimeMs) {
-                    // In waiting/countdown phase
-                    if (gameStatus === 'idle' || (gameStatus === 'crashed' && currentRoundId === roundDoc.id)) {
-                        startCountdown(startTimeMs);
+                } else if (data.status === 'waiting') {
+                    if (now >= runStartTimeMs) {
+                        // If time passed but status is still waiting, start flying
+                        if (gameStatus === 'waiting' || gameStatus === 'idle') {
+                            startRound(runStartTimeMs);
+                        }
+                    } else {
+                        // Still in countdown phase
+                        if (gameStatus === 'idle' || gameStatus === 'crashed') {
+                            startCountdown(startTimeMs);
+                        }
                     }
                 }
             });
@@ -631,20 +633,24 @@
         }
 
         function startCountdown(startTimeMs) {
+            if (gameStatus === 'waiting' || gameStatus === 'running') return;
             gameStatus = 'waiting';
             updateUIState();
             
-            const updateTimer = () => {
+            if (countdownTimeout) clearTimeout(countdownTimeout);
+            
+            const tick = () => {
                 if (gameStatus !== 'waiting') return;
                 const timeLeft = Math.max(0, Math.ceil((startTimeMs + (timeToStart * 1000) - Date.now()) / 1000));
                 
                 if (timeLeft <= 0) {
                     startRound(startTimeMs + (timeToStart * 1000));
                 } else {
-                    requestAnimationFrame(updateTimer);
+                    document.getElementById('status-text').innerText = `Starting in ${timeLeft}s...`;
+                    countdownTimeout = setTimeout(tick, 500);
                 }
             };
-            requestAnimationFrame(updateTimer);
+            tick();
         }
 
         function startRound(roundStartTimeMs) {
@@ -771,21 +777,28 @@
             
             if (countdownOverlayInterval) clearInterval(countdownOverlayInterval);
             
-            countdownOverlayInterval = setInterval(() => {
+            countdownOverlayInterval = setInterval(async () => {
                 timeLeft--;
                 countdownEl.innerText = `${timeLeft}s`;
                 if (timeLeft <= 0) {
                     clearInterval(countdownOverlayInterval);
                     overlay.classList.remove('active');
+                    
                     // ALL clients try to create the next round - transaction lock ensures only one wins
-                    createNewRoundAtomic();
+                    const tryCreate = async () => {
+                        if (gameStatus !== 'crashed') return; // onSnapshot caught a new round
+                        const success = await createNewRoundAtomic();
+                        if (!success && gameStatus === 'crashed') {
+                            setTimeout(tryCreate, 2000); // Retry every 2s if failed
+                        }
+                    };
+                    tryCreate();
                 }
             }, 1000);
         }
 
         function updateUIState() {
             const btn = document.getElementById('action-btn');
-            const statusText = document.getElementById('status-text');
 
             if (gameStatus === 'waiting') {
                 btn.innerHTML = myBetId 
@@ -793,10 +806,9 @@
                     : `<span class="btn-main-text">PLACE TREND</span><span class="btn-sub-text">${currencySymbol}${betAmount}</span>`;
                 btn.className = 'action-btn place-bet';
                 btn.disabled = !!myBetId;
-                statusText.innerText = 'Awaiting Market';
             } 
             else if (gameStatus === 'running') {
-                statusText.innerText = 'Analyzing Trend...';
+                document.getElementById('status-text').innerText = 'Analyzing Trend...';
                 if (isPlaying) {
                     btn.className = 'action-btn stop';
                     btn.disabled = false;
@@ -807,7 +819,6 @@
                 }
             } 
             else if (gameStatus === 'crashed') {
-                statusText.innerText = 'TREND CRASHED';
                 btn.innerHTML = `<span class="btn-main-text">WAITING...</span>`;
                 btn.className = 'action-btn place-bet';
                 btn.disabled = true;

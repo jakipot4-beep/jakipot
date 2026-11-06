@@ -83,7 +83,18 @@
         .message-bubble.sent .message-text { background: var(--chat-sent); border-radius: 18px 18px 0 18px; }
         .message-bubble.received .message-text { background: var(--chat-received); border-radius: 18px 18px 18px 0; }
         
-        .message-image { max-width: 100%; border-radius: 12px; margin-top: 5px; border: 1px solid var(--border-light); }
+        .message-image { 
+            max-width: 100%; 
+            max-height: 250px; 
+            border-radius: 12px; 
+            margin-top: 5px; 
+            border: 1px solid var(--border-light); 
+            cursor: pointer;
+            object-fit: cover;
+            transition: opacity 0.2s;
+        }
+        .message-image:active { opacity: 0.8; }
+        
         .message-audio { width: 220px; margin-top: 5px; outline: none; border-radius: 20px; }
         .message-time { font-size: 10px; color: #71717a; margin-top: 4px; margin-right: 4px; margin-left: 4px; }
 
@@ -116,6 +127,28 @@
         .mic-btn.recording { background: var(--danger); animation: pulse 1s infinite; }
         .mic-btn.recording svg { fill: #ffffff; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        /* Full Screen Image Viewer */
+        #image-viewer {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.95); z-index: 9999;
+            justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        #image-viewer.show { display: flex; }
+        #image-viewer img {
+            max-width: 100%; max-height: 90vh; object-fit: contain;
+            border-radius: 8px; animation: zoomIn 0.3s ease;
+        }
+        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .close-viewer {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.2); border: none; border-radius: 50%;
+            width: 40px; height: 40px; display: grid; place-items: center; cursor: pointer;
+            color: white; z-index: 10000;
+        }
+        .close-viewer svg { width: 24px; height: 24px; fill: white; }
     </style>
 </head>
 <body>
@@ -151,17 +184,25 @@
             </button>
             <input type="file" id="image-upload" accept="image/*" hidden onchange="uploadImage(this)">
             
-            <input type="text" id="chat-input" class="chat-input" placeholder="Message..." onkeypress="handleEnter(event)">
+            <input type="text" id="chat-input" class="chat-input" placeholder="Message..." oninput="toggleSendButton()" onkeypress="handleEnter(event)">
             
             <button class="action-btn mic-btn" id="mic-btn" onclick="toggleRecording()">
                 <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
             </button>
             
-            <button class="action-btn send-btn" onclick="sendMessage()">
+            <button class="action-btn send-btn" id="send-btn" onclick="sendMessage()" style="display: none;">
                 <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
             </button>
         </div>
     </section>
+
+    <!-- Full Screen Image Viewer Modal -->
+    <div id="image-viewer" onclick="closeImageViewer()">
+        <button class="close-viewer" onclick="closeImageViewer()">
+            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+        <img id="viewer-img" src="" alt="Full screen image" onclick="event.stopPropagation()">
+    </div>
 
     <script type="module">
         // LOCKED TO 13.1.0 AS REQUESTED
@@ -195,7 +236,6 @@
         let audioChunks = [];
         let isRecording = false;
 
-        // 🐕 WATCHDOG STATE
         let lastMessageTime = 0;
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -207,7 +247,35 @@
             window.location.replace('chat-rooms.html');
         }
 
-        // 🐕 WATCHDOG: Log Security Events
+        // Toggle Mic to Send Button
+        window.toggleSendButton = () => {
+            const text = document.getElementById('chat-input').value.trim();
+            const micBtn = document.getElementById('mic-btn');
+            const sendBtn = document.getElementById('send-btn');
+            
+            if (text.length > 0) {
+                micBtn.style.display = 'none';
+                sendBtn.style.display = 'grid';
+            } else {
+                micBtn.style.display = 'grid';
+                sendBtn.style.display = 'none';
+            }
+        };
+
+        // Image Viewer Functions
+        window.openImageViewer = (url) => {
+            const viewer = document.getElementById('image-viewer');
+            const img = document.getElementById('viewer-img');
+            img.src = url;
+            viewer.classList.add('show');
+        };
+
+        window.closeImageViewer = () => {
+            const viewer = document.getElementById('image-viewer');
+            viewer.classList.remove('show');
+            setTimeout(() => { document.getElementById('viewer-img').src = ''; }, 300);
+        };
+
         async function logSecurityEvent(event, details = {}) {
             try {
                 await addDoc(collection(db, 'security_logs'), {
@@ -221,8 +289,6 @@
             } catch (e) { console.warn('Guardian log failed', e); }
         }
 
-        // 🐕 WATCHDOG: Ensure chat membership exists before sending messages
-        // This is REQUIRED by the strict Firestore rules
         async function ensureChatMembership() {
             if (!currentUser || !activeRoomId) return;
             try {
@@ -244,27 +310,23 @@
             if (!user) { window.location.replace('login.html'); return; }
             currentUser = user;
 
-            // 1. Create chat membership immediately (Fixes Permission Error)
             await ensureChatMembership();
 
-            // 2. Listen to own data
             onSnapshot(doc(db, 'users', user.uid), (userDoc) => {
                 if (userDoc.exists()) currentUserData = userDoc.data();
             });
 
-            // 3. Extract other user UID
             if (activeRoomId.startsWith('private_')) {
                 const uids = activeRoomId.replace('private_', '').split('_');
                 otherUid = uids.find(id => id !== currentUser.uid);
             }
 
-            // 4. Setup Header
             document.getElementById('header-name').innerText = chatName;
             document.getElementById('header-avatar').innerText = chatName.charAt(0).toUpperCase();
             
             if (activeRoomId === 'global_chat') {
                 document.getElementById('header-status').innerText = 'Global Community';
-                document.getElementById('header-avatar').innerText = '🌍'; // FIXED ENCODING
+                document.getElementById('header-avatar').innerText = '🌍';
             } else if (otherUid) {
                 onSnapshot(doc(db, 'users', otherUid), (otherDoc) => {
                     if (otherDoc.exists()) {
@@ -327,7 +389,7 @@
                     
                     let contentHtml = '';
                     if (msg.messageType === 'image') {
-                        contentHtml = `<img src="${msg.imageUrl}" class="message-image">`;
+                        contentHtml = `<img src="${msg.imageUrl}" class="message-image" onclick="openImageViewer('${msg.imageUrl}')">`;
                     } else if (msg.messageType === 'voice') {
                         contentHtml = `<audio controls src="${msg.voiceNoteUrl}" class="message-audio"></audio>`;
                     } else {
@@ -346,7 +408,6 @@
             });
         }
 
-        // 🐕 WATCHDOG: Spam Sender Guard on Text Messages
         window.sendMessage = async () => {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
@@ -361,20 +422,27 @@
             lastMessageTime = now;
 
             input.value = '';
+            window.toggleSendButton(); // Reset button back to mic
 
-            await addDoc(collection(db, 'chat_messages'), {
-                groupId: activeRoomId,
-                uid: currentUser.uid,
-                senderName: currentUserData?.fullName || 'User',
-                messageType: 'text',
-                textContent: text,
-                timestamp: serverTimestamp()
-            });
+            await ensureChatMembership();
+
+            try {
+                await addDoc(collection(db, 'chat_messages'), {
+                    groupId: activeRoomId,
+                    uid: currentUser.uid,
+                    senderName: currentUserData?.fullName || 'User',
+                    messageType: 'text',
+                    textContent: text,
+                    timestamp: serverTimestamp()
+                });
+            } catch (error) {
+                console.error("Message failed:", error);
+                alert("Failed to send message. Please try again.");
+            }
         };
 
         window.handleEnter = (e) => { if (e.key === 'Enter') sendMessage(); };
 
-        // 🐕 WATCHDOG: File Size Check on Image Upload
         window.uploadImage = async (input) => {
             const file = input.files[0];
             if (!file) return;
@@ -389,6 +457,8 @@
             const container = document.getElementById('messages-container');
             container.innerHTML += `<div class="message-bubble sent"><div class="message-text" style="font-style:italic; opacity:0.7;">Uploading image...</div></div>`;
             container.scrollTop = container.scrollHeight;
+
+            await ensureChatMembership();
 
             try {
                 const formData = new FormData();
@@ -409,14 +479,16 @@
                         imageUrl: data.secure_url,
                         timestamp: serverTimestamp()
                     });
+                } else {
+                    throw new Error(data.error?.message || 'Cloudinary image upload failed');
                 }
             } catch (err) {
-                alert('Image upload failed');
+                console.error(err);
+                alert('Image upload failed: ' + err.message);
             }
             input.value = '';
         };
 
-        // 🐕 WATCHDOG: Recording Spam / File Size Check
         window.toggleRecording = async () => {
             if (isRecording) {
                 mediaRecorder.stop();
@@ -447,12 +519,15 @@
                     container.innerHTML += `<div class="message-bubble sent"><div class="message-text" style="font-style:italic; opacity:0.7;">Uploading voice note...</div></div>`;
                     container.scrollTop = container.scrollHeight;
 
+                    await ensureChatMembership();
+
                     try {
                         const formData = new FormData();
                         formData.append('file', file);
                         formData.append('upload_preset', CLOUDINARY.uploadPreset);
 
-                        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/video/upload`, {
+                        // 🚨 FIXED: Changed /video/upload to /auto/upload
+                        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/auto/upload`, {
                             method: 'POST', body: formData
                         });
                         const data = await res.json();
@@ -466,9 +541,12 @@
                                 voiceNoteUrl: data.secure_url,
                                 timestamp: serverTimestamp()
                             });
+                        } else {
+                            throw new Error(data.error?.message || 'Cloudinary voice upload failed. Make sure your preset allows audio.');
                         }
                     } catch (err) {
-                        alert('Voice note upload failed');
+                        console.error(err);
+                        alert('Voice note upload failed: ' + err.message);
                     }
                 };
 

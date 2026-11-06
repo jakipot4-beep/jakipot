@@ -91,7 +91,18 @@
         .message-row.sent .message-text { background: var(--chat-sent); border-radius: 18px 18px 0 18px; }
         .message-row.received .message-text { background: var(--chat-received); border-radius: 18px 18px 18px 0; }
         
-        .message-image { max-width: 100%; border-radius: 12px; margin-top: 5px; border: 1px solid var(--border-light); }
+        .message-image { 
+            max-width: 100%; 
+            max-height: 250px;
+            border-radius: 12px; 
+            margin-top: 5px; 
+            border: 1px solid var(--border-light);
+            cursor: pointer;
+            object-fit: cover;
+            transition: opacity 0.2s;
+        }
+        .message-image:active { opacity: 0.8; }
+        
         .message-audio { width: 220px; margin-top: 5px; outline: none; border-radius: 20px; }
         .message-time { font-size: 10px; color: #71717a; margin-top: 4px; margin-right: 4px; margin-left: 4px; }
 
@@ -153,20 +164,40 @@
         .suspended-title { font-size: 24px; font-weight: 900; color: var(--danger); margin-bottom: 10px; }
         .suspended-text { font-size: 14px; color: var(--text-secondary); line-height: 1.5; max-width: 300px; }
 
-        /* Empty State */
         .empty-state {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             text-align: center; padding: 40px 20px; color: var(--text-secondary);
         }
         .empty-state svg { width: 60px; height: 60px; fill: var(--text-secondary); opacity: 0.5; margin-bottom: 15px; }
         .empty-state p { font-size: 14px; font-weight: 600; }
+
+        /* Full Screen Image Viewer */
+        #image-viewer {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.95); z-index: 9999;
+            justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        #image-viewer.show { display: flex; }
+        #image-viewer img {
+            max-width: 100%; max-height: 90vh; object-fit: contain;
+            border-radius: 8px; animation: zoomIn 0.3s ease;
+        }
+        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .close-viewer {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.2); border: none; border-radius: 50%;
+            width: 40px; height: 40px; display: grid; place-items: center; cursor: pointer;
+            color: white; z-index: 10000;
+        }
+        .close-viewer svg { width: 24px; height: 24px; fill: white; }
     </style>
 </head>
 <body>
 
     <div class="suspended-overlay" id="suspended-overlay">
         <div class="suspended-icon-wrap">
-            <!-- Custom SVG: Ban Icon -->
             <svg viewBox="0 0 24 24">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z"/>
             </svg>
@@ -182,10 +213,11 @@
         
         <div class="chat-title-area">
             <div class="chat-avatar-header">
-                <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=200&auto=format&fit=crop" alt="Global">
+                <!-- Added ID to dynamically update this image -->
+                <img id="global-chat-avatar" src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=200&auto=format&fit=crop" alt="Global">
             </div>
             <div class="chat-title-text">
-                <h3>JAKIPOT International</h3>
+                <h3 id="global-chat-name">JAKIPOT International</h3>
                 <p>Global Community</p>
             </div>
         </div>
@@ -202,17 +234,26 @@
             </button>
             <input type="file" id="image-upload" accept="image/*" hidden onchange="uploadImage(this)">
             
-            <input type="text" id="chat-input" class="chat-input" placeholder="Message the community..." onkeypress="handleEnter(event)">
+            <input type="text" id="chat-input" class="chat-input" placeholder="Message the community..." oninput="toggleSendButton()" onkeypress="handleEnter(event)">
             
             <button class="action-btn mic-btn" id="mic-btn" onclick="toggleRecording()">
                 <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
             </button>
             
-            <button class="action-btn send-btn" onclick="sendMessage()">
+            <!-- Send button (hidden by default) -->
+            <button class="action-btn send-btn" id="send-btn" onclick="sendMessage()" style="display: none;">
                 <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
             </button>
         </div>
     </section>
+
+    <!-- Full Screen Image Viewer Modal -->
+    <div id="image-viewer" onclick="closeImageViewer()">
+        <button class="close-viewer" onclick="closeImageViewer()">
+            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+        <img id="viewer-img" src="" alt="Full screen image" onclick="event.stopPropagation()">
+    </div>
 
     <script type="module">
         // LOCKED TO 13.1.0
@@ -233,7 +274,6 @@
         const CLOUDINARY = { cloudName: 'jakipot', uploadPreset: 'jakipot_unsigned' };
         const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-        // Custom SVG Definitions
         const SVG_CROWN = `<svg viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>`;
         const SVG_TRASH = `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
         const SVG_BAN = `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z"/></svg>`;
@@ -253,6 +293,35 @@
         let messageCount = 0;
         let lastMessageTime = 0;
         let mediaRecorder, audioChunks = [], isRecording = false;
+
+        // Toggle Mic to Send Button
+        window.toggleSendButton = () => {
+            const text = document.getElementById('chat-input').value.trim();
+            const micBtn = document.getElementById('mic-btn');
+            const sendBtn = document.getElementById('send-btn');
+            
+            if (text.length > 0) {
+                micBtn.style.display = 'none';
+                sendBtn.style.display = 'grid';
+            } else {
+                micBtn.style.display = 'grid';
+                sendBtn.style.display = 'none';
+            }
+        };
+
+        // Image Viewer Functions
+        window.openImageViewer = (url) => {
+            const viewer = document.getElementById('image-viewer');
+            const img = document.getElementById('viewer-img');
+            img.src = url;
+            viewer.classList.add('show');
+        };
+
+        window.closeImageViewer = () => {
+            const viewer = document.getElementById('image-viewer');
+            viewer.classList.remove('show');
+            setTimeout(() => { document.getElementById('viewer-img').src = ''; }, 300);
+        };
 
         async function logSecurityEvent(event, details = {}) {
             try {
@@ -289,6 +358,20 @@
 
             await ensureChatMembership();
 
+            // 1. Listen for Global Chat Settings (Avatar & Name)
+            onSnapshot(doc(db, 'chat_groups', ROOM_ID), (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.avatarUrl) {
+                        document.getElementById('global-chat-avatar').src = data.avatarUrl;
+                    }
+                    if (data.name) {
+                        document.getElementById('global-chat-name').innerText = data.name;
+                    }
+                }
+            });
+
+            // 2. Listen for all users (for avatars)
             onSnapshot(collection(db, 'users'), (snapshot) => {
                 snapshot.forEach(doc => {
                     userCache[doc.id] = doc.data();
@@ -349,7 +432,7 @@
 
                     let contentHtml = '';
                     if (msg.messageType === 'image') {
-                        contentHtml = `<img src="${msg.imageUrl}" class="message-image">`;
+                        contentHtml = `<img src="${msg.imageUrl}" class="message-image" onclick="openImageViewer('${msg.imageUrl}')">`;
                     } else if (msg.messageType === 'voice') {
                         contentHtml = `<audio controls src="${msg.voiceNoteUrl}" class="message-audio"></audio>`;
                     } else {
@@ -404,6 +487,7 @@
             }
 
             input.value = '';
+            window.toggleSendButton(); // Reset button back to mic
 
             try {
                 await addDoc(collection(db, 'chat_messages'), {
@@ -534,7 +618,8 @@
                         formData.append('file', file);
                         formData.append('upload_preset', CLOUDINARY.uploadPreset);
 
-                        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/video/upload`, {
+                        // 🚨 FIXED: Changed /video/upload to /auto/upload
+                        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/auto/upload`, {
                             method: 'POST', body: formData
                         });
                         const data = await res.json();

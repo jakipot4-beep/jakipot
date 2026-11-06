@@ -37,6 +37,19 @@
         .back-btn { background: transparent; border: none; cursor: pointer; color: var(--cyan); display: flex; align-items: center; padding: 4px; }
         .back-btn svg { width: 24px; height: 24px; fill: currentColor; }
         .header-title { font-size: 16px; font-weight: 900; color: var(--text-white); letter-spacing: 1.5px; text-transform: uppercase; text-shadow: 0 0 10px var(--cyan-glow); }
+        
+        .header-right { display: flex; align-items: center; gap: 10px; }
+        
+        .mute-btn { 
+            background: transparent; border: none; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(255,255,255,0.05); transition: 0.2s;
+        }
+        .mute-btn:active { transform: scale(0.9); }
+        .mute-btn svg { width: 18px; height: 18px; fill: var(--text-muted); transition: fill 0.2s; }
+        .mute-btn:hover svg { fill: var(--white); }
+
         .wallet-balance { font-size: 14px; font-weight: 800; color: var(--gold); background: rgba(251, 191, 36, 0.1); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(251,191,36,0.3); }
 
         .game-container {
@@ -74,9 +87,32 @@
             box-shadow: 0 0 15px var(--cyan-glow);
         }
 
+        .jackpot-info {
+            width: 100%; max-width: 280px; margin-top: 15px;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+        }
+        .jackpot-text {
+            font-size: 14px; font-weight: 800; color: var(--gold);
+            text-shadow: 0 0 10px var(--gold-glow); text-align: center;
+            transition: color 0.3s;
+        }
+        .loss-tracker {
+            font-size: 11px; font-weight: 700; color: var(--text-muted);
+            background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 10px;
+            display: flex; align-items: center; gap: 4px;
+        }
+        .loss-tracker.unlocked {
+            color: var(--emerald); background: rgba(16, 185, 129, 0.15); border: 1px solid var(--emerald);
+            animation: pulse-glow 1.5s infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(16,185,129,0.4); }
+            50% { box-shadow: 0 0 15px rgba(16,185,129,0.8); }
+        }
+
         .bet-controls {
             display: flex; align-items: center; justify-content: space-between;
-            width: 100%; max-width: 280px; margin-top: 25px;
+            width: 100%; max-width: 280px; margin-top: 15px;
             background: var(--bg-panel); padding: 8px; border-radius: 12px;
             border: 1px solid var(--border-light);
         }
@@ -90,7 +126,7 @@
         .q-btn.active { background: rgba(0, 217, 255, 0.1); color: var(--cyan); border-color: var(--cyan); }
 
         .spin-btn {
-            margin-top: 20px; padding: 18px 60px; border-radius: 50px;
+            margin-top: 15px; padding: 18px 60px; border-radius: 50px;
             border: none; background: linear-gradient(90deg, #f59e0b, #fbbf24);
             color: #000; font-size: 20px; font-weight: 900; text-transform: uppercase;
             letter-spacing: 2px; cursor: pointer; transition: 0.2s;
@@ -99,6 +135,7 @@
         .spin-btn:active { transform: scale(0.95); }
         .spin-btn:disabled { background: #334155; color: var(--text-muted); box-shadow: none; cursor: not-allowed; }
 
+        /* SMALL WIN MODAL */
         .result-overlay {
             position: fixed; inset: 0; background: rgba(4, 11, 22, 0.9);
             backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center;
@@ -125,6 +162,41 @@
             cursor: pointer; text-transform: uppercase;
         }
 
+        /* BIG WIN ANIMATION OVERLAY */
+        .big-win-overlay {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95);
+            z-index: 1000; display: none; flex-direction: column;
+            justify-content: center; align-items: center;
+            background-image: radial-gradient(circle at center, rgba(251,191,36,0.2) 0%, transparent 70%);
+        }
+        .big-win-overlay.active { display: flex; animation: fadeIn 0.5s; }
+        
+        .big-win-title { 
+            font-size: 40px; font-weight: 900; color: #fff; 
+            text-transform: uppercase; letter-spacing: 4px;
+            text-shadow: 0 0 20px var(--gold), 0 0 40px var(--gold);
+            margin-bottom: 20px; animation: pulse-text 1s infinite alternate;
+        }
+        
+        .big-win-amount {
+            font-size: 70px; font-weight: 900; color: var(--gold);
+            text-shadow: 0 0 30px var(--gold-glow); margin-bottom: 30px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .btn-collect-big {
+            padding: 18px 60px; border-radius: 50px; border: none;
+            background: linear-gradient(90deg, #10b981, #059669); color: #fff;
+            font-size: 20px; font-weight: 900; text-transform: uppercase;
+            cursor: pointer; box-shadow: 0 0 20px rgba(16,185,129,0.6);
+            animation: bounce 1s infinite alternate;
+        }
+        .btn-collect-big:active { transform: scale(0.95); }
+
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+        @keyframes pulse-text { from { transform: scale(1); } to { transform: scale(1.05); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         #jackpot-flash { position: fixed; inset: 0; background: white; z-index: 99; display: none; opacity: 0; }
         .jackpot-mode .result-card { border-color: #ef4444; box-shadow: 0 0 80px #ef4444; }
         .jackpot-mode .result-title { color: #ef4444; text-shadow: 0 0 20px #ef4444; font-size: 36px; }
@@ -138,7 +210,11 @@
             <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         </button>
         <div class="header-title">Fruit 777</div>
-        <div class="wallet-balance" id="wallet-balance">Loading...</div>
+        
+        <div class="header-right">
+            <button class="mute-btn" id="mute-btn" onclick="toggleMute()"></button>
+            <div class="wallet-balance" id="wallet-balance">Loading...</div>
+        </div>
     </header>
 
     <div class="game-container">
@@ -149,40 +225,54 @@
             <div class="payline-overlay"></div>
         </div>
         
+        <div class="jackpot-info">
+            <div class="jackpot-text" id="jackpot-text">Chance to win K1,000.00</div>
+            <div class="loss-tracker" id="loss-tracker">
+                Daily Loss: K0.00 / K3,000
+            </div>
+        </div>
+
         <div class="bet-controls">
-            <button class="adj-btn" onclick="adjustBet(-10)">−</button>
+            <button class="adj-btn" onclick="adjustBet(-1)">−</button>
             <div class="bet-display">
                 <span class="currency-symbol" id="currency-symbol">K</span>
-                <input type="number" id="bet-input" class="bet-input" value="30" readonly>
+                <input type="number" id="bet-input" class="bet-input" value="6" readonly>
             </div>
-            <button class="adj-btn" onclick="adjustBet(10)">+</button>
+            <button class="adj-btn" onclick="adjustBet(1)">+</button>
         </div>
         <div class="quick-bets">
-            <button class="q-btn active" onclick="setBet(30)">K30</button>
-            <button class="q-btn" onclick="setBet(50)">K50</button>
-            <button class="q-btn" onclick="setBet(100)">K100</button>
-            <button class="q-btn" onclick="setBet(200)">K200</button>
+            <button class="q-btn active" onclick="setBet(6)">K6</button>
+            <button class="q-btn" onclick="setBet(30)">K30</button>
+            <button class="q-btn" onclick="setBet(300)">K300</button>
+            <button class="q-btn" onclick="setBet(3000)">K3K</button>
         </div>
 
-        <button class="spin-btn" id="spin-btn" onclick="spinSlots()">SPIN - K30</button>
+        <button class="spin-btn" id="spin-btn" onclick="spinSlots()">SPIN - K6</button>
     </div>
 
-    <div id="jackpot-flash"></div>
-
+    <!-- SMALL WIN OVERLAY -->
     <div class="result-overlay" id="result-overlay">
         <div class="result-card" id="result-card">
             <div class="result-icon" id="result-icon"></div>
             <div class="result-title" id="result-title">You Won!</div>
             <div class="result-msg" id="result-msg">Cherry Bonus</div>
-            <button class="btn-close-modal" onclick="closeModal()">COLLECT</button>
+            <button class="btn-close-modal" onclick="collectWin()">COLLECT</button>
         </div>
     </div>
 
+    <!-- BIG WIN ANIMATION OVERLAY -->
+    <div class="big-win-overlay" id="big-win-overlay">
+        <div class="big-win-title">BIG WIN!</div>
+        <div class="big-win-amount" id="big-win-amount">K0.00</div>
+        <button class="btn-collect-big" onclick="collectWin()">COLLECT</button>
+    </div>
+
+    <div id="jackpot-flash"></div>
+
     <script type="module">
-        // LOCKED TO 13.1.0 AS REQUESTED
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp, writeBatch, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+        import { getFirestore, doc, collection, serverTimestamp, writeBatch, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
@@ -198,14 +288,27 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- STATE ---
         let currentUser = null;
         let userBalance = 0;
         let userCurrency = 'ZMW';
         let currencySymbol = 'K';
-        let currentBet = 30.00;
+        let currentBet = 6;
         let isSpinning = false;
         let isProcessingTx = false;
+        
+        // PENDING WIN STATE
+        let pendingWin = 0;
+        let bigWinAnimationId = null;
+
+        // DAILY TRACKER STATE
+        let dailyLoss = 0;
+        let lastPlayDate = '';
+        const LOSS_TARGET = 3000;
+
+        // AUDIO & MUTE STATE
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        let isMuted = localStorage.getItem('jakipotFruitMuted') === 'true';
 
         const CURRENCY_MAP = {
             'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 
@@ -215,19 +318,42 @@
             'PKR': '₨', 'BDT': '৳'
         };
 
+        const SVG_UNMUTED = `<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
+        const SVG_MUTED = `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>`;
+
+        function updateMuteIcon() {
+            const btn = document.getElementById('mute-btn');
+            btn.innerHTML = isMuted ? SVG_MUTED : SVG_UNMUTED;
+        }
+
+        window.toggleMute = () => {
+            isMuted = !isMuted;
+            localStorage.setItem('jakipotFruitMuted', isMuted);
+            updateMuteIcon();
+            if (!isMuted) initAudio();
+        };
+
+        updateMuteIcon();
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.replace('login.html'); return; }
             currentUser = user;
 
             onSnapshot(doc(db, 'users', user.uid), (snap) => {
                 if (snap.exists()) {
-                    userCurrency = snap.data().currency || 'ZMW';
+                    const data = snap.data();
+                    userCurrency = data.currency || 'ZMW';
                     currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
+                    
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    if (data.lastFruitPlayDate === todayStr) {
+                        dailyLoss = data.fruitDailyLoss || 0;
+                    } else {
+                        dailyLoss = 0;
+                    }
+                    lastPlayDate = todayStr;
+
                     document.getElementById('currency-symbol').innerText = currencySymbol;
-                    document.querySelectorAll('.q-btn').forEach(btn => {
-                        const val = btn.innerText.replace('K', '');
-                        btn.innerText = `${currencySymbol}${val}`;
-                    });
                     updateBetUI();
                 }
             });
@@ -251,17 +377,30 @@
             document.getElementById('spin-btn').innerText = `SPIN - ${currencySymbol}${currentBet}`;
             
             document.querySelectorAll('.q-btn').forEach(btn => {
-                const btnVal = parseInt(btn.innerText.replace(currencySymbol, ''));
+                const btnVal = parseInt(btn.innerText.replace(currencySymbol, '').replace('K', ''));
                 if (btnVal === currentBet) btn.classList.add('active');
                 else btn.classList.remove('active');
             });
+
+            const scaleFactor = currentBet / 6;
+            const potentialJackpot = 1000 * scaleFactor;
+            document.getElementById('jackpot-text').innerText = `Chance to win ${currencySymbol}${potentialJackpot.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+            const trackerEl = document.getElementById('loss-tracker');
+            if (dailyLoss >= LOSS_TARGET) {
+                trackerEl.innerText = `🔓 777 JACKPOT UNLOCKED!`;
+                trackerEl.classList.add('unlocked');
+            } else {
+                trackerEl.innerText = `Daily Loss: ${currencySymbol}${dailyLoss.toFixed(2)} / ${currencySymbol}${LOSS_TARGET}`;
+                trackerEl.classList.remove('unlocked');
+            }
         }
 
         window.adjustBet = (amount) => {
             if (isSpinning || isProcessingTx) return;
             let newVal = currentBet + amount;
-            if (newVal < 30) newVal = 30; 
-            if (newVal > 10000) newVal = 10000; 
+            if (newVal < 6) newVal = 6; 
+            if (newVal > 50000) newVal = 50000; 
             currentBet = newVal;
             updateBetUI();
         };
@@ -272,17 +411,13 @@
             updateBetUI();
         };
 
-        // --- AUDIO ENGINE ---
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        let audioCtx = null;
-
         function initAudio() {
             if (!audioCtx) audioCtx = new AudioContext();
             if (audioCtx.state === 'suspended') audioCtx.resume();
         }
 
         function playSound(type) {
-            if (!audioCtx) return;
+            if (isMuted || !audioCtx) return;
             const now = audioCtx.currentTime;
 
             if (type === 'tick') {
@@ -309,7 +444,8 @@
                     osc.start(now + i * 0.1); osc.stop(now + i * 0.1 + 0.3);
                 });
             } 
-            else if (type === 'jackpot') {
+            else if (type === 'big_win') {
+                // HD Big Win Sound
                 const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
                 notes.forEach((freq, i) => {
                     const osc = audioCtx.createOscillator();
@@ -317,40 +453,48 @@
                     osc.type = 'sawtooth';
                     osc.frequency.setValueAtTime(freq, now + i * 0.08);
                     gain.gain.setValueAtTime(0.15, now + i * 0.08);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.08 + 0.4);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.08 + 0.5);
                     osc.connect(gain); gain.connect(audioCtx.destination);
-                    osc.start(now + i * 0.08); osc.stop(now + i * 0.08 + 0.4);
+                    osc.start(now + i * 0.08); osc.stop(now + i * 0.08 + 0.5);
                 });
             }
         }
 
-        // --- CUSTOM SVG FRUITS ---
         function getFruitSVG(icon) {
             switch(icon) {
+                case '🍏': return `<svg viewBox="0 0 100 100"><path d="M50 25 C30 25 15 45 15 65 C15 85 35 95 50 95 C65 95 85 85 85 65 C85 45 70 25 50 25 Z" fill="url(#greenAppleGrad)"/><path d="M50 25 Q55 15 60 10" stroke="#78350f" stroke-width="4" fill="none"/><defs><radialGradient id="greenAppleGrad" cx="40%" cy="30%" r="60%"><stop offset="0%" stop-color="#bbf7d0"/><stop offset="50%" stop-color="#22c55e"/><stop offset="100%" stop-color="#14532d"/></radialGradient></defs></svg>`;
+                case '🍓': return `<svg viewBox="0 0 100 100"><path d="M50 90 C20 90 10 60 20 40 L50 20 L80 40 C90 60 80 90 50 90 Z" fill="url(#strawGrad)"/><path d="M30 40 L50 25 L70 40" fill="none" stroke="#22c55e" stroke-width="5"/><circle cx="35" cy="55" r="2" fill="#fef08a"/><circle cx="50" cy="60" r="2" fill="#fef08a"/><circle cx="65" cy="55" r="2" fill="#fef08a"/><circle cx="45" cy="75" r="2" fill="#fef08a"/><circle cx="60" cy="80" r="2" fill="#fef08a"/><defs><radialGradient id="strawGrad" cx="40%" cy="30%" r="60%"><stop offset="0%" stop-color="#fca5a5"/><stop offset="50%" stop-color="#ef4444"/><stop offset="100%" stop-color="#991b1b"/></radialGradient></defs></svg>`;
                 case '🍋': return `<svg viewBox="0 0 100 100"><path d="M20 50 C20 30 40 20 50 20 C60 20 80 30 80 50 C80 70 60 80 50 80 C40 80 20 70 20 50 Z" fill="url(#lemonGrad)"/><path d="M50 20 L50 10 M50 80 L50 90" stroke="#4ade80" stroke-width="4" stroke-linecap="round"/><defs><linearGradient id="lemonGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fef08a"/><stop offset="50%" stop-color="#facc15"/><stop offset="100%" stop-color="#ca8a04"/></linearGradient></defs></svg>`;
+                case '🍍': return `<svg viewBox="0 0 100 100"><path d="M50 30 C25 30 20 60 20 75 C20 90 35 95 50 95 C65 95 80 90 80 75 C80 60 75 30 50 30 Z" fill="url(#pineGrad)"/><path d="M50 30 L30 10 M50 30 L50 5 M50 30 L70 10" stroke="#22c55e" stroke-width="5" stroke-linecap="round"/><path d="M30 40 L70 90 M30 60 L60 90 M40 40 L70 70" stroke="#b45309" stroke-width="2" opacity="0.5"/><defs><linearGradient id="pineGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fef08a"/><stop offset="50%" stop-color="#facc15"/><stop offset="100%" stop-color="#ca8a04"/></linearGradient></defs></svg>`;
+                case '🥥': return `<svg viewBox="0 0 100 100"><circle cx="50" cy="60" r="30" fill="url(#cocoGrad)"/><circle cx="40" cy="50" r="4" fill="#451a03"/><circle cx="60" cy="50" r="4" fill="#451a03"/><circle cx="50" cy="70" r="4" fill="#451a03"/><path d="M50 30 C40 10 60 10 50 30" fill="none" stroke="#22c55e" stroke-width="3"/><defs><radialGradient id="cocoGrad" cx="40%" cy="30%" r="60%"><stop offset="0%" stop-color="#a16207"/><stop offset="50%" stop-color="#713f12"/><stop offset="100%" stop-color="#422006"/></radialGradient></defs></svg>`;
                 case '🍒': return `<svg viewBox="0 0 100 100"><path d="M50 50 Q60 20 80 30" fill="none" stroke="#4ade80" stroke-width="6"/><path d="M50 50 Q40 20 20 30" fill="none" stroke="#4ade80" stroke-width="6"/><circle cx="50" cy="70" r="20" fill="url(#cherryGrad1)"/><circle cx="20" cy="70" r="20" fill="url(#cherryGrad2)"/><defs><radialGradient id="cherryGrad1" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#fca5a5"/><stop offset="60%" stop-color="#ef4444"/><stop offset="100%" stop-color="#991b1b"/></radialGradient><radialGradient id="cherryGrad2" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#fca5a5"/><stop offset="60%" stop-color="#dc2626"/><stop offset="100%" stop-color="#7f1d1d"/></radialGradient></defs></svg>`;
-                case '🍌': return `<svg viewBox="0 0 100 100"><path d="M20 30 C30 90 70 90 80 30 C70 60 50 60 20 30 Z" fill="url(#bananaGrad)" stroke="#78350f" stroke-width="2"/><defs><linearGradient id="bananaGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fef08a"/><stop offset="100%" stop-color="#facc15"/></linearGradient></defs></svg>`;
                 case '🍎': return `<svg viewBox="0 0 100 100"><path d="M50 25 C30 25 15 45 15 65 C15 85 35 95 50 95 C65 95 85 85 85 65 C85 45 70 25 50 25 Z" fill="url(#appleGrad)"/><path d="M50 25 Q55 15 60 10" stroke="#78350f" stroke-width="4" fill="none"/><defs><radialGradient id="appleGrad" cx="40%" cy="30%" r="60%"><stop offset="0%" stop-color="#fca5a5"/><stop offset="50%" stop-color="#ef4444"/><stop offset="100%" stop-color="#991b1b"/></radialGradient></defs></svg>`;
                 case '🍉': return `<svg viewBox="0 0 100 100"><path d="M10 50 A40 40 0 0 0 90 50 Z" fill="#22c55e"/><path d="M15 50 A35 35 0 0 0 85 50 Z" fill="#ef4444"/><circle cx="35" cy="60" r="3" fill="#000"/><circle cx="50" cy="65" r="3" fill="#000"/><circle cx="65" cy="60" r="3" fill="#000"/></svg>`;
+                case '🍌': return `<svg viewBox="0 0 100 100"><path d="M20 30 C30 90 70 90 80 30 C70 60 50 60 20 30 Z" fill="url(#bananaGrad)" stroke="#78350f" stroke-width="2"/><defs><linearGradient id="bananaGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fef08a"/><stop offset="100%" stop-color="#facc15"/></linearGradient></defs></svg>`;
                 case '🍇': return `<svg viewBox="0 0 100 100"><circle cx="50" cy="30" r="12" fill="url(#grapeGrad)"/><circle cx="35" cy="45" r="12" fill="url(#grapeGrad)"/><circle cx="65" cy="45" r="12" fill="url(#grapeGrad)"/><circle cx="20" cy="60" r="12" fill="url(#grapeGrad)"/><circle cx="50" cy="60" r="12" fill="url(#grapeGrad)"/><circle cx="80" cy="60" r="12" fill="url(#grapeGrad)"/><circle cx="35" cy="75" r="12" fill="url(#grapeGrad)"/><circle cx="65" cy="75" r="12" fill="url(#grapeGrad)"/><circle cx="50" cy="90" r="12" fill="url(#grapeGrad)"/><defs><radialGradient id="grapeGrad" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#d8b4fe"/><stop offset="60%" stop-color="#a855f7"/><stop offset="100%" stop-color="#581c87"/></radialGradient></defs></svg>`;
                 case '🔔': return `<svg viewBox="0 0 100 100"><path d="M50 15 C30 15 25 40 25 60 L15 75 L85 75 L75 60 C75 40 70 15 50 15 Z" fill="url(#bellGrad)"/><circle cx="50" cy="85" r="8" fill="#b45309"/><rect x="15" y="75" width="70" height="6" rx="3" fill="#78350f"/><defs><linearGradient id="bellGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fef08a"/><stop offset="50%" stop-color="#facc15"/><stop offset="100%" stop-color="#ca8a04"/></linearGradient></defs></svg>`;
-                case '⭐': return `<svg viewBox="0 0 100 100"><polygon points="50,10 61,35 88,35 66,55 74,82 50,65 26,82 34,55 12,35 39,35" fill="url(#starGrad)" stroke="#b45309" stroke-width="2"/><defs><linearGradient id="starGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fef08a"/><stop offset="50%" stop-color="#facc15"/><stop offset="100%" stop-color="#ca8a04"/></linearGradient></defs></svg>`;
+                case '🍊': return `<svg viewBox="0 0 100 100"><circle cx="50" cy="55" r="35" fill="url(#orangeGrad)"/><path d="M50 20 L55 10 L65 15" fill="none" stroke="#4ade80" stroke-width="4" stroke-linecap="round"/><circle cx="40" cy="45" r="4" fill="#fff" opacity="0.4"/><defs><radialGradient id="orangeGrad" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#fdba74"/><stop offset="60%" stop-color="#f97316"/><stop offset="100%" stop-color="#9a3412"/></radialGradient></defs></svg>`;
+                case '🥭': return `<svg viewBox="0 0 100 100"><path d="M30 30 C50 10 80 20 85 50 C90 80 60 95 40 90 C20 85 10 60 30 30 Z" fill="url(#mangoGrad)"/><path d="M40 25 C45 15 55 10 65 15" fill="none" stroke="#4ade80" stroke-width="4" stroke-linecap="round"/><defs><linearGradient id="mangoGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fef08a"/><stop offset="40%" stop-color="#fb923c"/><stop offset="80%" stop-color="#dc2626"/><stop offset="100%" stop-color="#7f1d1d"/></linearGradient></defs></svg>`;
                 case '777': return `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="url(#goldBg777)" rx="8"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="60" font-weight="900" fill="#000" stroke="#fff" stroke-width="1.5">777</text><defs><linearGradient id="goldBg777" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fef08a"/><stop offset="50%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#f59e0b"/></linearGradient></defs></svg>`;
                 default: return `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#fff"/></svg>`;
             }
         }
 
-        // --- GAME DATA ---
         const fruits = [
-            { icon: '🍋', name: 'Lemon', multiplier: 2, isJackpot: false },     
-            { icon: '🍒', name: 'Cherry', multiplier: 3, isJackpot: false },    
-            { icon: '🍌', name: 'Banana', multiplier: 4, isJackpot: false },    
-            { icon: '🍎', name: 'Apple', multiplier: 5, isJackpot: false },     
-            { icon: '🍉', name: 'Melon', multiplier: 6, isJackpot: false },     
-            { icon: '🍇', name: 'Grape', multiplier: 7, isJackpot: false },     
-            { icon: '🔔', name: 'Bell', multiplier: 8, isJackpot: false },      
-            { icon: '⭐', name: 'Star', multiplier: 9, isJackpot: false },      
-            { icon: '777', name: 'JACKPOT', multiplier: 10, isJackpot: true }   
+            { icon: '🍏', name: 'Green Apple', basePay: 1, prob: 8.0 },
+            { icon: '🍓', name: 'Strawberry', basePay: 2, prob: 4.0 },
+            { icon: '🍋', name: 'Lemon', basePay: 3, prob: 3.0 },
+            { icon: '🍍', name: 'Pineapple', basePay: 4, prob: 2.0 },
+            { icon: '🥥', name: 'Coconut', basePay: 5, prob: 1.5 },
+            { icon: '🍒', name: 'Cherry', basePay: 8, prob: 1.0 },
+            { icon: '🍎', name: 'Apple', basePay: 10, prob: 0.8 },
+            { icon: '🍉', name: 'Melon', basePay: 15, prob: 0.5 },
+            { icon: '🍌', name: 'Banana', basePay: 20, prob: 0.3 },
+            { icon: '🍇', name: 'Grape', basePay: 50, prob: 0.2 },
+            { icon: '🔔', name: 'Bell', basePay: 60, prob: 0.1 },
+            { icon: '🍊', name: 'Orange', basePay: 120, prob: 0.05 },
+            { icon: '🥭', name: 'Mango', basePay: 210, prob: 0.04 },
+            { icon: '777', name: 'JACKPOT', basePay: 1000, prob: 0.01, isJackpot: true }
         ];
 
         const ITEM_HEIGHT = 90;
@@ -358,6 +502,7 @@
         const WIN_INDEX = 55; 
 
         let spinResults = [null, null, null];
+        let lastSpinFruit = null;
 
         function initReels() {
             for (let col = 0; col < 3; col++) {
@@ -366,7 +511,7 @@
                 for (let i = 0; i < NUM_ITEMS; i++) {
                     const fruit = fruits[Math.floor(Math.random() * (fruits.length - 1))];
                     const div = document.createElement('div');
-                    div.className = `reel-item ${fruit.isJackpot ? 'jackpot' : ''}`;
+                    div.className = `reel-item`;
                     div.innerHTML = getFruitSVG(fruit.icon); 
                     strip.appendChild(div);
                 }
@@ -376,17 +521,20 @@
         }
 
         function getSpinOutcome() {
-            const rand = Math.random() * 100;
-            if (rand < 78.0) return null; 
-            if (rand < 84.0) return fruits.find(f => f.icon === '🍋'); 
-            if (rand < 89.0) return fruits.find(f => f.icon === '🍒'); 
-            if (rand < 93.0) return fruits.find(f => f.icon === '🍌'); 
-            if (rand < 96.0) return fruits.find(f => f.icon === '🍎'); 
-            if (rand < 98.0) return fruits.find(f => f.icon === '🍉'); 
-            if (rand < 99.0) return fruits.find(f => f.icon === '🍇'); 
-            if (rand < 99.5) return fruits.find(f => f.icon === '🔔'); 
-            if (rand < 99.8) return fruits.find(f => f.icon === '⭐'); 
-            return fruits.find(f => f.icon === '777'); 
+            const rand = Math.random() * 100; 
+            const isUnlocked = dailyLoss >= LOSS_TARGET;
+            
+            let cumulative = 0;
+            for (let f of fruits) {
+                if (f.isJackpot) {
+                    if (!isUnlocked) continue; 
+                    if (rand <= cumulative + 1.0) return f;
+                    continue;
+                }
+                if (rand <= cumulative + f.prob) return f;
+                cumulative += f.prob;
+            }
+            return null; 
         }
 
         window.spinSlots = async () => {
@@ -403,65 +551,49 @@
             document.getElementById('spin-btn').disabled = true;
             
             const winFruit = getSpinOutcome();
-            let multiplier = 0;
             let winAmount = 0;
+            const scaleFactor = currentBet / 6;
 
             if (winFruit) {
                 spinResults = [winFruit, winFruit, winFruit];
-                multiplier = winFruit.multiplier;
-                winAmount = currentBet * multiplier;
+                winAmount = winFruit.basePay * scaleFactor;
+                lastSpinFruit = winFruit;
+                pendingWin = winAmount; 
             } else {
                 spinResults = [
-                    fruits[Math.floor(Math.random() * (fruits.length - 1))],
-                    fruits[Math.floor(Math.random() * (fruits.length - 1))],
-                    fruits[Math.floor(Math.random() * (fruits.length - 1))]
+                    fruits[Math.floor(Math.random() * 9)],
+                    fruits[Math.floor(Math.random() * 9)],
+                    fruits[Math.floor(Math.random() * 9)]
                 ];
                 while (spinResults[0].icon === spinResults[1].icon && spinResults[1].icon === spinResults[2].icon) {
-                    spinResults[1] = fruits[Math.floor(Math.random() * (fruits.length - 1))];
+                    spinResults[1] = fruits[Math.floor(Math.random() * 9)];
                 }
+                lastSpinFruit = null;
+                pendingWin = 0;
             }
+
+            const netLoss = Math.max(0, currentBet - winAmount);
+            const newDailyLoss = dailyLoss + netLoss;
+            const finalDailyLoss = winFruit?.isJackpot ? 0 : newDailyLoss;
 
             try {
                 const batch = writeBatch(db);
                 const walletRef = doc(db, 'wallets', currentUser.uid);
-                
-                // CRITICAL FIX: Combine deduction and payout into ONE net transaction
-                // to satisfy the strict Firestore security rules.
-                const netChange = winAmount - currentBet;
+                const userRef = doc(db, 'users', currentUser.uid);
                 const txRef = doc(collection(db, 'transactions'));
                 
-                batch.update(walletRef, { 
-                    balance: increment(netChange),
-                    lastTxId: txRef.id 
-                });
-
-                batch.set(txRef, {
-                    uid: currentUser.uid, 
-                    type: 'fruit_777_result', 
-                    amount: netChange, 
-                    status: 'completed', 
-                    createdAt: serverTimestamp()
-                });
-
-                // Create Game Session Audit Trail
-                const sessionRef = doc(collection(db, 'game_sessions'));
-                batch.set(sessionRef, {
-                    uid: currentUser.uid,
-                    gameType: 'fruit_777',
-                    betAmount: currentBet,
-                    multiplier: multiplier,
-                    payoutAmount: winAmount,
-                    status: 'completed',
-                    createdAt: serverTimestamp()
-                });
+                // ONLY DEDUCT THE BET HERE
+                batch.update(walletRef, { balance: increment(-currentBet), lastTxId: txRef.id });
+                batch.set(txRef, { uid: currentUser.uid, type: 'fruit_777_bet', amount: -currentBet, status: 'completed', createdAt: serverTimestamp() });
+                batch.update(userRef, { fruitDailyLoss: finalDailyLoss, lastFruitPlayDate: lastPlayDate });
 
                 await batch.commit();
+                dailyLoss = finalDailyLoss;
 
             } catch (e) {
                 console.error("Transaction failed:", e);
                 alert("Failed to process spin. Please check your connection.");
-                isSpinning = false;
-                isProcessingTx = false;
+                isSpinning = false; isProcessingTx = false;
                 document.getElementById('spin-btn').disabled = false;
                 return;
             }
@@ -480,15 +612,14 @@
             strip.style.transform = `translateY(0px)`;
             
             for (let i = 0; i < NUM_ITEMS; i++) {
-                let fruit = (i === WIN_INDEX) ? targetFruit : fruits[Math.floor(Math.random() * (fruits.length - 1))];
+                let fruit = (i === WIN_INDEX) ? targetFruit : fruits[Math.floor(Math.random() * 9)];
                 const div = document.createElement('div');
-                div.className = `reel-item ${fruit.isJackpot ? 'jackpot' : ''}`;
+                div.className = `reel-item`;
                 div.innerHTML = getFruitSVG(fruit.icon); 
                 strip.appendChild(div);
             }
 
             const targetY = - ( (WIN_INDEX * ITEM_HEIGHT) - ITEM_HEIGHT );
-            
             let startTime = performance.now();
             let lastTickIndex = -1;
 
@@ -496,7 +627,6 @@
                 const elapsed = time - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 const easeOut = 1 - Math.pow(1 - progress, 4);
-                
                 const currentY = 0 + (targetY - 0) * easeOut;
                 strip.style.transform = `translateY(${currentY}px)`;
 
@@ -520,13 +650,54 @@
         }
 
         function evaluateResult() {
-            if (spinResults[0].icon === spinResults[1].icon && spinResults[1].icon === spinResults[2].icon) {
-                const winAmount = currentBet * spinResults[0].multiplier;
-                showWin(spinResults[0], winAmount);
+            if (lastSpinFruit) {
+                const scaleFactor = currentBet / 6;
+                const winAmount = lastSpinFruit.basePay * scaleFactor;
+                
+                // If win is 15 or more (based on K6 bet), trigger Big Win
+                if (winAmount >= 15) {
+                    showBigWin(winAmount);
+                } else {
+                    showSmallWin(lastSpinFruit, winAmount);
+                }
+            } else {
+                updateBetUI(); 
             }
         }
 
-        function showWin(fruit, winAmount) {
+        // --- BIG WIN ANIMATION LOGIC ---
+        function showBigWin(winAmount) {
+            playSound('big_win');
+            const overlay = document.getElementById('big-win-overlay');
+            const amountEl = document.getElementById('big-win-amount');
+            
+            overlay.classList.add('active');
+            
+            let startAmount = 0;
+            const duration = 2000; // 2 seconds
+            const startTime = performance.now();
+            
+            function updateCounter(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function for fast start, slow end
+                const easeOut = 1 - Math.pow(1 - progress, 3); 
+                const currentVal = winAmount * easeOut;
+                
+                amountEl.innerText = `${currencySymbol}${currentVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                
+                if (progress < 1) {
+                    bigWinAnimationId = requestAnimationFrame(updateCounter);
+                } else {
+                    amountEl.innerText = `${currencySymbol}${winAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                }
+            }
+            bigWinAnimationId = requestAnimationFrame(updateCounter);
+        }
+
+        function showSmallWin(fruit, winAmount) {
+            playSound('win');
             const overlay = document.getElementById('result-overlay');
             const card = document.getElementById('result-card');
             const icon = document.getElementById('result-icon');
@@ -536,29 +707,59 @@
             card.classList.remove('jackpot-mode');
 
             if (fruit.isJackpot) {
-                playSound('jackpot');
-                const flash = document.getElementById('jackpot-flash');
-                flash.style.display = 'block';
-                flash.style.opacity = '1';
-                setTimeout(() => { flash.style.opacity = '0'; }, 200);
-                setTimeout(() => { flash.style.display = 'none'; }, 500);
-
                 card.classList.add('jackpot-mode');
                 icon.innerHTML = getFruitSVG('777');
                 title.innerText = 'JAKIPOT 777!';
-                msg.innerText = `MASSIVE WIN! You hit the jackpot for ${currencySymbol}${winAmount.toFixed(2)}!`;
+                msg.innerText = `MASSIVE WIN! You hit the jackpot for ${currencySymbol}${winAmount.toLocaleString()}!`;
             } else {
-                playSound('win');
                 icon.innerHTML = getFruitSVG(fruit.icon);
                 title.innerText = 'You Won!';
-                msg.innerText = `3x ${fruit.name}! You won ${currencySymbol}${winAmount.toFixed(2)}!`;
+                msg.innerText = `3x ${fruit.name}! You won ${currencySymbol}${winAmount.toLocaleString()}!`;
             }
 
             overlay.classList.add('active');
         }
 
-        window.closeModal = () => {
-            document.getElementById('result-overlay').classList.remove('active');
+        // --- COLLECT LOGIC ---
+        window.collectWin = async () => {
+            if (pendingWin <= 0) {
+                // Just close modals if nothing pending
+                document.getElementById('result-overlay').classList.remove('active');
+                document.getElementById('big-win-overlay').classList.remove('active');
+                updateBetUI();
+                return;
+            }
+
+            try {
+                const batch = writeBatch(db);
+                const walletRef = doc(db, 'wallets', currentUser.uid);
+                const txRef = doc(collection(db, 'transactions'));
+                
+                batch.update(walletRef, { balance: increment(pendingWin), lastTxId: txRef.id });
+                batch.set(txRef, { uid: currentUser.uid, type: 'fruit_777_win', amount: pendingWin, status: 'completed', createdAt: serverTimestamp() });
+
+                const sessionRef = doc(collection(db, 'game_sessions'));
+                batch.set(sessionRef, {
+                    uid: currentUser.uid, gameType: 'fruit_777', betAmount: currentBet,
+                    multiplier: (pendingWin / currentBet).toFixed(2),
+                    payoutAmount: pendingWin, status: 'completed', createdAt: serverTimestamp()
+                });
+
+                await batch.commit();
+
+                // Close modals
+                document.getElementById('result-overlay').classList.remove('active');
+                document.getElementById('big-win-overlay').classList.remove('active');
+                
+                // Reset
+                pendingWin = 0;
+                lastSpinFruit = null;
+                updateBetUI();
+
+            } catch (e) {
+                console.error(e);
+                alert("Failed to collect win. Please try again.");
+            }
         };
 
     </script>

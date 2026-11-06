@@ -193,6 +193,7 @@
 
     <nav class="nav-bar">
         <div class="nav-tab active" onclick="switchTab('dashboard', this)">📊 Overview</div>
+        <div class="nav-tab" onclick="switchTab('profile', this)">👤 My Profile</div>
         <div class="nav-tab" onclick="switchTab('activations', this)">🚀 Activations</div>
         <div class="nav-tab" onclick="switchTab('kyc', this)">🛡️ KYC</div>
         <div class="nav-tab" onclick="switchTab('users', this)">👥 Users</div>
@@ -241,6 +242,25 @@
             </div>
         </div>
 
+        <!-- NEW: ADMIN PROFILE TAB -->
+        <div class="tab-panel" id="tab-profile">
+            <div class="page-title">My Admin Profile</div>
+            <div class="form-card" style="text-align: center;">
+                <div class="profile-avatar" id="admin-avatar-container" style="width: 100px; height: 100px; border-radius: 50%; background: var(--bg-elevated); margin: 0 auto 15px auto; display: grid; place-items: center; overflow: hidden; font-size: 36px; font-weight: 900; border: 2px solid var(--cyan); cursor: pointer; box-shadow: 0 0 20px rgba(0,217,255,0.2);" onclick="document.getElementById('admin-avatar-input').click()">
+                    A
+                </div>
+                <input type="file" id="admin-avatar-input" accept="image/*" hidden onchange="uploadAdminAvatar(this)">
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">Tap image to change</p>
+                
+                <div class="input-group" style="text-align: left; margin-bottom: 20px;">
+                    <label>Display Name</label>
+                    <input type="text" id="admin-display-name" placeholder="Admin Name">
+                </div>
+                
+                <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px;" onclick="updateAdminProfile()">SAVE PROFILE</button>
+            </div>
+        </div>
+
         <div class="tab-panel" id="tab-activations">
             <div class="page-title">Pending Activations ($0.25)</div>
             <div class="list-container" id="activations-list"></div>
@@ -272,7 +292,7 @@
             <div class="list-container" id="withdrawals-list"></div>
         </div>
 
-        <!-- PLANS TAB (with image preview) -->
+        <!-- PLANS TAB (with Total Income) -->
         <div class="tab-panel" id="tab-plans">
             <div class="page-title">Create New Locked Plan</div>
             <div class="form-card">
@@ -304,6 +324,11 @@
                     <div class="input-group">
                         <label>Duration (Days)</label>
                         <input type="number" id="plan-duration" placeholder="10">
+                    </div>
+                    <!-- NEW: Total Income Field -->
+                    <div class="input-group">
+                        <label>Total Income</label>
+                        <input type="number" id="plan-total" placeholder="e.g. 1100">
                     </div>
                 </div>
                 <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;" onclick="createPlan()">CREATE PLAN</button>
@@ -337,6 +362,9 @@
 
         <div class="tab-panel" id="tab-live-trending">
             <div class="page-title">Live Trending Engine</div>
+            <p style="font-size: 13px; color: var(--gold); margin-bottom: 20px; line-height: 1.5;">
+                <b>Note:</b> This panel is for emergency manual override and preview. For the game to run 24/7 automatically without this page open, the <b>live-trending.html</b> client file handles the rounds using atomic transactions.
+            </p>
             <div class="engine-status-box">
                 <div class="engine-round" id="engine-round-display">ROUND 0 / 20</div>
                 <div class="engine-multiplier" id="engine-multiplier-display">1.00x</div>
@@ -442,6 +470,8 @@
             appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
         };
 
+        const CLOUDINARY = { cloudName: 'jakipot', uploadPreset: 'jakipot_unsigned' };
+
         const app = initializeApp(firebaseConfig);
         initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LdTwQsuAAAAAITxU1ur4P5_lw3Qg3pltPqO3D3H'), isTokenAutoRefreshEnabled: true });
         const auth = getAuth(app);
@@ -478,11 +508,74 @@
                 loadSettings(); 
                 loadMachines();
                 loadUsersCache();
+                loadAdminProfile(); // Load Profile
             } else {
                 alert("Access Denied. You are not an Admin.");
                 window.location.replace('home.html'); 
             }
         });
+
+        // --- ADMIN PROFILE LOGIC ---
+        async function loadAdminProfile() {
+            const snap = await getDoc(doc(db, 'users', currentAdmin.uid));
+            if (snap.exists()) {
+                const data = snap.data();
+                document.getElementById('admin-display-name').value = data.fullName || 'Admin';
+                const container = document.getElementById('admin-avatar-container');
+                if (data.profilePicUrl) {
+                    container.innerHTML = `<img src="${data.profilePicUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                } else {
+                    container.innerText = (data.fullName || 'A').charAt(0).toUpperCase();
+                }
+            }
+        }
+
+        window.uploadAdminAvatar = async (input) => {
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) { alert("Image must be less than 2MB."); return; }
+            
+            const container = document.getElementById('admin-avatar-container');
+            container.innerHTML = '<span style="font-size:14px; color:var(--cyan); font-weight:800;">...</span>';
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY.uploadPreset);
+                formData.append('folder', 'jakipot/admin');
+
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, { method: 'POST', body: formData });
+                const data = await res.json();
+
+                if (data.secure_url) {
+                    await updateDoc(doc(db, 'users', currentAdmin.uid), { profilePicUrl: data.secure_url });
+                    container.innerHTML = `<img src="${data.secure_url}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    alert("Profile picture updated!");
+                } else {
+                    throw new Error("Upload failed");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Failed to upload image.");
+                loadAdminProfile(); // reset
+            }
+            input.value = '';
+        };
+
+        window.updateAdminProfile = async () => {
+            const name = document.getElementById('admin-display-name').value.trim();
+            if (!name) { alert("Name cannot be empty."); return; }
+
+            try {
+                await updateDoc(doc(db, 'users', currentAdmin.uid), { fullName: name });
+                document.getElementById('admin-name').innerText = name;
+                alert("Name updated successfully!");
+            } catch (err) {
+                console.error(err);
+                alert("Failed to update name.");
+            }
+        };
+
 
         window.previewPlanImage = () => {
             const url = document.getElementById('plan-img').value.trim();
@@ -639,7 +732,7 @@
                 }
             });
 
-            // APPROVED USERS AWAITING CODE ENTRY (This is the new listener)
+            // APPROVED USERS AWAITING CODE ENTRY
             onSnapshot(query(collection(db, 'users'), where('status', '==', 'approved')), (snap) => {
                 const list = document.getElementById('approved-activations-list');
                 if (!list) return;
@@ -830,7 +923,6 @@
             }
         };
 
-        // NEW FUNCTION: Regenerate Code for already approved users
         window.regenerateUserCode = async (uid) => {
             if (!confirm("Are you sure you want to generate a brand new code for this user?")) return;
             try {
@@ -901,7 +993,6 @@
             } catch (e) { alert("Failed. Check console."); }
         };
 
-        // 🚨 ADDED: Referral Logic (K20 bonus) inside the batch
         window.approveDeposit = async (depositId, uid, amount) => {
             try {
                 const batch = writeBatch(db);
@@ -974,12 +1065,13 @@
             const invest = parseFloat(document.getElementById('plan-invest').value);
             const daily = parseFloat(document.getElementById('plan-daily').value);
             const duration = parseInt(document.getElementById('plan-duration').value);
+            const total = parseFloat(document.getElementById('plan-total').value);
             
-            if (!name || !invest || !daily || !duration) { alert("Fill all fields"); return; }
+            if (!name || !invest || !daily || !duration || !total) { alert("Fill all fields"); return; }
             if (!img) { alert("Please paste an image URL"); return; }
             
             await addDoc(collection(db, 'plans'), { 
-                name, imageUrl: img, investAmount: invest, dailyIncome: daily, durationDays: duration, isActive: true 
+                name, imageUrl: img, investAmount: invest, dailyIncome: daily, durationDays: duration, totalIncome: total, isActive: true 
             });
             alert("Plan Created!");
             document.getElementById('plan-name').value = ''; 
@@ -987,6 +1079,7 @@
             document.getElementById('plan-invest').value = ''; 
             document.getElementById('plan-daily').value = ''; 
             document.getElementById('plan-duration').value = '';
+            document.getElementById('plan-total').value = '';
             document.getElementById('plan-img-preview').classList.remove('show');
         };
 
@@ -1100,7 +1193,7 @@
             document.getElementById('engine-round-display').innerText = `ROUND ${currentRoundIndex + 1} / 20`;
             document.getElementById('engine-multiplier-display').innerText = "1.00x";
             document.getElementById('engine-multiplier-display').style.color = "var(--cyan)";
-            document.getElementById('engine-state-display').innerText = "Waiting for players to bet...";
+            document.getElementById('engine-state-display').innerText = "Betting Phase (10s)...";
             document.getElementById('engine-state-display').style.color = "var(--gold)";
 
             try {
@@ -1113,6 +1206,7 @@
                 });
                 currentRoundId = roundRef.id;
 
+                // Wait 10 seconds for players to bet
                 await new Promise(r => engineTimeout = setTimeout(r, 10000));
                 if (!engineRunning) return;
 

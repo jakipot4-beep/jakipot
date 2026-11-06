@@ -102,7 +102,7 @@
 
         .empty-search { padding: 20px; color: var(--text-secondary); font-size: 13px; text-align: center; display: none; }
 
-        /* NEW: Loader & Watchdog Styles */
+        /* Loader & Watchdog Styles */
         .loading-spinner {
             display: flex; justify-content: center; align-items: center; padding: 40px;
         }
@@ -151,12 +151,14 @@
         <a href="global-chat.html" class="chat-row" id="global-chat-row" data-name="jakipot international global community">
             <div class="avatar-wrapper">
                 <div class="avatar">
-                    <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=200&auto=format&fit=crop" alt="Global">
+                    <!-- Added ID for dynamic update -->
+                    <img id="global-inbox-avatar" src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=200&auto=format&fit=crop" alt="Global">
                 </div>
             </div>
             <div class="chat-info">
                 <div class="chat-name-row">
-                    <span class="chat-name">JAKIPOT International</span>
+                    <!-- Added ID for dynamic update -->
+                    <span class="chat-name" id="global-inbox-name">JAKIPOT International</span>
                     <span class="chat-time">Official</span>
                 </div>
                 <div class="chat-msg-row">
@@ -177,6 +179,7 @@
         // LOCKED TO 13.1.0
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        // Added doc to imports
         import { getFirestore, collection, doc, query, where, limit, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -205,9 +208,25 @@
             if (!user) { window.location.replace('login.html'); return; }
             currentUser = user;
             
+            loadGlobalChatSettings(); // NEW: Load dynamic avatar
             findAdmin();
             loadUsers();
         });
+
+        // NEW FUNCTION: Update Global Chat avatar and name dynamically
+        function loadGlobalChatSettings() {
+            onSnapshot(doc(db, 'chat_groups', 'global_chat'), (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.avatarUrl) {
+                        document.getElementById('global-inbox-avatar').src = data.avatarUrl;
+                    }
+                    if (data.name) {
+                        document.getElementById('global-inbox-name').innerText = data.name;
+                    }
+                }
+            });
+        }
 
         window.toggleMenu = () => {
             document.getElementById('header-menu').classList.toggle('active');
