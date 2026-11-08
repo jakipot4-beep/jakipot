@@ -50,13 +50,14 @@
         .plan-card:active { transform: scale(0.97); }
         .plan-card.invested { border-color: var(--emerald); box-shadow: 0 0 15px rgba(16, 185, 129, 0.15); }
 
-        .plan-image-wrap { width: 100%; height: 85px; position: relative; background: #000; }
-        .plan-image { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: opacity 0.3s; }
-        .plan-card:active .plan-image { opacity: 1; }
-        .image-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 0%, var(--bg-card) 100%); }
+        /* Improved Image Styling */
+        .plan-image-wrap { width: 100%; height: 100px; position: relative; background: #000; }
+        .plan-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .plan-card:active .plan-image { transform: scale(1.05); }
+        .image-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 0%, var(--bg-card) 100%); pointer-events: none; }
 
         .plan-content { padding: 0 12px 12px 12px; display: flex; flex-direction: column; flex: 1; }
-        .plan-name { font-size: 13px; font-weight: 900; color: var(--white); margin-bottom: 8px; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.5px; }
+        .plan-name { font-size: 13px; font-weight: 900; color: var(--white); margin-bottom: 8px; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 5px;}
 
         .info-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
         .info-label { font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
@@ -244,7 +245,6 @@
             const fallbackImage = 'https://images.unsplash.com/photo-1621504450181-5d356f61d307?w=400&q=80';
 
             availablePlans.forEach(plan => {
-                // FIXED: Uses the Total Income set by Admin, or falls back to calculation
                 const totalIncome = plan.totalIncome || (plan.dailyIncome * plan.durationDays);
                 const isInvested = investedPlanIds.has(plan.id);
                 
@@ -309,10 +309,11 @@
                 const walletRef = doc(db, 'wallets', currentUser.uid);
                 const txRef = doc(collection(db, 'transactions'));
                 
-                // Deduct balance and create ledger
+                // FIXED: Added updatedAt to pass Firestore Rules
                 batch.update(walletRef, { 
                     balance: increment(-plan.investAmount),
-                    lastTxId: txRef.id 
+                    lastTxId: txRef.id,
+                    updatedAt: serverTimestamp() 
                 });
 
                 batch.set(txRef, {
@@ -350,7 +351,7 @@
 
             } catch (e) {
                 console.error(e);
-                alert("Investment failed. Please check your connection and try again.");
+                alert("Investment failed. " + e.message);
                 isProcessing = false;
                 renderPlans();
             }
