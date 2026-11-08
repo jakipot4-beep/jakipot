@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MyChat - Select contact</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* =========================================
+           1. THEME & VARIABLES
+           ========================================= */
+        :root {
+            --bg: #0B141A;
+            --header-bg: #1F2C34;
+            --text-main: #E9EDEF;
+            --text-muted: #8696A0;
+            --border: #222D34;
+            --green: #00A884;
+            --hover: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Light Mode Override */
+        body.light-mode {
+            --bg: #FFFFFF;
+            --header-bg: #F0F2F5;
+            --text-main: #111B21;
+            --text-muted: #667781;
+            --border: #E9EDEF;
+            --hover: rgba(0, 0, 0, 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background-color: var(--bg); 
+            color: var(--text-main); 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* =========================================
+           2. HEADER
+           ========================================= */
+        .header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 15px; background: var(--header-bg);
+            height: 70px; flex-shrink: 0; z-index: 10;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        
+        .back-btn {
+            background: transparent; border: none; cursor: pointer;
+            display: grid; place-items: center; color: var(--text-main);
+        }
+        .back-btn svg { width: 24px; height: 24px; fill: currentColor; }
+
+        .header-title-container { display: flex; flex-direction: column; }
+        .header-title { font-size: 18px; font-weight: 600; color: var(--text-main); }
+        .header-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+        .header-actions { display: flex; align-items: center; gap: 20px; }
+        .icon-btn { background: transparent; border: none; cursor: pointer; color: var(--text-main); display: grid; place-items: center; }
+        .icon-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+        /* Search Input (Hidden by default) */
+        .search-bar-container {
+            display: none; padding: 10px 15px; background: var(--header-bg);
+            border-bottom: 1px solid var(--border);
+        }
+        .search-bar-container.active { display: block; }
+        .search-input-wrapper {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--bg); border-radius: 8px; padding: 8px 12px;
+        }
+        .search-input-wrapper input {
+            flex: 1; background: transparent; border: none; outline: none;
+            color: var(--text-main); font-size: 15px;
+        }
+        .search-input-wrapper svg { width: 20px; height: 20px; fill: var(--text-muted); }
+
+        /* =========================================
+           3. MAIN CONTENT (SCROLLABLE)
+           ========================================= */
+        .content { flex: 1; overflow-y: auto; }
+
+        /* Section Header */
+        .section-header {
+            padding: 20px 20px 10px 20px;
+            font-size: 14px; font-weight: 500; color: var(--text-muted);
+            background: var(--bg);
+        }
+
+        /* Contact List Items */
+        .contact-item {
+            display: flex; align-items: center; gap: 15px;
+            padding: 10px 20px; cursor: pointer; text-decoration: none;
+            transition: background 0.2s;
+        }
+        .contact-item:active { background: var(--hover); }
+
+        .avatar {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--header-bg); color: var(--text-main);
+            display: grid; place-items: center; font-size: 20px; font-weight: 600;
+            overflow: hidden; flex-shrink: 0;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .contact-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .contact-name { font-size: 16px; font-weight: 500; color: var(--text-main); margin-bottom: 3px; }
+        .contact-status { font-size: 14px; color: var(--text-muted); }
+        
+        /* Self Contact Highlight */
+        .contact-item.self .contact-status { font-style: italic; opacity: 0.8; }
+
+        /* Loader */
+        .loading-spinner {
+            display: flex; justify-content: center; align-items: center; padding: 40px;
+        }
+        .spinner {
+            width: 30px; height: 30px; border: 3px solid var(--border);
+            border-top-color: var(--green); border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="header" id="main-header">
+        <div class="header-left">
+            <button class="back-btn" onclick="history.back()">
+                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            </button>
+            <div class="header-title-container">
+                <div class="header-title">Select contact</div>
+                <div class="header-subtitle" id="contact-count">Loading...</div>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="toggleSearch()">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- SEARCH BAR -->
+    <div class="search-bar-container" id="search-bar">
+        <div class="search-input-wrapper">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" id="search-input" placeholder="Search contacts..." oninput="filterContacts()">
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="content" id="main-content">
+        
+        <!-- CONTACTS LIST -->
+        <div class="section-header">Contacts on Jakipot</div>
+        <div id="contacts-container">
+            <div class="loading-spinner"><div class="spinner"></div></div>
+        </div>
+
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, collection, doc, getDoc, onSnapshot, query, limit } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let currentUserData = null;
+        let allContacts = [];
+
+        // Apply Theme
+        if (localStorage.getItem('mychat_theme') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+
+        // Toggle Search Bar
+        window.toggleSearch = () => {
+            const searchBar = document.getElementById('search-bar');
+            searchBar.classList.toggle('active');
+            if (searchBar.classList.contains('active')) {
+                document.getElementById('search-input').focus();
+            } else {
+                document.getElementById('search-input').value = '';
+                filterContacts();
+            }
+        };
+
+        // Load Data
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            currentUser = user;
+
+            // 1. Fetch Current User Data (to show at top)
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            if (userDoc.exists()) {
+                currentUserData = userDoc.data();
+            }
+
+            // 2. Listen to all users in real-time
+            loadContacts();
+        });
+
+        function loadContacts() {
+            const q = query(collection(db, 'users'), limit(200));
+            
+            onSnapshot(q, (snapshot) => {
+                allContacts = [];
+                
+                // Add self first
+                if (currentUserData) {
+                    allContacts.push({
+                        id: currentUser.uid,
+                        ...currentUserData,
+                        isSelf: true
+                    });
+                }
+
+                // Add other users (exclude self)
+                snapshot.forEach(docSnap => {
+                    if (docSnap.id !== currentUser.uid) {
+                        allContacts.push({
+                            id: docSnap.id,
+                            ...docSnap.data(),
+                            isSelf: false
+                        });
+                    }
+                });
+
+                // Update Contact Count in Header
+                document.getElementById('contact-count').innerText = `${allContacts.length} contacts`;
+
+                renderContacts(allContacts);
+            });
+        }
+
+        function renderContacts(contacts) {
+            const container = document.getElementById('contacts-container');
+            container.innerHTML = '';
+
+            if (contacts.length === 0) {
+                container.innerHTML = '<p style="padding: 20px; color: var(--text-muted); text-align: center;">No contacts found.</p>';
+                return;
+            }
+
+            contacts.forEach(contact => {
+                const name = contact.fullName || 'Jakipot User';
+                const initial = name.charAt(0).toUpperCase();
+                const avatarHtml = contact.profilePicUrl 
+                    ? `<img src="${contact.profilePicUrl}" alt="${name}">` 
+                    : initial;
+
+                // Generate the room ID for private chat
+                const roomId = `private_${[currentUser.uid, contact.id].sort().join('_')}`;
+                const chatLink = `chat.html?roomId=${roomId}&name=${encodeURIComponent(name)}&avatar=${contact.profilePicUrl || ''}`;
+
+                const statusText = contact.isSelf 
+                    ? 'Message yourself' 
+                    : (contact.bio || 'Hey there! I am using Jakipot.');
+
+                const nameDisplay = contact.isSelf 
+                    ? `${name} (You)` 
+                    : name;
+
+                container.innerHTML += `
+                    <a href="${chatLink}" class="contact-item ${contact.isSelf ? 'self' : ''}" data-name="${name.toLowerCase()}">
+                        <div class="avatar">${avatarHtml}</div>
+                        <div class="contact-info">
+                            <div class="contact-name">${nameDisplay}</div>
+                            <div class="contact-status">${statusText}</div>
+                        </div>
+                    </a>
+                `;
+            });
+        }
+
+        // Filter contacts based on search
+        window.filterContacts = () => {
+            const searchText = document.getElementById('search-input').value.toLowerCase();
+            const filtered = allContacts.filter(c => {
+                const name = (c.fullName || '').toLowerCase();
+                return name.includes(searchText);
+            });
+            renderContacts(filtered);
+        };
+    </script>
+</body>
+</html>

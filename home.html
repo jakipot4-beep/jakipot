@@ -240,7 +240,7 @@
                 <span class="promo-badge plans">PLANS</span>
             </a>
 
-            <!-- Slide 3: MACHINE (Corrected to point to trending-machine) -->
+            <!-- Slide 3: MACHINE -->
             <a href="trending-machine.html" class="promo-slide">
                 <div class="promo-icon" style="background: linear-gradient(135deg, #10b981, #047857);">
                     <svg viewBox="0 0 24 24" fill="#fff"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg>
@@ -284,8 +284,8 @@
         </a>
         
         <div class="header-right">
-            <!-- FIXED: Pointing to notification.html -->
-            <button class="icon-btn" onclick="window.location.href='notification.html'">
+            <!-- FIXED: Now points to welcome.html -->
+            <button class="icon-btn" onclick="window.location.href='welcome.html'">
                 <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
                 <div class="notification-dot"></div>
             </button>
@@ -412,7 +412,6 @@
             <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
             Trending
         </a>
-        <!-- RESTORED: Machine pointing to trending-machine -->
         <a href="trending-machine.html" class="nav-item">
             <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
             Machine
@@ -428,7 +427,6 @@
     </nav>
 
     <script type="module">
-        // LOCKED TO 13.1.0
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app-check.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
@@ -689,7 +687,6 @@
                 }
             }
 
-            // Pause on hover (desktop) or touch (mobile), resume after
             banner.addEventListener('mouseenter', stopAuto);
             banner.addEventListener('mouseleave', startAuto);
             banner.addEventListener('touchstart', function() {
@@ -697,9 +694,7 @@
                 setTimeout(startAuto, 5000);
             }, { passive: true });
 
-            // Respect reduced motion preferences
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                // Don't auto-rotate if user prefers reduced motion
                 return;
             }
 

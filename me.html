@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MyChat - Me</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* =========================================
+           1. THEME VARIABLES
+           ========================================= */
+        :root {
+            --bg-color: #FFFFFF;
+            --nav-bg: #FFFFFF;
+            --primary-green: #168B50;
+            --primary-green-light: #E8F5EE;
+            --primary-green-text: #168B50;
+            --text-main: #1A1A1A;
+            --text-secondary: #6C7770;
+            --border-color: #E4EAE6;
+            --input-bg: #F8F9FA;
+            --btn-gray: #E4E6EB;
+            --btn-gray-text: #050505;
+        }
+
+        body.dark-mode {
+            --bg-color: #0B141A;
+            --nav-bg: #0B141A;
+            --primary-green: #168B50;
+            --primary-green-light: #005C4B;
+            --primary-green-text: #25D366;
+            --text-main: #E9EDEF;
+            --text-secondary: #8696A0;
+            --border-color: #222D34;
+            --input-bg: #202C33;
+            --btn-gray: #2D3134;
+            --btn-gray-text: #E9EDEF;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Top Header */
+        .top-header {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: var(--nav-bg);
+            border-bottom: 1px solid var(--border-color);
+            height: 65px;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        /* Scrollable Area */
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 100px;
+        }
+
+        /* =========================================
+           2. BIG COVER & AVATAR (Facebook Style)
+           ========================================= */
+        .profile-header-section {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .cover-photo {
+            width: 100%;
+            height: 240px;
+            background-color: var(--border-color);
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        /* Camera Icon on Cover */
+        .cover-edit-btn {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: #FFFFFF;
+            color: #000000;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 5;
+        }
+        .cover-edit-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+        /* Big Circular Avatar */
+        .avatar-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            margin: -80px auto 15px auto;
+            z-index: 3;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: var(--primary-green);
+            display: grid;
+            place-items: center;
+            font-size: 56px;
+            font-weight: 900;
+            color: #FFF;
+            overflow: hidden;
+            border: 5px solid var(--bg-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        .avatar-img img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Camera Icon on Avatar */
+        .avatar-edit-badge {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 38px;
+            height: 38px;
+            background: #FFFFFF;
+            color: #000000;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .avatar-edit-badge svg { width: 20px; height: 20px; fill: currentColor; }
+
+        .display-name {
+            font-size: 26px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 4px;
+            color: var(--text-main);
+        }
+
+        .profile-phone {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* =========================================
+           3. ACTION BUTTONS
+           ========================================= */
+        .action-buttons-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 0 20px;
+            margin-bottom: 25px;
+        }
+
+        .btn-primary {
+            background: #1877F2;
+            color: #FFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            flex: 1;
+            justify-content: center;
+        }
+        .btn-primary svg { width: 18px; height: 18px; fill: currentColor; }
+
+        .btn-secondary {
+            background: var(--btn-gray);
+            color: var(--btn-gray-text);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            flex: 1;
+            justify-content: center;
+        }
+        .btn-secondary svg { width: 18px; height: 18px; fill: currentColor; }
+
+        /* =========================================
+           4. FORM INPUTS
+           ========================================= */
+        .form-wrapper {
+            padding: 0 20px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            margin-top: 10px;
+        }
+
+        .form-group {
+            background: var(--input-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary-green-text);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .form-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .form-input:disabled {
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+
+        /* =========================================
+           5. SHARE LINK SECTION
+           ========================================= */
+        .share-section {
+            margin-top: 25px;
+            margin-bottom: 25px;
+        }
+
+        .share-box {
+            display: flex;
+            align-items: center;
+            background: var(--primary-green-light);
+            border: 1px dashed var(--primary-green);
+            border-radius: 12px;
+            padding: 12px;
+            gap: 10px;
+        }
+
+        .share-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--primary-green-text);
+            font-size: 13px;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .btn-copy {
+            background: var(--primary-green);
+            color: #FFF;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-copy:active { transform: scale(0.95); }
+
+        /* =========================================
+           6. ACTIONS & BUTTONS
+           ========================================= */
+        .btn-save {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary-green);
+            color: #FFF;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(22, 139, 80, 0.3);
+        }
+        .btn-save:active { transform: scale(0.98); }
+
+        .btn-home {
+            width: 100%;
+            padding: 16px;
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-home svg { width: 20px; height: 20px; fill: currentColor; }
+        .btn-home:active { transform: scale(0.98); }
+
+        /* =========================================
+           7. BOTTOM NAVIGATION
+           ========================================= */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 75px;
+            background-color: var(--nav-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            width: 100%;
+            height: 100%;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .nav-icon-wrapper {
+            padding: 6px 20px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-item svg { width: 24px; height: 24px; fill: var(--text-secondary); }
+
+        .nav-item.active { color: var(--primary-green-text); font-weight: 800; }
+        .nav-item.active .nav-icon-wrapper { background-color: var(--primary-green-light); }
+        .nav-item.active svg { fill: var(--primary-green-text); }
+
+        /* Spinner */
+        .spinner {
+            width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="top-header">
+        <div class="header-title">Profile</div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="content-area">
+        
+        <!-- BIG COVER & AVATAR SECTION -->
+        <div class="profile-header-section">
+            
+            <!-- Cover Photo -->
+            <div class="cover-photo" id="cover-photo-container" onclick="document.getElementById('cover-upload-input').click()">
+                <!-- Camera Icon -->
+                <div class="cover-edit-btn">
+                    <svg viewBox="0 0 24 24"><path d="M12 15.2c1.77 0 3.2-1.43 3.2-3.2s-1.43-3.2-3.2-3.2-3.2 1.43-3.2 3.2 1.43 3.2 3.2 3.2zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                </div>
+            </div>
+            <input type="file" id="cover-upload-input" accept="image/*" hidden>
+
+            <!-- Big Profile Avatar -->
+            <div class="avatar-container">
+                <label for="profile-upload-input" style="cursor: pointer; display: block; width: 100%; height: 100%;">
+                    <div class="avatar-img" id="avatar-container">
+                        <span id="avatar-initial">U</span>
+                    </div>
+                    <!-- Camera Icon -->
+                    <div class="avatar-edit-badge">
+                        <svg viewBox="0 0 24 24"><path d="M12 15.2c1.77 0 3.2-1.43 3.2-3.2s-1.43-3.2-3.2-3.2-3.2 1.43-3.2 3.2 1.43 3.2 3.2 3.2zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                    </div>
+                </label>
+                <input type="file" id="profile-upload-input" accept="image/*" hidden>
+            </div>
+            
+            <div class="display-name" id="display-name">Loading...</div>
+            <div class="profile-phone" id="profile-phone">...</div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="action-buttons-row">
+            <button class="btn-primary" onclick="alert('Dashboard coming soon!')">
+                <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                Dashboard
+            </button>
+            <button class="btn-secondary" onclick="alert('Story feature coming soon!')">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                Add to story
+            </button>
+        </div>
+
+        <div class="form-wrapper">
+            <div class="section-title">Personal Details</div>
+            
+            <!-- FORM FIELDS -->
+            <div class="form-group">
+                <label class="form-label">Display Name (Read-Only)</label>
+                <input type="text" id="input-name" class="form-input" disabled>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Username (Starts with @)</label>
+                <input type="text" id="input-username" class="form-input" placeholder="@johndoe">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Date of Birth</label>
+                <input type="date" id="input-dob" class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Phone Number (Linked to Jakipot Account)</label>
+                <input type="tel" id="input-phone" class="form-input" disabled>
+            </div>
+
+            <button class="btn-save" id="save-btn" onclick="saveProfile()">SAVE CHANGES</button>
+
+            <!-- SHARE LINK -->
+            <div class="share-section">
+                <label class="form-label" style="margin-left: 5px;">Share Your Profile Link</label>
+                <div class="share-box">
+                    <input type="text" id="share-link" readonly>
+                    <button class="btn-copy" onclick="copyLink()">Copy</button>
+                </div>
+            </div>
+
+            <!-- BACK TO HOME -->
+            <button class="btn-home" onclick="window.location.href='home.html'">
+                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                Back to Jakipot Home
+            </button>
+        </div>
+
+    </main>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item">
+            <div class="nav-icon-wrapper">
+                <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+            </div>
+            <span>Chat</span>
+        </a>
+        <!-- UPDATED TO CONTACT.HTML -->
+        <a href="contact.html" class="nav-item">
+            <div class="nav-icon-wrapper">
+                <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            </div>
+            <span>Communities</span>
+        </a>
+        <a href="update.html" class="nav-item">
+            <div class="nav-icon-wrapper">
+                <svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+            </div>
+            <span>Update</span>
+        </a>
+        <a href="me.html" class="nav-item active">
+            <div class="nav-icon-wrapper">
+                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
+            <span>Me</span>
+        </a>
+    </nav>
+
+    <!-- FIREBASE LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        // 🛑 CHANGED: Imported onSnapshot for real-time updates
+        import { getFirestore, doc, onSnapshot, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
+        };
+
+        const CLOUDINARY = {
+            cloudName: 'jakipot',
+            uploadPreset: 'jakipot_unsigned',
+            folder: 'jakipot/profiles'
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        // 1. Theme Memory
+        const THEME_KEY = 'mychat_theme';
+        if (localStorage.getItem(THEME_KEY) === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // 2. Auth & Load Data (Real-Time)
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            currentUser = user;
+
+            // 🛑 CHANGED: Using onSnapshot to listen for real-time changes
+            onSnapshot(doc(db, 'users', user.uid), (userDoc) => {
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    const name = data.fullName || 'User';
+                    
+                    document.getElementById('display-name').innerText = name;
+                    document.getElementById('profile-phone').innerText = data.phone || 'No phone';
+                    
+                    document.getElementById('input-name').value = name;
+                    document.getElementById('input-phone').value = data.phone || '';
+                    document.getElementById('input-username').value = data.username || '';
+                    document.getElementById('input-dob').value = data.dob || '';
+
+                    const avatarContainer = document.getElementById('avatar-container');
+                    if (data.profilePicUrl) {
+                        // Only update if different to prevent flickering
+                        if (avatarContainer.querySelector('img')?.src !== data.profilePicUrl) {
+                            avatarContainer.innerHTML = `<img src="${data.profilePicUrl}" alt="Profile">`;
+                        }
+                    } else {
+                        avatarContainer.innerHTML = `<span id="avatar-initial">${name.charAt(0).toUpperCase()}</span>`;
+                    }
+
+                    const coverContainer = document.getElementById('cover-photo-container');
+                    if (data.coverPicUrl) {
+                        coverContainer.style.backgroundImage = `url('${data.coverPicUrl}')`;
+                    } else {
+                        coverContainer.style.background = `linear-gradient(135deg, #1e293b, #0f172a)`;
+                    }
+
+                    document.getElementById('share-link').value = `https://jakipot-win.web.app/friend.html?uid=${currentUser.uid}`;
+                }
+            });
+        });
+
+        // 3. Cover Photo Upload
+        document.getElementById('cover-upload-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file || !currentUser) return;
+
+            const coverContainer = document.getElementById('cover-photo-container');
+            coverContainer.style.opacity = '0.5';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY.uploadPreset);
+                formData.append('folder', `${CLOUDINARY.folder}/${currentUser.uid}/covers`);
+
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, {
+                    method: 'POST', body: formData
+                });
+                
+                const data = await res.json();
+                if (data.secure_url) {
+                    await updateDoc(doc(db, 'users', currentUser.uid), {
+                        coverPicUrl: data.secure_url,
+                        updatedAt: serverTimestamp()
+                    });
+                    // The onSnapshot will catch this and update the UI instantly
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Failed to upload cover photo.');
+            } finally {
+                coverContainer.style.opacity = '1';
+            }
+        });
+
+        // 4. Profile Picture Upload
+        document.getElementById('profile-upload-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file || !currentUser) return;
+
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Image too large. Max 2MB.');
+                return;
+            }
+
+            const container = document.getElementById('avatar-container');
+            container.innerHTML = `<div class="spinner"></div>`;
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY.uploadPreset);
+                formData.append('folder', `${CLOUDINARY.folder}/${currentUser.uid}`);
+
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, {
+                    method: 'POST', body: formData
+                });
+                
+                const data = await res.json();
+                if (data.secure_url) {
+                    await updateDoc(doc(db, 'users', currentUser.uid), {
+                        profilePicUrl: data.secure_url,
+                        updatedAt: serverTimestamp()
+                    });
+                    // The onSnapshot will catch this and update the UI instantly
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Failed to upload image.');
+                // onSnapshot will restore the UI automatically
+            }
+        });
+
+        // 5. Save Profile (Username & DOB)
+        window.saveProfile = async () => {
+            const btn = document.getElementById('save-btn');
+            const username = document.getElementById('input-username').value.trim();
+            const dob = document.getElementById('input-dob').value;
+
+            if (username && !username.startsWith('@')) {
+                alert('Username must start with @ (e.g. @johndoe)');
+                return;
+            }
+
+            btn.innerText = "SAVING...";
+            btn.disabled = true;
+
+            try {
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    username: username,
+                    dob: dob,
+                    updatedAt: serverTimestamp()
+                });
+                alert("Profile updated successfully!");
+            } catch (error) {
+                console.error(error);
+                alert("Failed to save profile. Please try again.");
+            } finally {
+                btn.innerText = "SAVE CHANGES";
+                btn.disabled = false;
+            }
+        };
+
+        // 6. Copy Link
+        window.copyLink = () => {
+            const linkInput = document.getElementById('share-link');
+            linkInput.select();
+            linkInput.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(linkInput.value).then(() => {
+                alert("Link copied to clipboard!");
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        };
+    </script>
+</body>
+</html>

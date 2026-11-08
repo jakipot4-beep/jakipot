@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MyChat - Group Info</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* =========================================
+           1. THEME & VARIABLES (DARK MODE DEFAULT)
+           ========================================= */
+        :root {
+            --bg: #0B141A;
+            --card: #182022;
+            --text: #E9EDEF;
+            --muted: #8696A0;
+            --border: #222D34;
+            --green: #00A884;
+            --green-light: rgba(0, 168, 132, 0.15);
+        }
+
+        /* LIGHT MODE OVERRIDES */
+        body.light-mode {
+            --bg: #FFFFFF;
+            --card: #F8F9FA;
+            --text: #202923;
+            --muted: #6C7770;
+            --border: #E4EAE6;
+            --green: #168B50;
+            --green-light: #E8F5EE;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background-color: var(--bg); 
+            color: var(--text); 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* =========================================
+           2. HEADER
+           ========================================= */
+        .header {
+            display: flex; align-items: center; gap: 15px;
+            padding: 15px 20px; background: var(--card);
+            border-bottom: 1px solid var(--border);
+            height: 65px; flex-shrink: 0; z-index: 10;
+        }
+
+        .back-btn {
+            background: transparent; border: none; cursor: pointer;
+            width: 36px; height: 36px; border-radius: 50%;
+            display: grid; place-items: center; color: var(--text);
+        }
+        .back-btn svg { width: 24px; height: 24px; fill: currentColor; }
+
+        .header h1 { font-size: 18px; font-weight: 600; }
+
+        /* =========================================
+           3. MAIN CONTENT
+           ========================================= */
+        .content {
+            flex: 1; overflow-y: auto; padding-bottom: 30px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* Group Avatar */
+        .group-avatar-container {
+            margin-top: 40px; position: relative;
+            width: 140px; height: 140px; border-radius: 24px;
+            background: var(--card); border: 1px solid var(--border);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: grid; place-items: center; overflow: hidden;
+            cursor: pointer;
+        }
+        .group-avatar-container img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .group-avatar-initial {
+            font-size: 56px; font-weight: 800; color: var(--green);
+        }
+
+        /* Group Info */
+        .info-section {
+            text-align: center; margin-top: 20px; padding: 0 20px;
+            width: 100%; max-width: 500px;
+        }
+
+        .group-name {
+            font-size: 26px; font-weight: 700; margin-bottom: 8px; color: var(--text);
+            word-wrap: break-word;
+        }
+
+        .member-count {
+            font-size: 15px; color: var(--muted); font-weight: 500;
+            margin-bottom: 25px;
+        }
+
+        /* =========================================
+           4. ACTION CARDS
+           ========================================= */
+        .cards-container {
+            width: 100%; max-width: 500px; padding: 0 20px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+
+        .card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 18px;
+            display: flex; align-items: center; gap: 15px;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .card:active { background: var(--border); }
+
+        .card-icon {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: var(--green-light); color: var(--green);
+            display: grid; place-items: center; flex-shrink: 0;
+        }
+        .card-icon svg { width: 22px; height: 22px; fill: currentColor; }
+
+        .card-text h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+        .card-text p { font-size: 13px; color: var(--muted); }
+
+        /* =========================================
+           5. LEAVE GROUP BUTTON
+           ========================================= */
+        .leave-btn {
+            width: 100%; max-width: 500px; margin-top: 25px;
+            padding: 16px; border-radius: 16px;
+            background: rgba(239, 68, 68, 0.1); color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: 0.2s;
+        }
+        .leave-btn:active { background: rgba(239, 68, 68, 0.2); }
+        .leave-btn svg { width: 20px; height: 20px; fill: currentColor; }
+
+        /* Loading State */
+        .spinner {
+            width: 40px; height: 40px; border: 3px solid var(--border);
+            border-top-color: var(--green); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-top: 100px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="header">
+        <button class="back-btn" onclick="history.back()">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </button>
+        <h1>Group Info</h1>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="content" id="main-content">
+        <!-- Loading Spinner -->
+        <div class="spinner" id="loading-spinner"></div>
+
+        <!-- Actual Content (Hidden initially) -->
+        <div id="group-info-container" style="display: none; width: 100%; display: flex; flex-direction: column; align-items: center;">
+            
+            <!-- Group Image -->
+            <div class="group-avatar-container" onclick="openImageViewer()">
+                <img id="group-avatar-img" src="" style="display: none;">
+                <div id="group-avatar-initial" class="group-avatar-initial">G</div>
+            </div>
+
+            <!-- Group Details -->
+            <div class="info-section">
+                <div class="group-name" id="group-name">Loading...</div>
+                <div class="member-count" id="member-count">Loading members...</div>
+            </div>
+
+            <!-- Options -->
+            <div class="cards-container">
+                
+                <div class="card" onclick="alert('Member list feature coming soon!')">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                    </div>
+                    <div class="card-text">
+                        <h3>View Members</h3>
+                        <p id="card-member-count">0 participants</p>
+                    </div>
+                </div>
+
+                <div class="card" onclick="alert('Media gallery coming soon!')">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    </div>
+                    <div class="card-text">
+                        <h3>Media, Links, and Docs</h3>
+                        <p>View shared photos and files</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Leave Group Button -->
+            <button class="leave-btn" onclick="leaveGroup()" style="width: calc(100% - 40px);">
+                <svg viewBox="0 0 24 24"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+                Leave Group
+            </button>
+
+        </div>
+    </main>
+
+    <!-- Image Viewer Overlay -->
+    <div id="image-viewer" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center;" onclick="closeImageViewer()">
+        <img id="viewer-img" src="" style="max-width: 100%; max-height: 90vh; object-fit: contain;">
+    </div>
+
+    <!-- FIREBASE LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, collection, query, where, getDocs, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let roomId = null;
+
+        // Apply Theme
+        if (localStorage.getItem('mychat_theme') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+
+        // Get Room ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        roomId = urlParams.get('roomId');
+
+        if (!roomId) {
+            window.location.replace('dashboard.html');
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            currentUser = user;
+
+            loadGroupDetails();
+            loadMemberCount();
+        });
+
+        // THIS IS WHERE IT PULLS THE ADMIN'S IMAGE
+        function loadGroupDetails() {
+            onSnapshot(doc(db, 'chat_groups', roomId), (docSnap) => {
+                document.getElementById('loading-spinner').style.display = 'none';
+                document.getElementById('group-info-container').style.display = 'flex';
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    
+                    // 1. Set Group Name
+                    document.getElementById('group-name').innerText = data.name || 'Unnamed Group';
+                    
+                    // 2. Set Group Image (Uploaded by Admin)
+                    if (data.avatarUrl) {
+                        document.getElementById('group-avatar-img').src = data.avatarUrl;
+                        document.getElementById('group-avatar-img').style.display = 'block';
+                        document.getElementById('group-avatar-initial').style.display = 'none';
+                    } else {
+                        // Fallback if admin didn't upload an image
+                        document.getElementById('group-avatar-initial').innerText = (data.name || 'G').charAt(0).toUpperCase();
+                    }
+                } else {
+                    alert("Group not found.");
+                    history.back();
+                }
+            });
+        }
+
+        // Load Member Count
+        async function loadMemberCount() {
+            try {
+                const membersQuery = query(collection(db, 'chat_group_members'), where('groupId', '==', roomId));
+                const membersSnap = await getDocs(membersQuery);
+                const count = membersSnap.size;
+
+                document.getElementById('member-count').innerText = `Group · ${count} ${count === 1 ? 'member' : 'members'}`;
+                document.getElementById('card-member-count').innerText = `${count} participants`;
+            } catch (e) {
+                console.error("Error loading members:", e);
+                document.getElementById('member-count').innerText = `Group`;
+            }
+        }
+
+        // Open full screen image
+        window.openImageViewer = () => {
+            const imgSrc = document.getElementById('group-avatar-img').src;
+            if (!imgSrc) return;
+            document.getElementById('viewer-img').src = imgSrc;
+            document.getElementById('image-viewer').style.display = 'flex';
+        };
+
+        window.closeImageViewer = () => {
+            document.getElementById('image-viewer').style.display = 'none';
+        };
+
+        // Leave Group Logic
+        window.leaveGroup = async () => {
+            if (!confirm("Are you sure you want to leave this group?")) return;
+
+            try {
+                // Remove user from chat_group_members
+                const memberDocId = `${currentUser.uid}_${roomId}`;
+                await deleteDoc(doc(db, 'chat_group_members', memberDocId));
+                
+                alert("You have left the group.");
+                window.location.replace('dashboard.html');
+            } catch (e) {
+                console.error(e);
+                alert("Failed to leave group: " + e.message);
+            }
+        };
+    </script>
+</body>
+</html>

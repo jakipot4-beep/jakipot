@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MyChat - Updates</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* =========================================
+           1. THEME & VARIABLES
+           ========================================= */
+        :root {
+            --bg-color: #FFFFFF;
+            --nav-bg: #FFFFFF;
+            --card-bg: #F8F9FA;
+            --text-main: #202923;
+            --text-secondary: #6C7770;
+            --border-color: #E4EAE6;
+            --primary-green: #168B50;
+            --primary-green-light: #E8F5EE;
+            --primary-green-text: #168B50;
+            --danger: #ef4444;
+        }
+
+        body.dark-mode {
+            --bg-color: #0B141A;
+            --nav-bg: #0B141A;
+            --card-bg: #182022;
+            --text-main: #E9EDEF;
+            --text-secondary: #8696A0;
+            --border-color: #222D34;
+            --primary-green: #168B50;
+            --primary-green-light: #005C4B;
+            --primary-green-text: #25D366;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* =========================================
+           2. HEADER
+           ========================================= */
+        .top-header {
+            padding: 15px 20px;
+            background-color: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 65px;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .header-title { font-size: 22px; font-weight: 800; }
+
+        /* =========================================
+           3. MAIN CONTENT (FEED)
+           ========================================= */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 100px; /* Space for bottom nav */
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Post Card */
+        .post-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .post-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 15px;
+        }
+
+        .admin-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--primary-green); color: #FFF;
+            display: grid; place-items: center; font-weight: 800; font-size: 16px;
+            overflow: hidden;
+        }
+        .admin-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .post-meta h4 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
+        .post-meta span { font-size: 12px; color: var(--text-secondary); }
+        
+        .verified-badge { width: 14px; height: 14px; fill: #53BDEB; }
+
+        .post-content { padding: 0 15px 15px 15px; }
+        .post-text { font-size: 15px; line-height: 1.5; margin-bottom: 12px; word-wrap: break-word; }
+
+        .post-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .post-actions {
+            display: flex; align-items: center; gap: 20px;
+            padding: 12px 15px; border-top: 1px solid var(--border-color);
+        }
+
+        .action-btn {
+            background: transparent; border: none; cursor: pointer;
+            display: flex; align-items: center; gap: 6px;
+            color: var(--text-secondary); font-size: 14px; font-weight: 600;
+            transition: color 0.2s;
+        }
+        .action-btn svg { width: 20px; height: 20px; fill: currentColor; transition: transform 0.2s; }
+        
+        .action-btn.liked { color: var(--danger); }
+        .action-btn.liked svg { animation: pop 0.3s ease; }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); }
+            100% { transform: scale(1); }
+        }
+
+        /* =========================================
+           4. COMMENT SECTION
+           ========================================= */
+        .comments-section {
+            border-top: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.02);
+            display: none; /* Hidden by default */
+        }
+        body.dark-mode .comments-section { background: rgba(0,0,0,0.1); }
+
+        .comments-list {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px 15px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .comment-item { display: flex; gap: 10px; align-items: flex-start; }
+        .comment-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: var(--text-secondary); color: var(--bg-color);
+            display: grid; place-items: center; font-size: 12px; font-weight: 700; flex-shrink: 0;
+            overflow: hidden;
+        }
+        .comment-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .comment-bubble {
+            background: var(--bg-color); padding: 8px 12px;
+            border-radius: 12px; border-top-left-radius: 4px;
+            font-size: 13px; border: 1px solid var(--border-color);
+            flex: 1;
+        }
+        .comment-bubble strong { font-size: 12px; color: var(--primary-green-text); display: block; margin-bottom: 2px; }
+
+        .comment-input-area {
+            display: flex; gap: 10px; padding: 10px 15px;
+            border-top: 1px solid var(--border-color);
+            background: var(--card-bg);
+        }
+        .comment-input-area input {
+            flex: 1; background: var(--bg-color); border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 10px 15px; color: var(--text-main);
+            outline: none; font-size: 14px;
+        }
+        .comment-input-area button {
+            background: var(--primary-green); color: #FFF; border: none;
+            width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+            display: grid; place-items: center; flex-shrink: 0;
+        }
+        .comment-input-area button svg { width: 18px; height: 18px; fill: #FFF; }
+
+        /* =========================================
+           5. BOTTOM NAVIGATION
+           ========================================= */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%; height: 75px;
+            background-color: var(--nav-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 100; padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 4px; width: 100%; height: 100%; text-decoration: none;
+            color: var(--text-secondary); font-size: 11px; font-weight: 600;
+        }
+
+        .nav-icon-wrapper {
+            padding: 6px 20px; border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .nav-item svg { width: 24px; height: 24px; fill: var(--text-secondary); }
+
+        .nav-item.active { color: var(--primary-green-text); font-weight: 800; }
+        .nav-item.active .nav-icon-wrapper { background-color: var(--primary-green-light); }
+        .nav-item.active svg { fill: var(--primary-green-text); }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center; color: var(--text-secondary);
+            margin-top: 50px; padding: 20px;
+        }
+        .empty-state svg { width: 60px; height: 60px; fill: var(--text-secondary); opacity: 0.5; margin-bottom: 15px; }
+
+        /* Image Viewer */
+        #image-viewer {
+            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95);
+            z-index: 9999; justify-content: center; align-items: center;
+        }
+        #image-viewer img { max-width: 100%; max-height: 90vh; object-fit: contain; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="top-header">
+        <div class="header-title">Updates</div>
+    </header>
+
+    <!-- MAIN FEED -->
+    <main class="main-content" id="updates-feed">
+        <div class="empty-state">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            <h3>No Updates Yet</h3>
+            <p>When the Admin posts news, it will appear here.</p>
+        </div>
+    </main>
+
+    <!-- IMAGE VIEWER -->
+    <div id="image-viewer" onclick="this.style.display='none'">
+        <img id="viewer-img" src="">
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item">
+            <div class="nav-icon-wrapper">
+                <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+            </div>
+            <span>Chat</span>
+        </a>
+        <a href="contact.html" class="nav-item">
+            <div class="nav-icon-wrapper">
+                <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            </div>
+            <span>Contacts</span>
+        </a>
+        <a href="update.html" class="nav-item active">
+            <div class="nav-icon-wrapper">
+                <svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+            </div>
+            <span>Update</span>
+        </a>
+        <a href="me.html" class="nav-item">
+            <div class="nav-icon-wrapper">
+                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
+            <span>Me</span>
+        </a>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove, addDoc, serverTimestamp, getDocs, where } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let currentUserData = null;
+
+        // Apply Theme
+        if (localStorage.getItem('mychat_theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Auth
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            currentUser = user;
+
+            // Get user data for comments
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, where('uid', '==', user.uid));
+            const snap = await getDocs(q);
+            if (!snap.empty) {
+                currentUserData = snap.docs[0].data();
+            }
+
+            loadUpdates();
+        });
+
+        // ==========================================
+        // 1. LOAD UPDATES FEED
+        // ==========================================
+        function loadUpdates() {
+            const feedContainer = document.getElementById('updates-feed');
+            const q = query(collection(db, 'updates'), orderBy('createdAt', 'desc'));
+
+            onSnapshot(q, (snapshot) => {
+                feedContainer.innerHTML = '';
+
+                if (snapshot.empty) {
+                    feedContainer.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                            <h3>No Updates Yet</h3>
+                            <p>When the Admin posts news, it will appear here.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                snapshot.forEach((docSnap) => {
+                    const post = docSnap.data();
+                    const postId = docSnap.id;
+                    
+                    // Format Date
+                    const dateObj = post.createdAt ? new Date(post.createdAt.toMillis()) : new Date();
+                    const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                    // Check if liked
+                    const likesArray = post.likes || [];
+                    const isLiked = likesArray.includes(currentUser.uid);
+                    const likeClass = isLiked ? 'liked' : '';
+                    const likeCount = likesArray.length;
+
+                    // Image HTML
+                    const imageHtml = post.imageUrl ? `<img src="${post.imageUrl}" class="post-image" onclick="viewImage('${post.imageUrl}')">` : '';
+
+                    feedContainer.innerHTML += `
+                        <div class="post-card">
+                            <div class="post-header">
+                                <div class="admin-avatar">
+                                    <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                </div>
+                                <div class="post-meta">
+                                    <h4>Jakipot Admin <svg class="verified-badge" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.4-1.4 3.6 3.6 7.6-7.6L19 8l-9 9z"/></svg></h4>
+                                    <span>${dateStr}</span>
+                                </div>
+                            </div>
+                            <div class="post-content">
+                                <div class="post-text">${post.text}</div>
+                                ${imageHtml}
+                            </div>
+                            
+                            <div class="post-actions">
+                                <button class="action-btn ${likeClass}" onclick="toggleLike('${postId}', ${isLiked})">
+                                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                    <span>${likeCount > 0 ? likeCount : ''} Like</span>
+                                </button>
+                                <button class="action-btn" onclick="toggleComments('${postId}')">
+                                    <svg viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+                                    <span>Comment</span>
+                                </button>
+                            </div>
+
+                            <!-- Comments Section -->
+                            <div class="comments-section" id="comments-${postId}">
+                                <div class="comments-list" id="comments-list-${postId}">
+                                    <div style="text-align:center; font-size:12px; color:var(--text-secondary);">Loading comments...</div>
+                                </div>
+                                <div class="comment-input-area">
+                                    <input type="text" id="comment-input-${postId}" placeholder="Write a comment...">
+                                    <button onclick="addComment('${postId}')">
+                                        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // ==========================================
+        // 2. LIKE LOGIC
+        // ==========================================
+        window.toggleLike = async (postId, isLiked) => {
+            const postRef = doc(db, 'updates', postId);
+            try {
+                if (isLiked) {
+                    await updateDoc(postRef, { likes: arrayRemove(currentUser.uid) });
+                } else {
+                    await updateDoc(postRef, { likes: arrayUnion(currentUser.uid) });
+                }
+            } catch (e) {
+                console.error("Failed to like:", e);
+            }
+        };
+
+        // ==========================================
+        // 3. COMMENTS LOGIC
+        // ==========================================
+        window.toggleComments = (postId) => {
+            const section = document.getElementById(`comments-${postId}`);
+            if (section.style.display === 'block') {
+                section.style.display = 'none';
+            } else {
+                section.style.display = 'block';
+                loadComments(postId);
+            }
+        };
+
+        function loadComments(postId) {
+            const list = document.getElementById(`comments-list-${postId}`);
+            const q = query(
+                collection(db, 'comments'), 
+                where('postId', '==', postId),
+                orderBy('createdAt', 'asc')
+            );
+
+            onSnapshot(q, (snapshot) => {
+                list.innerHTML = '';
+                if (snapshot.empty) {
+                    list.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-secondary); padding: 10px 0;">No comments yet. Be the first!</div>';
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const c = docSnap.data();
+                    const initial = (c.userName || 'U').charAt(0).toUpperCase();
+                    const avatar = c.userPic ? `<img src="${c.userPic}">` : initial;
+
+                    list.innerHTML += `
+                        <div class="comment-item">
+                            <div class="comment-avatar">${avatar}</div>
+                            <div class="comment-bubble">
+                                <strong>${c.userName || 'User'}</strong>
+                                ${c.text}
+                            </div>
+                        </div>
+                    `;
+                });
+                list.scrollTop = list.scrollHeight; // Auto-scroll to latest
+            });
+        }
+
+        window.addComment = async (postId) => {
+            const input = document.getElementById(`comment-input-${postId}`);
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = ''; // Clear input
+
+            try {
+                await addDoc(collection(db, 'comments'), {
+                    postId: postId,
+                    uid: currentUser.uid,
+                    userName: currentUserData?.fullName || 'Jakipot User',
+                    userPic: currentUserData?.profilePicUrl || null,
+                    text: text,
+                    createdAt: serverTimestamp()
+                });
+            } catch (e) {
+                console.error("Failed to add comment:", e);
+                alert("Failed to post comment. Please try again.");
+            }
+        };
+
+        // ==========================================
+        // 4. IMAGE VIEWER
+        // ==========================================
+        window.viewImage = (url) => {
+            document.getElementById('viewer-img').src = url;
+            document.getElementById('image-viewer').style.display = 'flex';
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MyChat - Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #FFFFFF;
+            --card: #F8F9FA;
+            --text: #202923;
+            --muted: #6C7770;
+            --border: #E4EAE6;
+            --green: #168B50;
+            --green-light: #E8F5EE;
+            --green-text: #168B50;
+            --danger: #ef4444;
+            --switch-off: #CFD5D2;
+            --overlay: rgba(0,0,0,0.05);
+        }
+        body.dark-mode {
+            --bg: #0B141A;
+            --card: #182022;
+            --text: #E9EDEF;
+            --muted: #8696A0;
+            --border: #222D34;
+            --green: #168B50;
+            --green-light: #005C4B;
+            --green-text: #25D366;
+            --switch-off: #3A444B;
+            --overlay: rgba(255,255,255,0.05);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body {
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; display: flex; flex-direction: column;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            display: flex; align-items: center; gap: 15px;
+            padding: 15px 20px; background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 10;
+        }
+        .back-btn {
+            background: transparent; border: none; cursor: pointer;
+            width: 36px; height: 36px; border-radius: 50%;
+            display: grid; place-items: center; color: var(--text);
+        }
+        .back-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .back-btn:active { background: var(--overlay); }
+        .header h1 { font-size: 20px; font-weight: 800; }
+
+        /* ===== CONTENT ===== */
+        .content { flex: 1; overflow-y: auto; padding: 15px 20px 60px 20px; max-width: 720px; margin: 0 auto; width: 100%; }
+
+        .section-title {
+            font-size: 11px; font-weight: 800; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 1px;
+            margin: 20px 8px 10px 8px;
+        }
+        .section-title:first-child { margin-top: 5px; }
+
+        .card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden; margin-bottom: 15px;
+        }
+
+        /* ===== ROWS ===== */
+        .row {
+            display: flex; align-items: center; gap: 15px;
+            padding: 15px 18px; cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            text-decoration: none; color: inherit;
+            transition: background 0.15s;
+        }
+        .row:last-child { border-bottom: none; }
+        .row:active { background: var(--overlay); }
+
+        .row-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            background: var(--green-light); color: var(--green-text);
+            display: grid; place-items: center; flex-shrink: 0;
+        }
+        .row-icon svg { width: 20px; height: 20px; fill: currentColor; }
+        .row-icon.danger { background: rgba(239,68,68,0.1); color: var(--danger); }
+        .row-icon.blue { background: rgba(59,130,246,0.12); color: #3b82f6; }
+        .row-icon.purple { background: rgba(168,85,247,0.12); color: #a855f7; }
+        .row-icon.orange { background: rgba(245,158,11,0.12); color: #f59e0b; }
+
+        .row-body { flex: 1; min-width: 0; }
+        .row-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+        .row-sub { font-size: 12px; color: var(--muted); }
+
+        .row-chev { color: var(--muted); display: flex; align-items: center; flex-shrink: 0; }
+        .row-chev svg { width: 18px; height: 18px; fill: currentColor; }
+
+        /* ===== SWITCH ===== */
+        .switch { position: relative; width: 44px; height: 26px; flex-shrink: 0; display: inline-block; }
+        .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+        .slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background: var(--switch-off); border-radius: 26px; transition: 0.3s;
+        }
+        .slider::before {
+            content: ''; position: absolute;
+            width: 20px; height: 20px; left: 3px; top: 3px;
+            background: #FFF; border-radius: 50%; transition: 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .switch input:checked + .slider { background: var(--green); }
+        .switch input:checked + .slider::before { transform: translateX(18px); }
+
+        /* ===== VALUE BADGE ===== */
+        .row-value {
+            font-size: 13px; color: var(--muted); font-weight: 600;
+            flex-shrink: 0; margin-right: 5px;
+        }
+
+        /* ===== WALLPAPER PREVIEW ===== */
+        .wp-preview {
+            width: 44px; height: 44px; border-radius: 10px;
+            border: 1px solid var(--border);
+            background-size: cover; background-position: center;
+            flex-shrink: 0;
+            background-color: #0B141A;
+        }
+
+        /* ===== FONT SIZE SELECTOR ===== */
+        .font-picker { display: flex; gap: 6px; flex-shrink: 0; }
+        .font-pick-btn {
+            width: 34px; height: 34px; border-radius: 8px;
+            border: 1px solid var(--border); background: transparent;
+            color: var(--text); font-weight: 700; cursor: pointer;
+            display: grid; place-items: center;
+            transition: 0.15s;
+        }
+        .font-pick-btn.active {
+            background: var(--green); color: #FFF; border-color: var(--green);
+        }
+        .font-pick-btn[data-size="small"] { font-size: 11px; }
+        .font-pick-btn[data-size="medium"] { font-size: 14px; }
+        .font-pick-btn[data-size="large"] { font-size: 17px; }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px); z-index: 100;
+            display: none; justify-content: center; align-items: center; padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: var(--bg); border-radius: 20px;
+            width: 100%; max-width: 400px;
+            padding: 24px; text-align: center;
+            border: 1px solid var(--border);
+            animation: popIn 0.25s ease;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-box h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+        .modal-box p { font-size: 14px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+        .modal-actions { display: flex; gap: 10px; }
+        .modal-btn {
+            flex: 1; padding: 12px; border-radius: 12px;
+            border: none; font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: 0.15s;
+        }
+        .modal-btn-cancel { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+        .modal-btn-confirm { background: var(--danger); color: #FFF; }
+
+        /* ===== STORAGE BAR ===== */
+        .storage-info { padding: 18px; }
+        .storage-bar-bg {
+            height: 8px; background: var(--border);
+            border-radius: 8px; overflow: hidden; margin-bottom: 12px;
+        }
+        .storage-bar-fill {
+            height: 100%; background: var(--green);
+            border-radius: 8px; transition: width 0.4s;
+        }
+        .storage-stats {
+            display: flex; justify-content: space-between;
+            font-size: 12px; color: var(--muted); font-weight: 600;
+        }
+        .storage-stats span { color: var(--text); }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.9); color: #FFF;
+            padding: 12px 20px; border-radius: 10px;
+            font-size: 14px; font-weight: 600;
+            z-index: 200; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s;
+            max-width: 90%;
+        }
+        .toast.show { opacity: 1; }
+
+        /* ===== VERSION ===== */
+        .version-footer {
+            text-align: center; padding: 20px 0 10px 0;
+            color: var(--muted); font-size: 12px; font-weight: 500;
+        }
+        .version-footer b { color: var(--text); font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <button class="back-btn" onclick="goBack()">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </button>
+        <h1>Settings</h1>
+    </header>
+
+    <main class="content">
+
+        <!-- ===== APPEARANCE ===== -->
+        <div class="section-title">Appearance</div>
+        <div class="card">
+            <div class="row">
+                <div class="row-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">Dark Mode</div>
+                    <div class="row-sub">Switch between light and dark theme</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="dark-toggle" onchange="setTheme(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <a href="wallpaper.html" class="row">
+                <div class="row-icon">
+                    <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">Chat Wallpaper</div>
+                    <div class="row-sub">Personalize your chat background</div>
+                </div>
+                <div class="wp-preview" id="wp-preview"></div>
+                <div class="row-chev"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></div>
+            </a>
+            <div class="row" style="cursor: default;">
+                <div class="row-icon">
+                    <svg viewBox="0 0 24 24"><path d="M9 4v3H5v12h14V7h-4V4H9zm0 2h6V5H9v1zm-2 2h10v9H7V8z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">Chat Font Size</div>
+                    <div class="row-sub">Text size in conversations</div>
+                </div>
+                <div class="font-picker">
+                    <button class="font-pick-btn" data-size="small" onclick="setFontSize('small')">A</button>
+                    <button class="font-pick-btn" data-size="medium" onclick="setFontSize('medium')">A</button>
+                    <button class="font-pick-btn" data-size="large" onclick="setFontSize('large')">A</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ACCOUNT ===== -->
+        <div class="section-title">Account</div>
+        <div class="card">
+            <a href="me.html" class="row">
+                <div class="row-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">Edit Profile</div>
+                    <div class="row-sub">Name, picture, username, bio</div>
+                </div>
+                <div class="row-chev"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></div>
+            </a>
+            <div class="row" onclick="showToast('This link is available in your profile page')">
+                <div class="row-icon">
+                    <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">Share Profile</div>
+                    <div class="row-sub">Get your profile link</div>
+                </div>
+                <div class="row-chev"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></div>
+            </div>
+        </div>
+
+        <!-- ===== NOTIFICATIONS ===== -->
+        <div class="section-title">Notifications</div>
+        <div class="card">
+            <div class="row">
+                <div class="row-icon orange">
+                    <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">Message Sound</div>
+                    <div class="row-sub">Play a tone on new messages</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="sound-toggle" onchange="saveToggle('sound', this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="row">
+                <div class="row-icon orange">
+                    <svg viewBox="0 0 24 24"><path d="M7 4v16h10V4H7zm8 14H9V6h6v12z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">Vibration</div>
+                    <div class="row-sub">Vibrate on new messages</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="vibrate-toggle" onchange="saveToggle('vibrate', this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="row">
+                <div class="row-icon orange">
+                    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">Message Preview</div>
+                    <div class="row-sub">Show message text in notifications</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="preview-toggle" onchange="saveToggle('preview', this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- ===== PRIVACY ===== -->
+        <div class="section-title">Privacy</div>
+        <div class="card">
+            <div class="row">
+                <div class="row-icon blue">
+                    <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">Read Receipts</div>
+                    <div class="row-sub">Show blue ticks when you read messages</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="receipts-toggle" onchange="saveToggle('receipts', this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="row">
+                <div class="row-icon blue">
+                    <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">Last Seen</div>
+                    <div class="row-sub">Share when you were last active</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="lastseen-toggle" onchange="saveToggle('lastseen', this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="row" onclick="showToast('Blocked users management coming soon')">
+                <div class="row-icon blue">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">Blocked Contacts</div>
+                    <div class="row-sub">Manage users you've blocked</div>
+                </div>
+                <div class="row-chev"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></div>
+            </div>
+        </div>
+
+        <!-- ===== CHAT ===== -->
+        <div class="section-title">Chat</div>
+        <div class="card">
+            <div class="row">
+                <div class="row-icon purple">
+                    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">Enter to Send</div>
+                    <div class="row-sub">Press Enter to send messages</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="enter-toggle" onchange="saveToggle('enter_send', this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="row">
+                <div class="row-icon purple">
+                    <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">Auto-Download Media</div>
+                    <div class="row-sub">Automatically download images & voice</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="autodownload-toggle" onchange="saveToggle('autodownload', this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- ===== DATA & STORAGE ===== -->
+        <div class="section-title">Data & Storage</div>
+        <div class="card">
+            <div class="storage-info">
+                <div class="storage-bar-bg">
+                    <div class="storage-bar-fill" id="storage-fill" style="width: 0%;"></div>
+                </div>
+                <div class="storage-stats">
+                    <div>Used: <span id="storage-used">0 KB</span></div>
+                    <div>Cache: <span id="storage-cache">0 KB</span></div>
+                </div>
+            </div>
+            <div class="row" onclick="openModal('clear-cache-modal')">
+                <div class="row-icon orange">
+                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">Clear Cache</div>
+                    <div class="row-sub">Free up local storage (keeps settings)</div>
+                </div>
+                <div class="row-chev"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></div>
+            </div>
+            <div class="row" onclick="exportData()">
+                <div class="row-icon orange">
+                    <svg viewBox="0 0 24 24"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2v9.67z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">Export My Data</div>
+                    <div class="row-sub">Download your settings as JSON</div>
+                </div>
+                <div class="row-chev"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></div>
+            </div>
+        </div>
+
+        <!-- ===== ABOUT ===== -->
+        <div class="section-title">About</div>
+        <div class="card">
+            <div class="row">
+                <div class="row-icon">
+                    <svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">App Version</div>
+                    <div class="row-sub">MyChat v1.0.0</div>
+                </div>
+                <div class="row-value">Latest</div>
+            </div>
+            <div class="row" onclick="showToast('Jakipot • Built with ❤️')">
+                <div class="row-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </div>
+                <div class="row-body">
+                    <div class="row-title">About Jakipot</div>
+                    <div class="row-sub">Our team, vision, mission</div>
+                </div>
+                <div class="row-chev"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></div>
+            </div>
+        </div>
+
+        <div class="version-footer">
+            <b>MyChat</b> · v1.0.0 · © 2025 Jakipot
+        </div>
+
+    </main>
+
+    <!-- ===== MODALS ===== -->
+    <div class="modal-overlay" id="clear-cache-modal">
+        <div class="modal-box">
+            <h3>Clear Cache?</h3>
+            <p>This will clear cached images and local data. Your settings, theme, and wallpaper will be kept.</p>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal('clear-cache-modal')">Cancel</button>
+                <button class="modal-btn modal-btn-confirm" onclick="clearCache()">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // SMART NAVIGATION
+        window.goBack = () => {
+            if (document.referrer && document.referrer !== "") {
+                window.history.back();
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        };
+
+        // ============================================================
+        // LOCALSTORAGE KEYS
+        // ============================================================
+        const KEYS = {
+            theme: 'mychat_theme',            
+            wallpaperBg: 'mychat_wallpaper_bg',    
+            wallpaperColor: 'mychat_wallpaper_color', 
+            fontSize: 'mychat_font_size',     
+            sound: 'mychat_sound',            
+            vibrate: 'mychat_vibrate',        
+            preview: 'mychat_preview',        
+            receipts: 'mychat_receipts',      
+            lastseen: 'mychat_lastseen',      
+            enterSend: 'mychat_enter_send',   
+            autodownload: 'mychat_autodownload'
+        };
+
+        let toastTimer;
+        window.showToast = (msg) => {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+        };
+
+        window.openModal = (id) => document.getElementById(id).classList.add('active');
+        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
+        document.querySelectorAll('.modal-overlay').forEach(m => {
+            m.addEventListener('click', (e) => {
+                if (e.target === m) m.classList.remove('active');
+            });
+        });
+
+        function applyTheme() {
+            const theme = localStorage.getItem(KEYS.theme) || 'light';
+            const isDark = theme === 'dark';
+            document.body.classList.toggle('dark-mode', isDark);
+            document.getElementById('dark-toggle').checked = isDark;
+        }
+
+        window.setTheme = (isDark) => {
+            localStorage.setItem(KEYS.theme, isDark ? 'dark' : 'light');
+            document.body.classList.toggle('dark-mode

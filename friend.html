@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MyChat - Friend Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* =========================================
+           1. THEME VARIABLES
+           ========================================= */
+        :root {
+            --bg-color: #FFFFFF;
+            --nav-bg: #FFFFFF;
+            --primary-green: #168B50;
+            --primary-green-light: #E8F5EE;
+            --text-main: #202923;
+            --text-secondary: #6C7770;
+            --border-color: #E4EAE6;
+            --danger: #ef4444;
+            --card-bg: #F8F9FA;
+        }
+
+        body.dark-mode {
+            --bg-color: #101719;
+            --nav-bg: #182022;
+            --primary-green: #168B50;
+            --primary-green-light: rgba(22, 139, 80, 0.15);
+            --text-main: #FFFFFF;
+            --text-secondary: #B9C3C0;
+            --border-color: #303B3D;
+            --danger: #ef4444;
+            --card-bg: #1A2326;
+        }
+
+        /* =========================================
+           2. GLOBAL & LAYOUT
+           ========================================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Top Nav */
+        .top-nav {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            color: var(--text-main);
+        }
+        .back-btn svg { width: 24px; height: 24px; fill: currentColor; }
+
+        .nav-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-left: 15px;
+        }
+
+        /* Main Scrollable Content */
+        .profile-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 30px;
+        }
+
+        /* =========================================
+           3. PROFILE HEADER
+           ========================================= */
+        .cover-photo {
+            width: 100%;
+            height: 200px;
+            background-color: var(--card-bg);
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            position: relative;
+        }
+        .cover-photo::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.5) 100%);
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: -60px auto 15px auto;
+            border-radius: 50%;
+            border: 4px solid var(--bg-color);
+            background-color: var(--card-bg);
+            cursor: pointer;
+            z-index: 2;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-initial {
+            width: 100%; height: 100%; display: grid; place-items: center;
+            font-size: 40px; font-weight: 900; color: #fff; background: var(--primary-green);
+        }
+
+        .profile-info {
+            text-align: center;
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .profile-username {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .profile-bio {
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .profile-joined {
+            font-size: 12px;
+            color: var(--primary-green);
+            font-weight: 600;
+            background: var(--primary-green-light);
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        /* =========================================
+           4. ACTION BUTTONS
+           ========================================= */
+        .action-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 0 20px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+        }
+        .btn:active { transform: scale(0.95); }
+
+        .btn-primary {
+            background-color: var(--primary-green);
+            color: #FFFFFF;
+            box-shadow: 0 4px 10px rgba(22, 139, 80, 0.3);
+        }
+        .btn-secondary {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+        .btn svg { width: 20px; height: 20px; fill: currentColor; }
+
+        /* =========================================
+           5. SETTINGS/MANAGEMENT LIST
+           ========================================= */
+        .menu-section {
+            padding: 0 20px;
+            margin-bottom: 30px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .menu-item:active { background-color: var(--border-color); }
+
+        .menu-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--bg-color);
+            display: grid;
+            place-items: center;
+            margin-right: 15px;
+        }
+        .menu-icon svg { width: 20px; height: 20px; fill: var(--text-main); }
+
+        .menu-text {
+            flex: 1;
+        }
+        .menu-text h4 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+        .menu-text p { font-size: 12px; color: var(--text-secondary); }
+
+        .menu-item.danger .menu-icon svg { fill: var(--danger); }
+        .menu-item.danger .menu-text h4 { color: var(--danger); }
+
+        /* =========================================
+           6. MODALS & MEDIA VIEWER
+           ========================================= */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px); z-index: 1000;
+            display: none; justify-content: center; align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal-box {
+            background-color: var(--bg-color);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            padding: 25px;
+            text-align: center;
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-box h3 { font-size: 20px; margin-bottom: 10px; }
+        .modal-box p { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; }
+        
+        .modal-input {
+            width: 100%; padding: 12px; border-radius: 10px;
+            border: 1px solid var(--border-color); background: var(--card-bg);
+            color: var(--text-main); margin-bottom: 15px; outline: none;
+        }
+        .modal-input:focus { border-color: var(--primary-green); }
+
+        .modal-actions { display: flex; gap: 10px; }
+        .modal-actions .btn { padding: 14px; }
+
+        /* Full Screen Image Viewer */
+        #image-viewer {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 9999; justify-content: center; align-items: center;
+        }
+        #image-viewer.active { display: flex; }
+        #image-viewer img { max-width: 100%; max-height: 90vh; object-fit: contain; }
+        .close-viewer {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255,255,255,0.2); border: none; border-radius: 50%;
+            width: 40px; height: 40px; display: grid; place-items: center;
+            cursor: pointer; color: white;
+        }
+        .close-viewer svg { width: 24px; height: 24px; fill: white; }
+
+        /* Media Grid */
+        .media-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;
+            max-height: 50vh; overflow-y: auto; margin-bottom: 20px;
+        }
+        .media-grid img {
+            width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px;
+            cursor: pointer;
+        }
+        .empty-state { color: var(--text-secondary); font-size: 14px; padding: 20px; }
+    </style>
+</head>
+<body>
+
+    <!-- TOP NAVIGATION -->
+    <div class="top-nav">
+        <button class="back-btn" onclick="goBackToChat()">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </button>
+        <div class="nav-title" id="nav-title">Profile</div>
+    </div>
+
+    <!-- MAIN SCROLLABLE CONTENT -->
+    <div class="profile-scroll" id="profile-scroll">
+        <div class="cover-photo" id="cover-photo" onclick="openImageViewer(this.style.backgroundImage.slice(5, -2))"></div>
+        
+        <div class="avatar-wrapper" id="avatar-wrapper" onclick="openImageViewer(this.querySelector('img')?.src || '')">
+            <div class="avatar-initial" id="avatar-initial">?</div>
+        </div>
+
+        <div class="profile-info">
+            <div class="profile-name" id="profile-name">Loading...</div>
+            <div class="profile-username" id="profile-username">@loading</div>
+            <div class="profile-bio" id="profile-bio">Loading profile information...</div>
+            <div class="profile-joined" id="profile-joined">Joined Loading...</div>
+        </div>
+
+        <div class="action-row">
+            <button class="btn btn-primary" onclick="goBackToChat()">
+                <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                Message
+            </button>
+            <button class="btn btn-secondary" onclick="alert('Contact saved!')">
+                <svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                Add Contact
+            </button>
+        </div>
+
+        <!-- MANAGEMENT MENU -->
+        <div class="menu-section">
+            
+            <div class="menu-item" onclick="openModal('media-modal')">
+                <div class="menu-icon">
+                    <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                </div>
+                <div class="menu-text">
+                    <h4>Media, Links and Docs</h4>
+                    <p id="media-count-text">Loading...</p>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="alert('Search feature coming soon')">
+                <div class="menu-icon">
+                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                </div>
+                <div class="menu-text">
+                    <h4>Search Conversation</h4>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openModal('clear-modal')">
+                <div class="menu-icon">
+                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                </div>
+                <div class="menu-text">
+                    <h4>Clear Chat</h4>
+                    <p>Empty this conversation history.</p>
+                </div>
+            </div>
+
+            <div class="menu-item danger" onclick="openModal('block-modal')">
+                <div class="menu-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z"/></svg>
+                </div>
+                <div class="menu-text">
+                    <h4 id="block-btn-text">Block User</h4>
+                </div>
+            </div>
+
+            <div class="menu-item danger" onclick="openModal('report-modal')">
+                <div class="menu-icon">
+                    <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                </div>
+                <div class="menu-text">
+                    <h4>Report User</h4>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- =========================================
+         MODALS & VIEWERS
+         ========================================= -->
+
+    <!-- Media Modal -->
+    <div class="modal-overlay" id="media-modal">
+        <div class="modal-box" style="max-width: 500px;">
+            <h3>Media, Links & Docs</h3>
+            <p>Shared images in this chat</p>
+            <div class="media-grid" id="media-grid-container">
+                <!-- Images load here -->
+            </div>
+            <button class="btn btn-secondary" onclick="closeModal('media-modal')">Close</button>
+        </div>
+    </div>
+
+    <!-- Clear Chat Modal -->
+    <div class="modal-overlay" id="clear-modal">
+        <div class="modal-box">
+            <h3>Clear Chat?</h3>
+            <p>This will clear the message history for your account only. The other user will still have their copy.</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('clear-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="clearChat()">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Block User Modal -->
+    <div class="modal-overlay" id="block-modal">
+        <div class="modal-box">
+            <h3 id="block-modal-title">Block this user?</h3>
+            <p>You will no longer receive messages from this account. You can unblock them later in settings.</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('block-modal')">Cancel</button>
+                <button class="btn btn-primary" style="background-color: var(--danger); box-shadow: none;" onclick="toggleBlock()" id="block-confirm-btn">Block</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report User Modal -->
+    <div class="modal-overlay" id="report-modal">
+        <div class="modal-box">
+            <h3>Report User</h3>
+            <p>Why are you reporting this user?</p>
+            <select id="report-reason" class="modal-input">
+                <option value="spam">Spam or Scam</option>
+                <option value="harassment">Harassment or Bullying</option>
+                <option value="inappropriate">Inappropriate Content</option>
+                <option value="other">Other</option>
+            </select>
+            <textarea id="report-details" class="modal-input" rows="3" placeholder="Provide more details (optional)"></textarea>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('report-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="submitReport()">Submit Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Screen Image Viewer -->
+    <div id="image-viewer" onclick="closeImageViewer()">
+        <button class="close-viewer" onclick="closeImageViewer()">
+            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+        <img id="viewer-img" src="" alt="Full screen image" onclick="event.stopPropagation()">
+    </div>
+
+    <!-- =========================================
+         FIREBASE LOGIC
+         ========================================= -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // State
+        let currentUser = null;
+        let friendUid = null;
+        let roomId = null;
+        let isBlocked = false;
+        let friendName = '';
+
+        // Theme
+        const THEME_KEY = 'mychat_theme';
+        if (localStorage.getItem(THEME_KEY) === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Get URL Parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        friendUid = urlParams.get('uid');
+
+        if (!friendUid) {
+            alert("No user specified.");
+            window.location.replace('dashboard.html');
+        }
+
+        // Auth Check
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            currentUser = user;
+
+            // Generate Room ID (matches chat.html logic)
+            const uids = [currentUser.uid, friendUid].sort();
+            roomId = `private_${uids[0]}_${uids[1]}`;
+
+            loadProfile();
+            checkBlockStatus();
+            loadMedia();
+        });
+
+        // 1. Load Friend Profile
+        async function loadProfile() {
+            try {
+                const userDoc = await getDoc(doc(db, 'users', friendUid));
+                if (!userDoc.exists()) {
+                    alert("User not found.");
+                    return;
+                }
+
+                const data = userDoc.data();
+                friendName = data.fullName || 'User';
+
+                document.getElementById('nav-title').innerText = friendName;
+                document.getElementById('profile-name').innerText = friendName;
+                document.getElementById('profile-username').innerText = `@${data.username || friendName.toLowerCase().replace(/\s/g, '')}`;
+                document.getElementById('profile-bio').innerText = data.bio || "No bio yet.";
+
+                // Date joined
+                if (data.createdAt) {
+                    const date = new Date(data.createdAt.toMillis());
+                    document.getElementById('profile-joined').innerText = `Joined Jakipot on ${date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
+                } else {
+                    document.getElementById('profile-joined').innerText = `Joined Jakipot`;
+                }
+
+                // Avatar
+                if (data.profilePicUrl) {
+                    document.getElementById('avatar-wrapper').innerHTML = `<img src="${data.profilePicUrl}" alt="${friendName}">`;
+                } else {
+                    document.getElementById('avatar-initial').innerText = friendName.charAt(0).toUpperCase();
+                }
+
+                // Cover Photo
+                if (data.coverPicUrl) {
+                    document.getElementById('cover-photo').style.backgroundImage = `url('${data.coverPicUrl}')`;
+                } else {
+                    // Default cover gradient
+                    document.getElementById('cover-photo').style.background = `linear-gradient(135deg, var(--primary-green), #0e5a34)`;
+                }
+
+            } catch (error) {
+                console.error("Error loading profile:", error);
+                alert("Failed to load profile.");
+            }
+        }
+
+        // 2. Check Block Status
+        async function checkBlockStatus() {
+            // Check if current user blocked the friend
+            const blockDoc = await getDoc(doc(db, 'blocked_users', `${currentUser.uid}_${friendUid}`));
+            if (blockDoc.exists()) {
+                isBlocked = true;
+                document.getElementById('block-btn-text').innerText = "Unblock User";
+                document.getElementById('block-confirm-btn').innerText = "Unblock";
+                document.getElementById('block-modal-title').innerText = "Unblock this user?";
+                document.getElementById('block-confirm-btn').style.backgroundColor = "var(--primary-green)";
+            }
+        }
+
+        // 3. Load Media (Images from chat)
+        async function loadMedia() {
+            try {
+                const q = query(
+                    collection(db, 'chat_messages'),
+                    where('groupId', '==', roomId),
+                    where('messageType', '==', 'image')
+                );
+                const snapshot = await getDocs(q);
+                
+                const grid = document.getElementById('media-grid-container');
+                grid.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    grid.innerHTML = '<div class="empty-state">No media shared yet.</div>';
+                    document.getElementById('media-count-text').innerText = "No media";
+                    return;
+                }
+
+                document.getElementById('media-count-text').innerText = `${snapshot.size} photos`;
+                
+                snapshot.forEach(docSnap => {
+                    const msg = docSnap.data();
+                    if (msg.imageUrl) {
+                        grid.innerHTML += `<img src="${msg.imageUrl}" onclick="openImageViewer('${msg.imageUrl}')">`;
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error loading media:", error);
+            }
+        }
+
+        // 4. Actions
+        window.goBackToChat = () => {
+            window.location.replace(`chat.html?roomId=${roomId}&name=${encodeURIComponent(friendName)}`);
+        };
+
+        window.openModal = (id) => document.getElementById(id).classList.add('active');
+        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
+
+        window.openImageViewer = (url) => {
+            if (!url) return;
+            document.getElementById('viewer-img').src = url;
+            document.getElementById('image-viewer').classList.add('active');
+        };
+
+        window.closeImageViewer = () => {
+            document.getElementById('image-viewer').classList.remove('active');
+            setTimeout(() => { document.getElementById('viewer-img').src = ''; }, 300);
+        };
+
+        window.toggleBlock = async () => {
+            const btn = document.getElementById('block-confirm-btn');
+            btn.innerText = "Processing...";
+
+            try {
+                const blockRef = doc(db, 'blocked_users', `${currentUser.uid}_${friendUid}`);
+                
+                if (isBlocked) {
+                    await deleteDoc(blockRef);
+                    alert("User unblocked.");
+                } else {
+                    await setDoc(blockRef, {
+                        blockerId: currentUser.uid,
+                        blockedId: friendUid,
+                        timestamp: serverTimestamp()
+                    });
+                    alert("User blocked.");
+                }
+                closeModal('block-modal');
+                window.location.reload();
+            } catch (error) {
+                console.error(error);
+                alert("Action failed.");
+                btn.innerText = isBlocked ? "Unblock" : "Block";
+            }
+        };
+
+        window.clearChat = async () => {
+            // Note: Real clear chat requires modifying the chat.html query to respect a "clearedAt" timestamp.
+            // For now, this simulates the action and saves the timestamp.
+            try {
+                await setDoc(doc(db, 'user_chat_settings', `${currentUser.uid}_${roomId}`), {
+                    clearedAt: serverTimestamp()
+                }, { merge: true });
+                
+                alert("Chat history cleared.");
+                closeModal('clear-modal');
+                goBackToChat();
+            } catch (error) {
+                console.error(error);
+                alert("Failed to clear chat.");
+            }
+        };
+
+        window.submitReport = async () => {
+            const reason = document.getElementById('report-reason').value;
+            const details = document.getElementById('report-details').value;
+
+            try {
+                await setDoc(doc(collection(db, 'reports')), {
+                    reporterId: currentUser.uid,
+                    reportedId: friendUid,
+                    reportedName: friendName,
+                    reason: reason,
+                    details: details,
+                    status: 'pending',
+                    timestamp: serverTimestamp()
+                });
+
+                alert("Report submitted. Our team will review it.");
+                closeModal('report-modal');
+            } catch (error) {
+                console.error(error);
+                alert("Failed to submit report.");
+            }
+        };
+    </script>
+</body>
+</html>

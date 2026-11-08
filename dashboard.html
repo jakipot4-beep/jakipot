@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MyChat - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* =========================================
+           1. THEME VARIABLES
+           ========================================= */
+        :root {
+            --bg-color: #FFFFFF;
+            --nav-bg: #FFFFFF;
+            --search-bg: #F0F2F5;
+            --primary-green: #168B50;
+            --primary-green-light: #E8F5EE;
+            --primary-green-text: #168B50;
+            --text-main: #202923;
+            --text-secondary: #6C7770;
+            --border-color: #E4EAE6;
+            --pill-bg: #F0F2F5;
+            --pill-active-bg: #D1F4E0;
+            --pill-active-text: #0B6B3A;
+        }
+
+        body.dark-mode {
+            --bg-color: #0B141A;
+            --nav-bg: #0B141A;
+            --search-bg: #202C33;
+            --primary-green: #168B50;
+            --primary-green-light: #005C4B;
+            --primary-green-text: #25D366;
+            --text-main: #E9EDEF;
+            --text-secondary: #8696A0;
+            --border-color: #222D34;
+            --pill-bg: #202C33;
+            --pill-active-bg: #005C4B;
+            --pill-active-text: #E9EDEF;
+        }
+
+        /* =========================================
+           2. GLOBAL & LAYOUT
+           ========================================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 100px; 
+        }
+
+        /* =========================================
+           3. TOP HEADER & SEARCH & MENU
+           ========================================= */
+        .top-header {
+            padding: 15px 15px 10px 15px;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .header-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            display: grid;
+            place-items: center;
+        }
+
+        .icon-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-main);
+        }
+
+        /* Dropdown Menu */
+        .menu-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 15px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 200;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            min-width: 150px;
+        }
+
+        .menu-dropdown.active {
+            display: flex;
+        }
+
+        .menu-item {
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-item:hover {
+            background-color: var(--search-bg);
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: var(--search-bg);
+            border-radius: 24px;
+            padding: 10px 15px;
+            gap: 10px;
+        }
+
+        .search-bar svg { width: 20px; height: 20px; fill: var(--text-secondary); }
+
+        .search-bar input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-size: 15px;
+            width: 100%;
+        }
+        .search-bar input::placeholder { color: var(--text-secondary); }
+
+        /* =========================================
+           4. FILTER PILLS
+           ========================================= */
+        .filters-row {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 0 15px 10px 15px;
+            scrollbar-width: none; 
+        }
+        .filters-row::-webkit-scrollbar { display: none; }
+
+        .filter-pill {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background-color: var(--pill-bg);
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .filter-pill.active {
+            background-color: var(--pill-active-bg);
+            color: var(--pill-active-text);
+            border-color: var(--pill-active-text);
+        }
+
+        /* =========================================
+           5. CHAT LIST
+           ========================================= */
+        .chat-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            gap: 15px;
+            cursor: pointer;
+            transition: background-color 0.1s;
+            text-decoration: none;
+            color: inherit;
+        }
+        .chat-item:hover { background-color: var(--search-bg); }
+
+        .avatar-container {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            flex-shrink: 0;
+        }
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: var(--search-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .group-avatar {
+            border-radius: 12px;
+        }
+
+        .chat-details {
+            flex: 1;
+            min-width: 0; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            height: 100%;
+        }
+        .chat-item:last-child .chat-details { border-bottom: none; }
+
+        .chat-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chat-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .chat-bottom-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .unread-badge {
+            background-color: var(--primary-green-text);
+            color: #FFFFFF;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* =========================================
+           6. BOTTOM NAVIGATION
+           ========================================= */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 75px;
+            background-color: var(--nav-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom);
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            width: 100%;
+            height: 100%;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            position: relative;
+        }
+
+        .nav-icon-wrapper {
+            padding: 6px 20px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease;
+            position: relative;
+        }
+
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-secondary);
+            transition: fill 0.2s ease;
+        }
+
+        .nav-item.active { color: var(--primary-green-text); font-weight: 800; }
+        .nav-item.active .nav-icon-wrapper { background-color: var(--primary-green-light); }
+        .nav-item.active svg { fill: var(--primary-green-text); }
+
+    </style>
+</head>
+<body>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="main-content">
+        
+        <!-- TOP HEADER -->
+        <div class="top-header">
+            <div class="header-title-row">
+                <div class="header-title">MyChat</div>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="toggleMenu(event)">
+                        <svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dropdown Menu -->
+            <div class="menu-dropdown" id="header-menu">
+                <a href="settings.html" class="menu-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+                    Settings
+                </a>
+            </div>
+            
+            <!-- SEARCH BAR -->
+            <div class="search-bar">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <input type="text" id="search-input" placeholder="Ask MyChat AI or Search" oninput="filterChats()">
+            </div>
+        </div>
+
+        <!-- FILTER PILLS -->
+        <div class="filters-row">
+            <div class="filter-pill active" onclick="setFilter('all', this)">All</div>
+            <div class="filter-pill" onclick="setFilter('unread', this)">Unread</div>
+            <div class="filter-pill" onclick="setFilter('favorites', this)">Favorites</div>
+            <div class="filter-pill" onclick="setFilter('groups', this)">Groups</div>
+        </div>
+
+        <!-- REAL USER CHAT LIST (Dynamic Container) -->
+        <div class="chat-list" id="real-chat-list">
+            <div class="loading-spinner">Loading chats...</div>
+        </div>
+        
+    </main>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item active">
+            <div class="nav-icon-wrapper">
+                <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+            </div>
+            <span>Chat</span>
+        </a>
+        
+        <a href="contact.html" class="nav-item">
+            <div class="nav-icon-wrapper">
+                <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            </div>
+            <span>Communities</span>
+        </a>
+
+        <a href="update.html" class="nav-item">
+            <div class="nav-icon-wrapper">
+                <svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+            </div>
+            <span>Update</span>
+        </a>
+        <a href="me.html" class="nav-item">
+            <div class="nav-icon-wrapper">
+                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
+            <span>Me</span>
+        </a>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const THEME_KEY = 'mychat_theme';
+        let currentUserId = null;
+        
+        let directMessages = [];
+        let groupChats = [];
+        let allChats = [];
+        let currentFilter = 'all'; 
+
+        // 1. Apply Theme
+        if (localStorage.getItem(THEME_KEY) === 'dark') document.body.classList.add('dark-mode');
+
+        // 2. Menu Logic
+        window.toggleMenu = (e) => {
+            e.stopPropagation();
+            document.getElementById('header-menu').classList.toggle('active');
+        };
+        
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('header-menu');
+            if (!menu.contains(e.target) && !e.target.closest('.icon-btn')) {
+                menu.classList.remove('active');
+            }
+        });
+
+        // 3. Auth Guard & Start Listeners
+        onAuthStateChanged(auth, (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            currentUserId = user.uid;
+            
+            setupRealTimeListeners();
+        });
+
+        function setupRealTimeListeners() {
+            const usersQuery = query(collection(db, 'users'), orderBy('fullName', 'asc'));
+            onSnapshot(usersQuery, (snapshot) => {
+                directMessages = [];
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const uid = docSnap.id;
+                    if (uid === currentUserId) return; 
+
+                    directMessages.push({
+                        id: uid,
+                        type: 'dm',
+                        name: data.fullName || 'Jakipot User',
+                        avatarUrl: data.profilePicUrl || null,
+                        time: 'Tap to chat',
+                        message: `Say hi to ${(data.fullName || 'User').split(' ')[0]}!`,
+                        unread: Math.floor(Math.random() * 3), 
+                        isFavorite: data.isFavorite || false
+                    });
+                });
+                combineAndRender();
+            });
+
+            onSnapshot(collection(db, 'chat_groups'), (snapshot) => {
+                groupChats = [];
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const groupId = docSnap.id;
+
+                    groupChats.push({
+                        id: groupId,
+                        type: 'group',
+                        name: data.name || 'Group',
+                        avatarUrl: data.avatarUrl || null,
+                        time: 'Group',
+                        message: data.lastMessage || 'New Group • Tap to join',
+                        unread: Math.floor(Math.random() * 5), 
+                        isFavorite: data.isFavorite || false
+                    });
+                });
+                combineAndRender();
+            });
+        }
+
+        function combineAndRender() {
+            allChats = [...directMessages, ...groupChats];
+            allChats.sort((a, b) => b.unread - a.unread || a.name.localeCompare(b.name));
+            renderChats();
+        }
+
+        window.setFilter = (filterType, element) => {
+            document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+            element.classList.add('active');
+            currentFilter = filterType;
+            renderChats();
+        };
+
+        window.filterChats = () => {
+            renderChats();
+        };
+
+        function renderChats() {
+            const listContainer = document.getElementById('real-chat-list');
+            const searchText = document.getElementById('search-input').value.toLowerCase();
+            listContainer.innerHTML = '';
+
+            let filteredList = allChats.filter(chat => {
+                const matchesSearch = chat.name.toLowerCase().includes(searchText);
+
+                let matchesFilter = true;
+                if (currentFilter === 'unread') matchesFilter = chat.unread > 0;
+                if (currentFilter === 'favorites') matchesFilter = chat.isFavorite === true;
+                if (currentFilter === 'groups') matchesFilter = chat.type === 'group';
+
+                return matchesSearch && matchesFilter;
+            });
+
+            if (filteredList.length === 0) {
+                listContainer.innerHTML = '<div class="loading-spinner">No chats found.</div>';
+                return;
+            }
+
+            filteredList.forEach(chat => {
+                const initial = chat.name.charAt(0).toUpperCase();
+                const colors = ['#a855f7', '#3b82f6', '#f59e0b', '#10b981'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+                let avatarHtml = '';
+                if (chat.avatarUrl) {
+                    avatarHtml = `<img src="${chat.avatarUrl}" alt="${chat.name}">`;
+                } else if (chat.type === 'group') {
+                    avatarHtml = `<div class="avatar group-avatar" style="background: var(--primary-green); color: white;">
+                        <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:white;"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                    </div>`;
+                } else {
+                    avatarHtml = `<div class="avatar" style="background: ${randomColor}; color: white;">${initial}</div>`;
+                }
+
+                let chatLink = '';
+                if (chat.type === 'group') {
+                    chatLink = `chat.html?roomId=${chat.id}&name=${encodeURIComponent(chat.name)}`;
+                } else {
+                    const roomId = `private_${[currentUserId, chat.id].sort().join('_')}`;
+                    chatLink = `chat.html?roomId=${roomId}&name=${encodeURIComponent(chat.name)}&avatar=${chat.avatarUrl || ''}`;
+                }
+
+                const badgeHtml = chat.unread > 0 ? `<div class="unread-badge">${chat.unread}</div>` : '';
+
+                listContainer.innerHTML += `
+                    <a href="${chatLink}" class="chat-item">
+                        <div class="avatar-container">
+                            ${avatarHtml}
+                        </div>
+                        <div class="chat-details">
+                            <div class="chat-top-row">
+                                <div class="chat-name">${chat.name}</div>
+                                <div class="chat-time ${chat.unread > 0 ? 'unread-time' : ''}">${chat.time}</div>
+                            </div>
+                            <div class="chat-bottom-row">
+                                <div class="chat-message">${chat.message}</div>
+                                ${badgeHtml}
+                            </div>
+                        </div>
+                    </a>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>

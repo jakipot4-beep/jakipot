@@ -65,87 +65,44 @@
         @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
         .input-group { display: flex; flex-direction: column; gap: 8px; }
         .input-group label { font-size: 12px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
-        .input-group input, .input-group select { padding: 14px; border-radius: 10px; background: var(--bg-elevated); border: 1px solid var(--border-light); color: var(--text-white); font-size: 15px; outline: none; }
-        .input-group input:focus, .input-group select:focus { border-color: var(--cyan); }
+        .input-group input, .input-group select, .input-group textarea { padding: 14px; border-radius: 10px; background: var(--bg-elevated); border: 1px solid var(--border-light); color: var(--text-white); font-size: 15px; outline: none; font-family: inherit; resize: vertical; }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--cyan); }
 
-        /* Image Preview */
-        .img-preview-box {
-            margin-top: 10px; display: none; border-radius: 12px; overflow: hidden;
-            border: 1px solid var(--border-light); background: #000; position: relative; height: 160px;
-        }
+        .img-preview-box { margin-top: 10px; display: none; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-light); background: #000; position: relative; height: 160px; }
         .img-preview-box.show { display: block; }
         .img-preview-box img { width: 100%; height: 100%; object-fit: cover; }
-        .img-preview-badge {
-            position: absolute; top: 8px; left: 8px;
-            background: rgba(16, 185, 129, 0.9); color: #fff;
-            padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800;
-        }
+        .img-preview-badge { position: absolute; top: 8px; left: 8px; background: rgba(16, 185, 129, 0.9); color: #fff; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; }
 
-        /* CHAT STYLES */
         .chat-container { display: flex; height: calc(100vh - 220px); background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-light); overflow: hidden; }
         .chat-sidebar { width: 300px; border-right: 1px solid var(--border-light); overflow-y: auto; background: rgba(0,0,0,0.2); flex-shrink: 0; }
         .chat-sidebar::-webkit-scrollbar { width: 4px; }
         .chat-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
-        .chat-user-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 15px 18px; border-bottom: 1px solid var(--border-light);
-            cursor: pointer; transition: 0.2s; position: relative;
-        }
+        .chat-user-item { display: flex; align-items: center; gap: 12px; padding: 15px 18px; border-bottom: 1px solid var(--border-light); cursor: pointer; transition: 0.2s; position: relative; }
         .chat-user-item:hover { background: rgba(0, 217, 255, 0.05); }
         .chat-user-item.active { background: rgba(0, 217, 255, 0.1); border-left: 3px solid var(--cyan); padding-left: 15px; }
-        
-        .chat-user-item.global-chat-item {
-            background: linear-gradient(90deg, rgba(0, 217, 255, 0.08), rgba(16, 185, 129, 0.08));
-            border-bottom: 2px solid rgba(0, 217, 255, 0.2);
-        }
+        .chat-user-item.global-chat-item { background: linear-gradient(90deg, rgba(0, 217, 255, 0.08), rgba(16, 185, 129, 0.08)); border-bottom: 2px solid rgba(0, 217, 255, 0.2); }
         .chat-user-item.global-chat-item:hover { background: linear-gradient(90deg, rgba(0, 217, 255, 0.15), rgba(16, 185, 129, 0.15)); }
-        
-        .chat-avatar-circle {
-            width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-            display: grid; place-items: center; font-weight: 900; font-size: 16px;
-            background: var(--bg-elevated); color: var(--text-white);
-            overflow: hidden; border: 2px solid rgba(255,255,255,0.1);
-        }
+
+        .chat-avatar-circle { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; font-weight: 900; font-size: 16px; background: var(--bg-elevated); color: var(--text-white); overflow: hidden; border: 2px solid rgba(255,255,255,0.1); }
         .chat-avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
-        .chat-avatar-circle.global { 
-            background: linear-gradient(135deg, var(--cyan), var(--emerald)); 
-            border-color: var(--cyan);
-            box-shadow: 0 0 15px rgba(0, 217, 255, 0.4);
-            font-size: 22px;
-        }
-        
+        .chat-avatar-circle.global { background: linear-gradient(135deg, var(--cyan), var(--emerald)); border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 217, 255, 0.4); font-size: 22px; }
+
         .chat-preview { flex: 1; min-width: 0; }
         .chat-preview h4 { font-size: 14px; font-weight: 800; color: var(--text-white); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .chat-preview p { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .chat-user-item.active .chat-preview h4 { color: var(--cyan); }
-        
         .chat-time-badge { font-size: 10px; color: var(--text-muted); flex-shrink: 0; align-self: flex-start; margin-top: 3px; }
-        
+
         .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        
-        .chat-header {
-            display: flex; align-items: center; gap: 12px;
-            padding: 15px 20px; background: rgba(0,0,0,0.2);
-            border-bottom: 1px solid var(--border-light); flex-shrink: 0;
-        }
-        .chat-header-avatar {
-            width: 40px; height: 40px; border-radius: 50%;
-            display: grid; place-items: center; font-weight: 900;
-            background: var(--bg-elevated); overflow: hidden;
-            border: 2px solid var(--cyan);
-        }
+        .chat-header { display: flex; align-items: center; gap: 12px; padding: 15px 20px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-light); flex-shrink: 0; }
+        .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; background: var(--bg-elevated); overflow: hidden; border: 2px solid var(--cyan); }
         .chat-header-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .chat-header-info h3 { font-size: 15px; font-weight: 800; color: var(--text-white); }
         .chat-header-info p { font-size: 11px; color: var(--emerald); font-weight: 700; display: flex; align-items: center; gap: 4px; }
         .online-dot { width: 6px; height: 6px; background: var(--emerald); border-radius: 50%; display: inline-block; }
-        
-        .chat-history {
-            flex: 1; padding: 20px; overflow-y: auto;
-            display: flex; flex-direction: column; gap: 10px;
-            background-image: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
-            background-size: cover; background-position: center;
-        }
+
+        .chat-history { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background-image: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop'); background-size: cover; background-position: center; }
         .chat-history::-webkit-scrollbar { width: 4px; }
         .chat-history::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
@@ -157,11 +114,13 @@
         .msg audio { max-width: 100%; }
         .msg-sender-name { font-size: 10px; font-weight: 800; color: var(--gold); margin-bottom: 3px; text-transform: uppercase; }
 
-        .chat-input-area { padding: 12px 15px; border-top: 1px solid var(--border-light); display: flex; gap: 10px; background: rgba(0,0,0,0.2); flex-shrink: 0; }
+        .chat-input-area { padding: 12px 15px; border-top: 1px solid var(--border-light); display: flex; gap: 10px; background: rgba(0,0,0,0.2); flex-shrink: 0; align-items: center; }
         .chat-input { flex: 1; padding: 14px 18px; border-radius: 24px; border: 1px solid var(--border-light); background: var(--bg-elevated); color: var(--text-white); outline: none; font-size: 14px; }
         .chat-input:focus { border-color: var(--cyan); }
-        .btn-send { padding: 0 24px; border-radius: 24px; border: none; background: var(--cyan); color: #000; font-weight: 900; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .btn-send { padding: 0 24px; border-radius: 24px; border: none; background: var(--cyan); color: #000; font-weight: 900; cursor: pointer; font-size: 14px; transition: 0.2s; height: 48px; }
         .btn-send:hover { background: #00b8d4; }
+        .btn-img { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--border-light); background: var(--bg-elevated); color: var(--cyan); font-size: 20px; cursor: pointer; display: grid; place-items: center; transition: 0.2s; flex-shrink: 0; }
+        .btn-img:hover { background: #334155; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 100; }
         .modal-overlay.active { display: flex; }
@@ -205,6 +164,9 @@
         <div class="nav-tab" onclick="switchTab('challenge', this)">⚔️ Challenge</div>
         <div class="nav-tab" onclick="switchTab('live-trending', this)">📉 Live Trending Engine</div>
         <div class="nav-tab" onclick="switchTab('chat', this)">💬 Live Chat</div>
+        <div class="nav-tab" onclick="switchTab('groups', this)">👥 Groups</div>
+        <div class="nav-tab" onclick="switchTab('updates', this)">📰 Updates</div>
+        <div class="nav-tab" onclick="switchTab('notifications', this)">🔔 Notifications</div>
         <div class="nav-tab" onclick="switchTab('settings', this)">⚙️ Settings</div>
     </nav>
 
@@ -244,7 +206,6 @@
             </div>
         </div>
 
-        <!-- ADMIN PROFILE TAB -->
         <div class="tab-panel" id="tab-profile">
             <div class="page-title">My Admin Profile</div>
             <div class="form-card" style="text-align: center;">
@@ -297,7 +258,6 @@
             <div class="list-container" id="withdrawals-list"></div>
         </div>
 
-        <!-- UPDATED: PLANS TAB WITH FILE UPLOAD & LIST -->
         <div class="tab-panel" id="tab-plans">
             <div class="page-title">Create New Locked Plan</div>
             <div class="form-card">
@@ -320,22 +280,10 @@
                 </div>
 
                 <div class="form-grid" style="margin-top: 15px;">
-                    <div class="input-group">
-                        <label>Invest Amount</label>
-                        <input type="number" id="plan-invest" placeholder="500">
-                    </div>
-                    <div class="input-group">
-                        <label>Daily Income</label>
-                        <input type="number" id="plan-daily" placeholder="60">
-                    </div>
-                    <div class="input-group">
-                        <label>Duration (Days)</label>
-                        <input type="number" id="plan-duration" placeholder="10">
-                    </div>
-                    <div class="input-group">
-                        <label>Total Income</label>
-                        <input type="number" id="plan-total" placeholder="e.g. 1100">
-                    </div>
+                    <div class="input-group"><label>Invest Amount</label><input type="number" id="plan-invest" placeholder="500"></div>
+                    <div class="input-group"><label>Daily Income</label><input type="number" id="plan-daily" placeholder="60"></div>
+                    <div class="input-group"><label>Duration (Days)</label><input type="number" id="plan-duration" placeholder="10"></div>
+                    <div class="input-group"><label>Total Income</label><input type="number" id="plan-total" placeholder="e.g. 1100"></div>
                 </div>
                 <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;" onclick="createPlan()">CREATE PLAN</button>
             </div>
@@ -348,18 +296,9 @@
             <div class="page-title">Create Trending Machine</div>
             <div class="form-card">
                 <div class="form-grid">
-                    <div class="input-group">
-                        <label>Country Name</label>
-                        <input type="text" id="machine-country-name" placeholder="e.g. Zambia, USA, Japan">
-                    </div>
-                    <div class="input-group">
-                        <label>Country Code (for flag)</label>
-                        <input type="text" id="machine-country-code" placeholder="e.g. zm, us, jp" maxlength="2">
-                    </div>
-                    <div class="input-group">
-                        <label>Seller Name / Location</label>
-                        <input type="text" id="machine-seller" placeholder="e.g. Lusaka Branch">
-                    </div>
+                    <div class="input-group"><label>Country Name</label><input type="text" id="machine-country-name" placeholder="e.g. Zambia, USA, Japan"></div>
+                    <div class="input-group"><label>Country Code (for flag)</label><input type="text" id="machine-country-code" placeholder="e.g. zm, us, jp" maxlength="2"></div>
+                    <div class="input-group"><label>Seller Name / Location</label><input type="text" id="machine-seller" placeholder="e.g. Lusaka Branch"></div>
                 </div>
                 <div class="form-grid">
                     <div class="input-group"><label>Duration (Days)</label><input type="number" id="machine-duration" placeholder="7"></div>
@@ -377,14 +316,8 @@
             <div class="page-title">Create PvP Challenge</div>
             <div class="form-card">
                 <div class="form-grid">
-                    <div class="input-group">
-                        <label>Player A (Challenger)</label>
-                        <select id="challenger-select"></select>
-                    </div>
-                    <div class="input-group">
-                        <label>Player B (Opponent)</label>
-                        <select id="opponent-select"></select>
-                    </div>
+                    <div class="input-group"><label>Player A (Challenger)</label><select id="challenger-select"></select></div>
+                    <div class="input-group"><label>Player B (Opponent)</label><select id="opponent-select"></select></div>
                 </div>
                 <div class="form-grid">
                     <div class="input-group">
@@ -394,10 +327,7 @@
                             <option value="cards">Cards</option>
                         </select>
                     </div>
-                    <div class="input-group">
-                        <label>Bet Amount</label>
-                        <input type="number" id="challenge-amount" placeholder="e.g. 100">
-                    </div>
+                    <div class="input-group"><label>Bet Amount</label><input type="number" id="challenge-amount" placeholder="e.g. 100"></div>
                 </div>
                 <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;" onclick="createChallenge()">CREATE CHALLENGE</button>
             </div>
@@ -456,10 +386,120 @@
                         </div>
                     </div>
                     <div class="chat-input-area" id="chat-input-area" style="display: none;">
+                        <input type="file" id="chat-image-input" accept="image/*" hidden onchange="uploadChatImage(this)">
+                        <button class="btn-img" onclick="document.getElementById('chat-image-input').click()" title="Send Image">📷</button>
                         <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMessage()">
                         <button class="btn-send" onclick="sendMessage()">SEND</button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="tab-panel" id="tab-groups">
+            <div class="page-title">Create New Group</div>
+            <div class="form-card">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Group Name *</label>
+                        <input type="text" id="group-name" placeholder="e.g. VIP Traders, Support Room" maxlength="100">
+                    </div>
+                    <div class="input-group">
+                        <label>Group Image (Cloudinary)</label>
+                        <input type="file" id="group-image-file" accept="image/*" hidden onchange="uploadGroupImage(this)">
+                        <button type="button" class="btn btn-neutral" id="group-img-btn" onclick="document.getElementById('group-image-file').click()" style="width: 100%; padding: 14px; font-size: 14px;">📁 Upload Image</button>
+                    </div>
+                </div>
+
+                <div class="img-preview-box" id="group-img-preview">
+                    <span class="img-preview-badge">LIVE PREVIEW</span>
+                    <img id="group-img-preview-tag" src="" alt="Group preview" onerror="this.parentElement.classList.remove('show')">
+                </div>
+
+                <div class="form-grid" style="margin-top: 15px;">
+                    <div class="input-group" style="grid-column: 1 / -1;">
+                        <label>Description (optional)</label>
+                        <input type="text" id="group-desc" placeholder="What is this group about?">
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="input-group" style="grid-column: 1 / -1;">
+                        <label>Welcome Message (auto-posted as first message)</label>
+                        <input type="text" id="group-welcome" placeholder="Welcome everyone! This is where we'll share updates...">
+                    </div>
+                </div>
+
+                <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 10px;" onclick="createGroup()">CREATE GROUP</button>
+            </div>
+
+            <div class="page-title" style="margin-top: 30px;">Existing Groups</div>
+            <div class="list-container" id="groups-list">
+                <div style="color: var(--text-muted); text-align: center; padding: 20px;">Loading groups...</div>
+            </div>
+        </div>
+
+        <!-- NEW: UPDATES TAB -->
+        <div class="tab-panel" id="tab-updates">
+            <div class="page-title">Create New Update</div>
+            <div class="form-card">
+                <div class="input-group" style="margin-bottom: 15px;">
+                    <label>Update Text / Message *</label>
+                    <textarea id="update-text" rows="4" placeholder="Write your news here... e.g. New game launched today!"></textarea>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Attach Image (Optional)</label>
+                        <input type="file" id="update-image-file" accept="image/*" hidden onchange="uploadUpdateImage(this)">
+                        <button type="button" class="btn btn-neutral" id="update-img-btn" onclick="document.getElementById('update-image-file').click()" style="width: 100%; padding: 14px; font-size: 14px;">📁 Upload Image</button>
+                    </div>
+                </div>
+
+                <div class="img-preview-box" id="update-img-preview">
+                    <span class="img-preview-badge">LIVE PREVIEW</span>
+                    <img id="update-img-preview-tag" src="" alt="Update preview" onerror="this.parentElement.classList.remove('show')">
+                </div>
+
+                <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;" onclick="createUpdate()">POST UPDATE</button>
+            </div>
+
+            <div class="page-title" style="margin-top: 30px;">Recent Updates</div>
+            <div class="list-container" id="updates-list">
+                <div style="color: var(--text-muted); text-align: center; padding: 20px;">Loading updates...</div>
+            </div>
+        </div>
+
+        <!-- NEW: NOTIFICATIONS TAB -->
+        <div class="tab-panel" id="tab-notifications">
+            <div class="page-title">Create Notification / News</div>
+            <div class="form-card">
+                <div class="input-group" style="margin-bottom: 15px;">
+                    <label>Notification Title *</label>
+                    <input type="text" id="notif-title" placeholder="e.g. New Gold Plan Available!">
+                </div>
+
+                <div class="input-group" style="margin-bottom: 15px;">
+                    <label>Body Text *</label>
+                    <textarea id="notif-body" rows="4" placeholder="Invest in our new 30-day plan and get 15% returns..."></textarea>
+                </div>
+
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Link URL (Optional)</label>
+                        <input type="text" id="notif-link-url" placeholder="e.g. plans.html">
+                    </div>
+                    <div class="input-group">
+                        <label>Link Button Text (Optional)</label>
+                        <input type="text" id="notif-link-text" placeholder="e.g. View Plans Now">
+                    </div>
+                </div>
+
+                <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;" onclick="createNotification()">POST NOTIFICATION</button>
+            </div>
+
+            <div class="page-title" style="margin-top: 30px;">Recent Notifications</div>
+            <div class="list-container" id="notifications-list">
+                <div style="color: var(--text-muted); text-align: center; padding: 20px;">Loading notifications...</div>
             </div>
         </div>
 
@@ -499,7 +539,6 @@
     </div>
 
     <script type="module">
-        // LOCKED TO 13.1.0
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app-check.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
@@ -524,9 +563,12 @@
         let currentAdmin = null;
         let selectedUserId = null;
         let unsubscribeChat = null;
+        let unsubscribeGroups = null;
         let currentChatId = null;
         let currentChatName = 'Chat';
         let currentChatAvatar = '';
+        let uploadedGroupImageUrl = '';
+        let uploadedUpdateImageUrl = '';
         
         const userCache = {};
         let lastChatGroupsSnapshot = null;
@@ -555,14 +597,20 @@
                 loadAdminProfile();
                 loadChallengeSelects();
                 listenToChallenges();
-                loadPlans(); // Added this
+                loadPlans();
+                ensureGlobalChatExists();
+                loadGroups();
+                loadUpdates();
+                loadNotifications();
             } else {
                 alert("Access Denied. You are not an Admin.");
                 window.location.replace('home.html'); 
             }
         });
 
-        // --- ADMIN PROFILE LOGIC ---
+        // ============================================================
+        // ADMIN PROFILE
+        // ============================================================
         async function loadAdminProfile() {
             const snap = await getDoc(doc(db, 'users', currentAdmin.uid));
             if (snap.exists()) {
@@ -623,7 +671,179 @@
             }
         };
 
-        // --- PLAN IMAGE UPLOAD LOGIC ---
+        // ============================================================
+        // UPDATES TAB (NEW)
+        // ============================================================
+        window.uploadUpdateImage = async (input) => {
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > 5 * 1024 * 1024) { alert("Image must be less than 5MB."); return; }
+
+            const btn = document.getElementById('update-img-btn');
+            btn.innerText = "Uploading...";
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY.uploadPreset);
+                formData.append('folder', 'jakipot/updates');
+
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, { method: 'POST', body: formData });
+                const data = await res.json();
+
+                if (data.secure_url) {
+                    uploadedUpdateImageUrl = data.secure_url;
+                    document.getElementById('update-img-preview-tag').src = data.secure_url;
+                    document.getElementById('update-img-preview').classList.add('show');
+                    btn.innerText = "Image Uploaded ✓";
+                    setTimeout(() => { btn.innerText = "Change Image"; }, 3000);
+                } else {
+                    throw new Error("Upload failed");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Failed to upload image.");
+                btn.innerText = "📁 Upload Image";
+            } finally {
+                btn.disabled = false;
+                input.value = '';
+            }
+        };
+
+        window.createUpdate = async () => {
+            const text = document.getElementById('update-text').value.trim();
+            if (!text) { alert("Please enter some text for the update."); return; }
+
+            try {
+                await addDoc(collection(db, 'updates'), {
+                    text: text,
+                    imageUrl: uploadedUpdateImageUrl || null,
+                    likes: [],
+                    createdAt: serverTimestamp()
+                });
+                alert("✅ Update posted successfully!");
+                document.getElementById('update-text').value = '';
+                document.getElementById('update-img-preview').classList.remove('show');
+                document.getElementById('update-img-preview-tag').src = '';
+                document.getElementById('update-img-btn').innerText = '📁 Upload Image';
+                uploadedUpdateImageUrl = '';
+            } catch (e) {
+                console.error(e);
+                alert("Failed to post update: " + e.message);
+            }
+        };
+
+        function loadUpdates() {
+            onSnapshot(query(collection(db, 'updates'), orderBy('createdAt', 'desc')), (snap) => {
+                const list = document.getElementById('updates-list');
+                list.innerHTML = '';
+
+                if (snap.empty) {
+                    list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No updates posted yet.</div>';
+                    return;
+                }
+
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const dateStr = d.createdAt ? new Date(d.createdAt.toMillis()).toLocaleString() : 'Just now';
+                    const textPreview = d.text.length > 60 ? d.text.substring(0, 60) + '...' : d.text;
+
+                    list.innerHTML += `
+                        <div class="row-card">
+                            <div class="row-info">
+                                <div class="row-title">${textPreview}</div>
+                                <div class="row-sub">Posted: <span>${dateStr}</span></div>
+                                <div class="row-sub">Likes: <span>${(d.likes || []).length}</span></div>
+                            </div>
+                            <div class="row-actions">
+                                <button class="btn btn-reject" onclick="deleteUpdate('${doc.id}')">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        window.deleteUpdate = async (id) => {
+            if (!confirm("Delete this update? Users will no longer see it.")) return;
+            try {
+                await deleteDoc(doc(db, 'updates', id));
+                alert("Update deleted.");
+            } catch (e) { alert("Failed: " + e.message); }
+        };
+
+        // ============================================================
+        // NOTIFICATIONS TAB (NEW)
+        // ============================================================
+        window.createNotification = async () => {
+            const title = document.getElementById('notif-title').value.trim();
+            const body = document.getElementById('notif-body').value.trim();
+            const linkUrl = document.getElementById('notif-link-url').value.trim();
+            const linkText = document.getElementById('notif-link-text').value.trim();
+
+            if (!title || !body) { alert("Please fill in both Title and Body."); return; }
+
+            try {
+                await addDoc(collection(db, 'notifications'), {
+                    title: title,
+                    body: body,
+                    linkUrl: linkUrl || null,
+                    linkText: linkText || null,
+                    createdAt: serverTimestamp()
+                });
+                alert("✅ Notification posted successfully!");
+                document.getElementById('notif-title').value = '';
+                document.getElementById('notif-body').value = '';
+                document.getElementById('notif-link-url').value = '';
+                document.getElementById('notif-link-text').value = '';
+            } catch (e) {
+                console.error(e);
+                alert("Failed to post notification: " + e.message);
+            }
+        };
+
+        function loadNotifications() {
+            onSnapshot(query(collection(db, 'notifications'), orderBy('createdAt', 'desc')), (snap) => {
+                const list = document.getElementById('notifications-list');
+                list.innerHTML = '';
+
+                if (snap.empty) {
+                    list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No notifications posted yet.</div>';
+                    return;
+                }
+
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const dateStr = d.createdAt ? new Date(d.createdAt.toMillis()).toLocaleString() : 'Just now';
+
+                    list.innerHTML += `
+                        <div class="row-card">
+                            <div class="row-info">
+                                <div class="row-title">${d.title}</div>
+                                <div class="row-sub">${d.body}</div>
+                                <div class="row-sub">Posted: <span>${dateStr}</span></div>
+                            </div>
+                            <div class="row-actions">
+                                <button class="btn btn-reject" onclick="deleteNotification('${doc.id}')">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        window.deleteNotification = async (id) => {
+            if (!confirm("Delete this notification?")) return;
+            try {
+                await deleteDoc(doc(db, 'notifications', id));
+                alert("Notification deleted.");
+            } catch (e) { alert("Failed: " + e.message); }
+        };
+
+        // ============================================================
+        // PLAN IMAGE UPLOAD
+        // ============================================================
         window.uploadPlanImage = async (input) => {
             const file = input.files[0];
             if (!file) return;
@@ -714,7 +934,9 @@
             });
         }
 
-        // --- CHALLENGE SELECT POPULATION ---
+        // ============================================================
+        // CHALLENGE
+        // ============================================================
         function loadChallengeSelects() {
             const cSelect = document.getElementById('challenger-select');
             const oSelect = document.getElementById('opponent-select');
@@ -787,6 +1009,9 @@
             });
         }
 
+        // ============================================================
+        // DASHBOARD LISTENERS
+        // ============================================================
         function initDashboard() {
             // Users List
             onSnapshot(collection(db, 'users'), async (snap) => {
@@ -1051,6 +1276,9 @@
             });
         }
 
+        // ============================================================
+        // CHAT SIDEBAR
+        // ============================================================
         function renderChatSidebar() {
             if (!lastChatGroupsSnapshot) return;
             const list = document.getElementById('chat-user-list');
@@ -1074,7 +1302,7 @@
             chats.sort((a, b) => b._lastTimeMs - a._lastTimeMs);
 
             if (chats.length === 0) {
-                list.innerHTML += `<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">No private chats yet.</div>`;
+                list.innerHTML += `<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">No chats yet.</div>`;
                 return;
             }
 
@@ -1085,23 +1313,215 @@
                     otherUid = uids.find(id => id !== currentAdmin.uid);
                 }
                 const otherUser = otherUid ? userCache[otherUid] : null;
-                const userName = otherUser?.fullName || chat.userName || 'User';
-                const userAvatar = otherUser?.profilePicUrl || chat.userAvatar;
+                const userName = otherUser?.fullName || chat.name || chat.userName || 'Chat';
+                const userAvatar = otherUser?.profilePicUrl || chat.avatarUrl || chat.userAvatar || '';
+                const isGroup = !otherUid && !!chat.createdBy;
                 const initial = userName.charAt(0).toUpperCase();
                 const lastMsg = chat.lastMessage || 'No messages yet';
                 const timeStr = chat._lastTimeMs > 0 ? new Date(chat._lastTimeMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                const avatarHtml = userAvatar ? `<img src="${userAvatar}" alt="${initial}">` : initial;
+                const avatarHtml = userAvatar ? `<img src="${userAvatar}" alt="${initial}" onerror="this.style.display='none'; this.parentElement.innerText='${initial}';">` : initial;
+                const safeName = userName.replace(/'/g, "\\'");
+                const safeAvatar = (userAvatar || '').replace(/'/g, "\\'");
 
                 list.innerHTML += `
-                    <div class="chat-user-item" id="chat-item-${chat.id}" onclick="openChat('${chat.id}', '${userName.replace(/'/g, "\\'")}', '${userAvatar || ''}')">
+                    <div class="chat-user-item" id="chat-item-${chat.id}" onclick="openChat('${chat.id}', '${safeName}', '${safeAvatar}')">
                         <div class="chat-avatar-circle">${avatarHtml}</div>
-                        <div class="chat-preview"><h4>${userName}</h4><p>${lastMsg}</p></div>
+                        <div class="chat-preview"><h4>${userName}${isGroup ? ' 👥' : ''}</h4><p>${lastMsg}</p></div>
                         <div class="chat-time-badge">${timeStr}</div>
                     </div>
                 `;
             });
         }
 
+        // ============================================================
+        // GROUPS TAB
+        // ============================================================
+        async function ensureGlobalChatExists() {
+            try {
+                const ref = doc(db, 'chat_groups', 'global_chat');
+                const snap = await getDoc(ref);
+                if (!snap.exists()) {
+                    await setDoc(ref, {
+                        name: 'Global Community',
+                        avatarUrl: '',
+                        description: 'Official chat room for everyone',
+                        createdBy: currentAdmin.uid,
+                        type: 'community',
+                        createdAt: serverTimestamp()
+                    });
+                }
+            } catch (e) { console.warn('global_chat:', e); }
+        }
+
+        window.uploadGroupImage = async (input) => {
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > 5 * 1024 * 1024) { alert("Image must be less than 5MB."); return; }
+
+            const btn = document.getElementById('group-img-btn');
+            btn.innerText = "Uploading...";
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY.uploadPreset);
+                formData.append('folder', 'jakipot/groups');
+
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, { method: 'POST', body: formData });
+                const data = await res.json();
+
+                if (data.secure_url) {
+                    uploadedGroupImageUrl = data.secure_url;
+                    document.getElementById('group-img-preview-tag').src = data.secure_url;
+                    document.getElementById('group-img-preview').classList.add('show');
+                    btn.innerText = "Image Uploaded ✓";
+                    setTimeout(() => { btn.innerText = "Change Image"; }, 3000);
+                } else {
+                    throw new Error("Upload failed");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Failed to upload image.");
+                btn.innerText = "📁 Upload Image";
+            } finally {
+                btn.disabled = false;
+                input.value = '';
+            }
+        };
+
+        window.createGroup = async () => {
+            const name = document.getElementById('group-name').value.trim();
+            const description = document.getElementById('group-desc').value.trim();
+            const welcomeMsg = document.getElementById('group-welcome').value.trim();
+
+            if (!name) { alert("Group name is required."); return; }
+            if (name.length > 100) { alert("Name too long (max 100 chars)."); return; }
+
+            try {
+                const groupRef = await addDoc(collection(db, 'chat_groups'), {
+                    name: name,
+                    description: description,
+                    avatarUrl: uploadedGroupImageUrl || '',
+                    createdBy: currentAdmin.uid,
+                    type: 'custom',
+                    createdAt: serverTimestamp()
+                });
+
+                if (welcomeMsg) {
+                    await addDoc(collection(db, 'chat_messages'), {
+                        groupId: groupRef.id,
+                        uid: currentAdmin.uid,
+                        senderName: 'Admin',
+                        messageType: 'text',
+                        textContent: welcomeMsg,
+                        timestamp: serverTimestamp()
+                    });
+                }
+
+                await updateDoc(groupRef, {
+                    lastMessage: welcomeMsg || 'Group created',
+                    lastMessageTime: serverTimestamp()
+                });
+
+                alert(`✅ Group "${name}" created!`);
+                resetGroupForm();
+            } catch (e) {
+                console.error(e);
+                alert("Failed to create group: " + e.message);
+            }
+        };
+
+        function resetGroupForm() {
+            document.getElementById('group-name').value = '';
+            document.getElementById('group-desc').value = '';
+            document.getElementById('group-welcome').value = '';
+            document.getElementById('group-img-preview').classList.remove('show');
+            document.getElementById('group-img-preview-tag').src = '';
+            document.getElementById('group-img-btn').innerText = '📁 Upload Image';
+            uploadedGroupImageUrl = '';
+        }
+
+        window.deleteGroup = async (groupId) => {
+            if (!confirm("⚠️ Delete this group AND all its messages? This cannot be undone.")) return;
+
+            try {
+                const msgSnap = await getDocs(query(collection(db, 'chat_messages'), where('groupId', '==', groupId)));
+                for (const m of msgSnap.docs) {
+                    await deleteDoc(doc(db, 'chat_messages', m.id));
+                }
+                await deleteDoc(doc(db, 'chat_groups', groupId));
+
+                if (currentChatId === groupId) {
+                    document.getElementById('chat-header').style.display = 'none';
+                    document.getElementById('chat-input-area').style.display = 'none';
+                    document.getElementById('chat-history').innerHTML = '<div style="text-align: center; margin-top: 100px; color: var(--text-muted);">Select a chat from the left</div>';
+                    if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
+                    currentChatId = null;
+                }
+
+                alert("✅ Group deleted.");
+            } catch (e) {
+                console.error(e);
+                alert("Failed to delete group: " + e.message);
+            }
+        };
+
+        function loadGroups() {
+            if (unsubscribeGroups) unsubscribeGroups();
+            unsubscribeGroups = onSnapshot(collection(db, 'chat_groups'), (snap) => {
+                const list = document.getElementById('groups-list');
+                if (!list) return;
+                list.innerHTML = '';
+
+                if (snap.empty) {
+                    list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No groups yet. Create one above!</div>';
+                    return;
+                }
+
+                const groups = [];
+                snap.forEach(d => {
+                    groups.push({ id: d.id, ...d.data() });
+                });
+                groups.sort((a, b) => {
+                    if (a.id === 'global_chat') return -1;
+                    if (b.id === 'global_chat') return 1;
+                    return (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0);
+                });
+
+                groups.forEach(g => {
+                    const isGlobal = g.id === 'global_chat';
+                    const initial = (g.name || 'G').charAt(0).toUpperCase();
+                    const avatarHtml = g.avatarUrl
+                        ? `<img src="${g.avatarUrl}" style="width: 50px; height: 50px; border-radius: 12px; object-fit: cover; border: 1px solid var(--border-light);" onerror="this.style.display='none'; this.parentElement.innerHTML='${initial}';">`
+                        : `<div style="width: 50px; height: 50px; border-radius: 12px; background: linear-gradient(135deg, var(--cyan), var(--emerald)); display: grid; place-items: center; font-size: 22px; font-weight: 900; color: #000;">${initial}</div>`;
+
+                    const safeName = (g.name || 'Group').replace(/'/g, "\\'");
+                    const safeAvatar = (g.avatarUrl || '').replace(/'/g, "\\'");
+
+                    list.innerHTML += `
+                        <div class="row-card">
+                            <div style="display: flex; align-items: center; gap: 15px; flex: 1; min-width: 0;">
+                                ${avatarHtml}
+                                <div class="row-info">
+                                    <div class="row-title">${g.name || 'Unnamed'} ${isGlobal ? '<span style="font-size: 10px; color: var(--gold); font-weight: 800;">★ DEFAULT</span>' : ''}</div>
+                                    <div class="row-sub">${g.description || 'No description'}</div>
+                                    <div class="row-sub">ID: <span style="font-family: monospace; font-size: 11px;">${g.id}</span> · Type: <span>${g.type || 'custom'}</span></div>
+                                </div>
+                            </div>
+                            <div class="row-actions">
+                                <button class="btn btn-neutral" onclick="openChat('${g.id}', '${safeName}', '${safeAvatar}')">💬 Open</button>
+                                ${!isGlobal ? `<button class="btn btn-reject" onclick="deleteGroup('${g.id}')">🗑️ Delete</button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // ============================================================
+        // TABS
+        // ============================================================
         window.switchTab = (tabId, element) => {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(m => m.classList.remove('active'));
@@ -1109,7 +1529,9 @@
             element.classList.add('active');
         };
 
-        // --- VIP ACTIONS ---
+        // ============================================================
+        // VIP ACTIONS
+        // ============================================================
         window.approveVipRequest = async (requestId, uid, amount) => {
             try {
                 const batch = writeBatch(db);
@@ -1118,20 +1540,17 @@
                 const userRef = doc(db, 'users', uid);
                 const reqRef = doc(db, 'vip_requests', requestId);
 
-                // 1. Deduct funds
                 batch.update(walletRef, { balance: increment(-amount), lastTxId: txRef.id });
                 batch.set(txRef, { uid: uid, type: 'vip_purchase', amount: -amount, status: 'completed', createdAt: serverTimestamp() });
                 
-                // 2. Update user VIP level
                 const reqSnap = await getDoc(reqRef);
                 const vipTier = reqSnap.data().vipTier;
                 batch.update(userRef, { vipLevel: vipTier });
 
-                // 3. Update request status
                 batch.update(reqRef, { status: 'approved' });
                 
                 await batch.commit();
-                alert("VIP Approved and funds deducted. Click 'Generate Code' next.");
+                alert("VIP Approved and funds deducted.");
             } catch (e) { alert("Failed: " + e.message); }
         };
 
@@ -1145,44 +1564,46 @@
             try {
                 const code = Math.floor(100000000000 + Math.random() * 900000000000).toString();
                 await updateDoc(doc(db, 'vip_requests', requestId), { vipTicketCode: code, status: 'code_generated' });
-                alert(`✅ VIP Code Generated: ${code}\n\nSend this to the user.`);
+                alert(`✅ VIP Code Generated: ${code}`);
             } catch (e) { alert("Failed to generate code."); }
         };
 
-        // --- ACTIONS ---
+        // ============================================================
+        // GENERAL ACTIONS
+        // ============================================================
         window.generateActivationCode = async (depositId, uid) => {
             try {
                 const code = Math.floor(100000 + Math.random() * 900000).toString();
                 await updateDoc(doc(db, 'deposits', depositId), { status: 'approved', approvedAt: serverTimestamp() });
                 await updateDoc(doc(db, 'users', uid), { status: 'approved', verificationCode: code, updatedAt: serverTimestamp() });
-                alert(`✅ Activation Code Generated: ${code}\n\nSend this code to the user.`);
+                alert(`✅ Activation Code Generated: ${code}`);
             } catch (error) { alert("Failed to generate code."); }
         };
 
         window.regenerateUserCode = async (uid) => {
-            if (!confirm("Are you sure you want to generate a brand new code for this user?")) return;
+            if (!confirm("Generate a brand new code for this user?")) return;
             try {
                 const newCode = Math.floor(100000 + Math.random() * 900000).toString();
                 await updateDoc(doc(db, 'users', uid), { verificationCode: newCode, updatedAt: serverTimestamp() });
-                alert(`✅ New Activation Code Generated: ${newCode}`);
-            } catch (error) { alert("Failed to regenerate code."); }
+                alert(`✅ New Code: ${newCode}`);
+            } catch (error) { alert("Failed."); }
         };
 
         window.rejectDeposit = async (depositId) => {
             if(!confirm("Reject this request?")) return;
             try {
                 await updateDoc(doc(db, 'deposits', depositId), { status: 'rejected' });
-                alert("Request rejected.");
-            } catch (e) { alert("Failed to reject."); }
+                alert("Rejected.");
+            } catch (e) { alert("Failed."); }
         };
 
         window.deleteUser = async (uid) => {
-            if(!confirm("WARNING: Are you sure you want to delete this user completely? This cannot be undone.")) return;
+            if(!confirm("WARNING: Delete this user completely?")) return;
             try {
                 await deleteDoc(doc(db, 'users', uid));
                 await deleteDoc(doc(db, 'wallets', uid));
                 alert("User deleted.");
-            } catch (e) { alert("Failed to delete user: " + e.message); }
+            } catch (e) { alert("Failed: " + e.message); }
         };
 
         window.toggleBlock = async (uid, currentStatus) => {
@@ -1195,7 +1616,7 @@
                 await updateDoc(doc(db, 'kyc_documents', uid), { status: 'approved' });
                 await updateDoc(doc(db, 'users', uid), { kycStatus: 'verified' });
                 alert("KYC Approved!");
-            } catch (e) { alert("Failed to approve KYC"); }
+            } catch (e) { alert("Failed."); }
         };
 
         window.rejectKyc = async (uid) => {
@@ -1204,7 +1625,7 @@
                 await updateDoc(doc(db, 'kyc_documents', uid), { status: 'rejected' });
                 await updateDoc(doc(db, 'users', uid), { kycStatus: 'rejected' });
                 alert("KYC Rejected.");
-            } catch (e) { alert("Failed to reject KYC"); }
+            } catch (e) { alert("Failed."); }
         };
 
         window.openBalanceModal = (uid, currentBal) => {
@@ -1227,9 +1648,9 @@
                 batch.update(walletRef, { balance: increment(amount), lastTxId: txRef.id });
                 batch.set(txRef, { uid: selectedUserId, type: 'admin_adjustment', amount: amount, status: 'completed', createdAt: serverTimestamp() });
                 await batch.commit();
-                alert("Balance adjusted successfully!");
+                alert("Balance adjusted!");
                 closeModal();
-            } catch (e) { alert("Failed. Check console."); }
+            } catch (e) { alert("Failed."); }
         };
 
         window.approveDeposit = async (depositId, uid, amount) => {
@@ -1268,10 +1689,10 @@
                     }
                 }
                 await batch.commit();
-                alert("Deposit Approved and Referral Processed!");
+                alert("Deposit Approved!");
             } catch (e) { 
                 console.error(e); 
-                alert("Failed to approve."); 
+                alert("Failed."); 
             }
         };
 
@@ -1289,13 +1710,15 @@
                 batch.update(walletRef, { balance: increment(amount), lastTxId: txRef.id });
                 batch.set(txRef, { uid: uid, type: 'withdrawal_refund', amount: amount, status: 'completed', createdAt: serverTimestamp() });
                 await batch.commit();
-                alert("Withdrawal Rejected and Refunded!");
-            } catch (e) { alert("Failed to refund."); }
+                alert("Withdrawal Rejected & Refunded!");
+            } catch (e) { alert("Failed."); }
         };
 
-        // --- PLAN ACTIONS ---
+        // ============================================================
+        // PLAN CREATION
+        // ============================================================
         window.createPlan = async () => {
-            const name = document.getElementById('plan-name').value;
+            const name = document.getElementById('plan-name').value.trim();
             const img = document.getElementById('plan-img').value;
             const invest = parseFloat(document.getElementById('plan-invest').value);
             const daily = parseFloat(document.getElementById('plan-daily').value);
@@ -1305,21 +1728,27 @@
             if (!name || !invest || !daily || !duration || !total) { alert("Fill all fields"); return; }
             if (!img) { alert("Please upload an image"); return; }
             
-            await addDoc(collection(db, 'plans'), { 
-                name, imageUrl: img, investAmount: invest, dailyIncome: daily, durationDays: duration, totalIncome: total, isActive: true 
-            });
-            alert("Plan Created!");
-            document.getElementById('plan-name').value = ''; 
-            document.getElementById('plan-img').value = ''; 
-            document.getElementById('plan-invest').value = ''; 
-            document.getElementById('plan-daily').value = ''; 
-            document.getElementById('plan-duration').value = '';
-            document.getElementById('plan-total').value = '';
-            document.getElementById('plan-img-preview').classList.remove('show');
-            document.getElementById('upload-img-btn').innerText = "📁 Upload Image";
+            try {
+                await addDoc(collection(db, 'plans'), { 
+                    name, imageUrl: img, investAmount: invest, dailyIncome: daily,
+                    durationDays: duration, totalIncome: total, isActive: true,
+                    createdAt: serverTimestamp()
+                });
+                alert("Plan Created!");
+                document.getElementById('plan-name').value = ''; 
+                document.getElementById('plan-img').value = ''; 
+                document.getElementById('plan-invest').value = ''; 
+                document.getElementById('plan-daily').value = ''; 
+                document.getElementById('plan-duration').value = '';
+                document.getElementById('plan-total').value = '';
+                document.getElementById('plan-img-preview').classList.remove('show');
+                document.getElementById('upload-img-btn').innerText = "📁 Upload Image";
+            } catch (e) { alert("Failed: " + e.message); }
         };
 
-        // --- TRENDING MACHINE ACTIONS ---
+        // ============================================================
+        // MACHINES
+        // ============================================================
         function loadMachines() {
             const q = query(collection(db, 'trending_machines'), orderBy('createdAt', 'desc'));
             onSnapshot(q, (snap) => {
@@ -1370,7 +1799,9 @@
             if(confirm("Delete this machine?")) { await deleteDoc(doc(db, 'trending_machines', id)); alert("Machine Deleted."); }
         };
 
-        // --- ENGINE ---
+        // ============================================================
+        // ENGINE
+        // ============================================================
         async function loadCrashSequence() {
             const grid = document.getElementById('sequence-grid');
             grid.innerHTML = '';
@@ -1513,14 +1944,25 @@
             alert("Platform Settings Saved!");
         };
 
-        // ==========================================
-        // CHAT SYSTEM
-        // ==========================================
+        // ============================================================
+        // OPEN CHAT
+        // ============================================================
         window.openChat = (chatId, userName, userAvatar) => {
             currentChatId = chatId;
             currentChatName = userName;
             currentChatAvatar = userAvatar || '';
-            
+
+            // Switch to Chat tab if we're coming from Groups tab
+            const chatTab = document.getElementById('tab-chat');
+            if (!chatTab.classList.contains('active')) {
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.nav-tab').forEach(m => m.classList.remove('active'));
+                chatTab.classList.add('active');
+                document.querySelectorAll('.nav-tab').forEach(t => {
+                    if (t.textContent.includes('Live Chat')) t.classList.add('active');
+                });
+            }
+
             document.querySelectorAll('.chat-user-item').forEach(el => el.classList.remove('active'));
             const activeItem = document.getElementById(`chat-item-${chatId}`);
             if(activeItem) activeItem.classList.add('active');
@@ -1534,7 +1976,7 @@
                 headerAvatar.innerText = '🌍';
                 headerAvatar.style.background = 'linear-gradient(135deg, #00D9FF, #10b981)';
             } else if (userAvatar) {
-                headerAvatar.innerHTML = `<img src="${userAvatar}" alt="${userName}">`;
+                headerAvatar.innerHTML = `<img src="${userAvatar}" alt="${userName}" onerror="this.style.display='none'; this.parentElement.innerText='${userName.charAt(0).toUpperCase()}';">`;
                 headerAvatar.style.background = 'var(--bg-elevated)';
             } else {
                 headerAvatar.innerText = userName.charAt(0).toUpperCase();
@@ -1591,6 +2033,9 @@
             });
         };
 
+        // ============================================================
+        // SEND MESSAGE (FIXED)
+        // ============================================================
         window.sendMessage = async () => {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
@@ -1599,6 +2044,27 @@
             input.value = '';
 
             try {
+                const groupRef = doc(db, 'chat_groups', currentChatId);
+                const groupSnap = await getDoc(groupRef);
+
+                if (!groupSnap.exists()) {
+                    await setDoc(groupRef, {
+                        name: currentChatName,
+                        avatarUrl: currentChatAvatar,
+                        description: '',
+                        createdBy: currentAdmin.uid,
+                        type: currentChatId.startsWith('private_') ? 'private' : 'custom',
+                        createdAt: serverTimestamp(),
+                        lastMessage: 'Admin: ' + text,
+                        lastMessageTime: serverTimestamp()
+                    });
+                } else {
+                    await updateDoc(groupRef, {
+                        lastMessage: 'Admin: ' + text,
+                        lastMessageTime: serverTimestamp()
+                    });
+                }
+
                 await addDoc(collection(db, 'chat_messages'), {
                     groupId: currentChatId,
                     uid: currentAdmin.uid,
@@ -1608,19 +2074,64 @@
                     timestamp: serverTimestamp()
                 });
 
-                await setDoc(doc(db, 'chat_groups', currentChatId), {
-                    lastMessage: 'Admin: ' + text,
-                    lastMessageTime: serverTimestamp()
-                }, { merge: true });
-
             } catch (e) {
                 console.error(e);
-                alert("Failed to send message.");
+                alert("Failed to send message: " + e.message);
             }
         };
 
-        window.logout = async () => { await signOut(auth); window.location.replace('login.html'); };
+        window.uploadChatImage = async (input) => {
+            const file = input.files[0];
+            if (!file || !currentChatId) return;
+            if (file.size > 5 * 1024 * 1024) { alert("Max 5MB"); input.value = ''; return; }
 
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY.uploadPreset);
+                formData.append('folder', `jakipot/chats/${currentChatId}`);
+
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, { method: 'POST', body: formData });
+                const data = await res.json();
+
+                if (!data.secure_url) throw new Error('Upload failed');
+
+                const groupRef = doc(db, 'chat_groups', currentChatId);
+                const groupSnap = await getDoc(groupRef);
+                if (!groupSnap.exists()) {
+                    await setDoc(groupRef, {
+                        name: currentChatName,
+                        avatarUrl: currentChatAvatar,
+                        description: '',
+                        createdBy: currentAdmin.uid,
+                        type: currentChatId.startsWith('private_') ? 'private' : 'custom',
+                        createdAt: serverTimestamp(),
+                        lastMessage: '📷 Image',
+                        lastMessageTime: serverTimestamp()
+                    });
+                } else {
+                    await updateDoc(groupRef, {
+                        lastMessage: '📷 Image',
+                        lastMessageTime: serverTimestamp()
+                    });
+                }
+
+                await addDoc(collection(db, 'chat_messages'), {
+                    groupId: currentChatId,
+                    uid: currentAdmin.uid,
+                    senderName: 'Admin',
+                    messageType: 'image',
+                    imageUrl: data.secure_url,
+                    timestamp: serverTimestamp()
+                });
+            } catch (err) {
+                console.error(err);
+                alert("Failed to send image: " + err.message);
+            }
+            input.value = '';
+        };
+
+        window.logout = async () => { await signOut(auth); window.location.replace('login.html'); };
     </script>
 </body>
 </html>
