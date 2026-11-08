@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JAKIPOT - My Orders</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #040b16; 
+            --bg-card: #0f172a; 
+            --bg-elevated: #1e293b;
+            --cyan: #00D9FF; 
+            --cyan-glow: rgba(0, 217, 255, 0.3);
+            --emerald: #10b981; 
+            --gold: #fbbf24;
+            --danger: #ef4444;
+            --text-white: #ffffff; 
+            --text-muted: #8b9bb4; 
+            --border-light: rgba(255, 255, 255, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg-deep); color: var(--text-white); 
+            min-height: 100vh; display: flex; flex-direction: column;
+            background-image: radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.05) 0%, transparent 50%);
+        }
+
+        .top-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 15px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border-light);
+            position: sticky; top: 0; z-index: 10;
+        }
+        .back-btn { background: transparent; border: none; cursor: pointer; color: var(--cyan); display: flex; align-items: center; padding: 4px; }
+        .back-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .header-title { font-size: 16px; font-weight: 900; color: var(--white); letter-spacing: 1.5px; text-transform: uppercase; }
+        .wallet-balance { font-size: 14px; font-weight: 800; color: var(--gold); background: var(--bg-elevated); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(251,191,36,0.3); }
+
+        .tabs-container {
+            display: flex; background: var(--bg-card); padding: 10px 20px; gap: 10px;
+            border-bottom: 1px solid var(--border-light); position: sticky; top: 60px; z-index: 9;
+        }
+        .tab-btn {
+            flex: 1; padding: 12px; border-radius: 10px; border: 1px solid transparent;
+            background: transparent; color: var(--text-muted); font-size: 14px; font-weight: 800;
+            cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .tab-btn.active { background: rgba(0, 217, 255, 0.1); color: var(--cyan); border-color: var(--cyan-glow); }
+
+        .content-area { flex: 1; padding: 15px; overflow-y: auto; padding-bottom: 50px; }
+        
+        .orders-list { display: flex; flex-direction: column; gap: 15px; }
+
+        .order-card {
+            background: var(--bg-card); border: 1px solid var(--border-light);
+            border-radius: 16px; padding: 15px; position: relative; overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .plan-name { font-size: 16px; font-weight: 900; color: var(--white); text-transform: uppercase; }
+        .status-badge { font-size: 10px; font-weight: 900; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
+        .status-active { background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-completed { background: rgba(139, 155, 180, 0.15); color: var(--text-muted); border: 1px solid rgba(139, 155, 180, 0.3); }
+
+        .order-details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .detail-item { display: flex; flex-direction: column; }
+        .detail-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; }
+        .detail-value { font-size: 14px; font-weight: 800; color: var(--white); }
+        .detail-value.gold { color: var(--gold); }
+        .detail-value.cyan { color: var(--cyan); }
+
+        .progress-container { margin-bottom: 15px; }
+        .progress-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; }
+        .progress-bar-bg { height: 6px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--emerald)); border-radius: 3px; transition: width 1s linear; }
+
+        .btn-claim {
+            width: 100%; padding: 14px; border-radius: 10px; border: none;
+            background: var(--cyan); color: #000; font-size: 14px; font-weight: 900;
+            text-transform: uppercase; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 4px 15px var(--cyan-glow);
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .btn-claim:active { transform: scale(0.98); }
+        .btn-claim:disabled {
+            background: var(--bg-elevated); color: var(--text-muted);
+            cursor: not-allowed; box-shadow: none; border: 1px solid var(--border-light);
+        }
+        .btn-claim.cooldown { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border-light); box-shadow: none; cursor: not-allowed; }
+
+        .empty-state {
+            text-align: center; padding: 50px 20px; color: var(--text-muted); font-size: 14px;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+        .empty-state svg { width: 60px; height: 60px; fill: var(--bg-elevated); }
+
+        .loader-wrap { display: flex; justify-content: center; padding: 40px; }
+        .spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--cyan); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <header class="top-header">
+        <button class="back-btn" onclick="window.location.href='home.html'">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </button>
+        <div class="header-title">My Orders</div>
+        <div class="wallet-balance" id="wallet-balance">Loading...</div>
+    </header>
+
+    <div class="tabs-container">
+        <button class="tab-btn active" id="tab-active" onclick="switchTab('active')">Active</button>
+        <button class="tab-btn" id="tab-old" onclick="switchTab('old')">History</button>
+    </div>
+
+    <main class="content-area">
+        <div class="orders-list" id="orders-list">
+            <div class="loader-wrap"><div class="spinner"></div></div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+        import { getFirestore, doc, collection, query, where, onSnapshot, writeBatch, serverTimestamp, increment, addDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
+            measurementId: "G-L1CLB5TDHV"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let userCurrency = 'ZMW';
+        let currencySymbol = 'K';
+        let allInvestments = [];
+        let currentTab = 'active';
+        let timerInterval = null;
+        let isClaiming = false;
+
+        const CURRENCY_MAP = {
+            'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 
+            'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'TZS': 'TSh', 
+            'UGX': 'USh', 'BWP': 'P', 'MWK': 'MK', 'MZN': 'MT', 
+            'NAD': 'N$', 'AOA': 'Kz', 'PHP': '₱', 'IDR': 'Rp', 
+            'PKR': '₨', 'BDT': '৳'
+        };
+
+        function formatMoney(amount) {
+            return `${currencySymbol}${amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+
+        async function logSecurityEvent(event, details = {}) {
+            try {
+                await addDoc(collection(db, 'security_logs'), {
+                    event: event,
+                    uid: currentUser?.uid || 'unknown',
+                    page: 'orders.html',
+                    timestamp: serverTimestamp(),
+                    ...details
+                });
+            } catch (e) { console.warn('Guardian log failed', e); }
+        }
+
+        // 1. Auth & Real-time Listeners
+        onAuthStateChanged(auth, (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+            currentUser = user;
+
+            onSnapshot(doc(db, 'users', user.uid), (snap) => {
+                if (snap.exists()) {
+                    userCurrency = snap.data().currency || 'ZMW';
+                    currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
+                    renderOrders();
+                }
+            });
+
+            onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
+                if (snap.exists()) {
+                    const bal = snap.data().balance || 0;
+                    document.getElementById('wallet-balance').innerText = formatMoney(bal);
+                }
+            });
+
+            const q = query(collection(db, 'user_investments'), where('uid', '==', user.uid));
+            onSnapshot(q, (snap) => {
+                allInvestments = [];
+                snap.forEach(d => allInvestments.push({ id: d.id, ...d.data() }));
+                // Sort by startDate descending
+                allInvestments.sort((a, b) => (b.startDate?.toMillis() || 0) - (a.startDate?.toMillis() || 0));
+                renderOrders();
+            });
+        });
+
+        // 2. Tab Switching
+        window.switchTab = (tab) => {
+            currentTab = tab;
+            document.getElementById('tab-active').classList.toggle('active', tab === 'active');
+            document.getElementById('tab-old').classList.toggle('active', tab === 'old');
+            renderOrders();
+        };
+
+        // 3. Render Logic
+        function renderOrders() {
+            const list = document.getElementById('orders-list');
+            const now = Date.now();
+
+            const activeOrders = allInvestments.filter(inv => inv.status === 'active' && inv.endDate.toMillis() > now);
+            const oldOrders = allInvestments.filter(inv => inv.status === 'completed' || inv.endDate.toMillis() <= now);
+            const displayList = currentTab === 'active' ? activeOrders : oldOrders;
+
+            if (displayList.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                        <span>No ${currentTab} orders found.</span>
+                    </div>
+                `;
+                if (timerInterval) clearInterval(timerInterval);
+                return;
+            }
+
+            list.innerHTML = '';
+            if (timerInterval) clearInterval(timerInterval);
+
+            displayList.forEach(inv => {
+                const totalReturn = (inv.dailyIncome || 0) * (inv.durationDays || 0);
+                const progressPercent = Math.min(100, Math.max(0, ((now - inv.startDate.toMillis()) / (inv.endDate.toMillis() - inv.startDate.toMillis())) * 100));
+                
+                let statusBadge = inv.status === 'active' ? `<div class="status-badge status-active">Active</div>` : `<div class="status-badge status-completed">Completed</div>`;
+                
+                let actionHtml = '';
+                let claimCooldownHtml = '';
+
+                if (inv.status === 'active') {
+                    const lastClaimMs = inv.lastClaimedAt ? inv.lastClaimedAt.toMillis() : inv.startDate.toMillis();
+                    const nextClaimMs = lastClaimMs + (24 * 60 * 60 * 1000); 
+                    
+                    if (now >= nextClaimMs) {
+                        actionHtml = `<button class="btn-claim" id="claim-btn-${inv.id}" onclick="claimDaily('${inv.id}')">CLAIM ${formatMoney(inv.dailyIncome)}</button>`;
+                    } else {
+                        claimCooldownHtml = `<div style="font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 8px;">Next claim in: <span id="timer-${inv.id}" style="color: var(--gold); font-weight: 800; font-family: monospace;">Calculating...</span></div>`;
+                        actionHtml = `<button class="btn-claim cooldown" disabled>WAITING...</button>`;
+                    }
+                } else {
+                    actionHtml = `<button class="btn-claim cooldown" disabled>EXPIRED</button>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'order-card';
+                card.innerHTML = `
+                    <div class="order-header">
+                        <div class="plan-name">${inv.planName}</div>
+                        ${statusBadge}
+                    </div>
+                    
+                    <div class="order-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Invested</span>
+                            <span class="detail-value gold">${formatMoney(inv.investAmount)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Daily Income</span>
+                            <span class="detail-value cyan">${formatMoney(inv.dailyIncome)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Duration</span>
+                            <span class="detail-value">${inv.durationDays} Days</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Total Return</span>
+                            <span class="detail-value">${formatMoney(totalReturn)}</span>
+                        </div>
+                    </div>
+
+                    <div class="progress-container">
+                        <div class="progress-labels">
+                            <span>Progress</span>
+                            <span>${Math.round(progressPercent)}%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${progressPercent}%"></div>
+                        </div>
+                    </div>
+
+                    ${actionHtml}
+                    ${claimCooldownHtml}
+                `;
+                
+                list.appendChild(card);
+            });
+
+            startCooldownTimers(displayList);
+        }
+
+        function startCooldownTimers(displayList) {
+            if (timerInterval) clearInterval(timerInterval);
+
+            timerInterval = setInterval(() => {
+                const currentTime = Date.now();
+                displayList.forEach(inv => {
+                    if (inv.status !== 'active') return;
+                    
+                    const lastClaimMs = inv.lastClaimedAt ? inv.lastClaimedAt.toMillis() : inv.startDate.toMillis();
+                    const nextClaimMs = lastClaimMs + (24 * 60 * 60 * 1000);
+                    
+                    const el = document.getElementById(`timer-${inv.id}`);
+                    if (el) {
+                        const diff = nextClaimMs - currentTime;
+                        if (diff <= 0) {
+                            renderOrders(); 
+                        } else {
+                            const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                            const m = Math.floor((diff / 1000 / 60) % 60);
+                            const s = Math.floor((diff / 1000) % 60);
+                            el.innerText = `${h}h ${m}m ${s}s`;
+                        }
+                    }
+                });
+            }, 1000);
+        }
+
+        // 4. Claim Action
+        window.claimDaily = async (invId) => {
+            if (!currentUser || isClaiming) return;
+
+            const inv = allInvestments.find(i => i.id === invId);
+            if (!inv) return;
+
+            const lastClaimMs = inv.lastClaimedAt ? inv.lastClaimedAt.toMillis() : inv.startDate.toMillis();
+            const nextClaimMs = lastClaimMs + (24 * 60 * 60 * 1000);
+            
+            if (Date.now() < nextClaimMs) {
+                logSecurityEvent('early_daily_claim_attempt', { 
+                    invId: invId, 
+                    timeRemainingMs: nextClaimMs - Date.now() 
+                });
+                alert("You must wait 24 hours between claims.");
+                return;
+            }
+
+            isClaiming = true;
+            const claimBtn = document.getElementById(`claim-btn-${invId}`);
+            if (claimBtn) {
+                claimBtn.disabled = true;
+                claimBtn.innerText = "PROCESSING...";
+            }
+
+            try {
+                const batch = writeBatch(db);
+
+                const invRef = doc(db, 'user_investments', invId);
+                batch.update(invRef, { lastClaimedAt: serverTimestamp() });
+
+                const walletRef = doc(db, 'wallets', currentUser.uid);
+                const txRef = doc(collection(db, 'transactions'));
+                
+                // 🚨 CRITICAL FIX: Added 'updatedAt' to pass Firestore rules
+                batch.update(walletRef, { 
+                    balance: increment(inv.dailyIncome),
+                    lastTxId: txRef.id,
+                    updatedAt: serverTimestamp()
+                });
+
+                batch.set(txRef, {
+                    uid: currentUser.uid, 
+                    type: 'daily_claim', 
+                    amount: inv.dailyIncome, 
+                    status: 'completed', 
+                    createdAt: serverTimestamp()
+                });
+
+                await batch.commit();
+
+                alert(`Successfully claimed ${formatMoney(inv.dailyIncome)}!`);
+
+            } catch (e) {
+                console.error(e);
+                logSecurityEvent('daily_claim_failed', { invId: invId, reason: e.message });
+                alert("Claim failed. Please try again.");
+            } finally {
+                isClaiming = false;
+                if (claimBtn) {
+                    claimBtn.disabled = false;
+                    claimBtn.innerText = `CLAIM ${formatMoney(inv.dailyIncome)}`;
+                }
+            }
+        };
+    </script>
+</body>
+</html>
