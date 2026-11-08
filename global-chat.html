@@ -20,11 +20,17 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
+        /* BULLETPROOF LAYOUT: Forces browser to keep input visible when keyboard opens */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
         body { 
             background: var(--bg-deep); color: var(--text-primary); 
-            height: 100vh; 
-            height: 100dvh; /* FIX: Dynamic viewport height for mobile keyboard */
-            display: flex; flex-direction: column; overflow: hidden; 
+            display: flex; flex-direction: column;
         }
 
         .chat-header {
@@ -52,7 +58,7 @@
         .chat-title-text h3 { font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; }
         .chat-title-text p { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
 
-        #chat-screen { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        #chat-screen { flex: 1; display: flex; flex-direction: column; min-height: 0; }
         
         .messages-container {
             flex: 1; overflow-y: auto; padding: 20px;
@@ -64,8 +70,8 @@
         }
 
         .message-row { display: flex; gap: 10px; align-items: flex-end; max-width: 85%; }
-        .message-row.sent { align-self: flex-end; justify-content: flex-end; }
-        .message-row.received { align-self: flex-start; justify-content: flex-start; }
+        .message-row.sent { align-self: flex-end; flex-direction: row-reverse; }
+        .message-row.received { align-self: flex-start; flex-direction: row; }
         
         .message-avatar {
             width: 32px; height: 32px; border-radius: 50%; background: var(--bg-elevated);
@@ -125,7 +131,7 @@
             padding: 12px 15px; background: var(--bg-surface); border-top: 1px solid var(--border-light);
             display: flex; align-items: center; gap: 8px; padding-bottom: max(12px, env(safe-area-inset-bottom));
             z-index: 10;
-            flex-shrink: 0; /* FIX: Prevent input area from shrinking */
+            flex-shrink: 0; /* FIX: Prevents input box from shrinking */
         }
         
         .chat-input {
@@ -217,8 +223,8 @@
         
         <div class="chat-title-area">
             <div class="chat-avatar-header">
-                <!-- Added ID to dynamically update this image -->
-                <img id="global-chat-avatar" src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=200&auto=format&fit=crop" alt="Global">
+                <!-- Added robust fallback for image -->
+                <img id="global-chat-avatar" src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=200&auto=format&fit=crop" alt="Global" onerror="this.style.display='none'; this.parentElement.innerText='🌍';">
             </div>
             <div class="chat-title-text">
                 <h3 id="global-chat-name">JAKIPOT International</h3>
@@ -357,8 +363,8 @@
                     });
                 }
             } catch (e) {
-                console.error('Could not create chat membership', e);
-                throw new Error("Could not join chat room. Please try again."); // FIX: Throw error
+                console.warn('Could not create chat membership', e);
+                // Do not throw to block messages. Just log it.
             }
         }
 
@@ -373,7 +379,12 @@
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     if (data.avatarUrl) {
-                        document.getElementById('global-chat-avatar').src = data.avatarUrl;
+                        const img = document.getElementById('global-chat-avatar');
+                        img.src = data.avatarUrl;
+                        img.onerror = function() {
+                            this.style.display = 'none';
+                            this.parentElement.innerText = '🌍';
+                        };
                     }
                     if (data.name) {
                         document.getElementById('global-chat-name').innerText = data.name;
@@ -436,9 +447,12 @@
                     
                     const senderProfile = userCache[msg.uid] || {};
                     const senderAvatarUrl = senderProfile.profilePicUrl;
+                    
+                    // Robust Avatar Builder with Fallback
+                    const avatarInitial = msg.senderName ? msg.senderName.charAt(0).toUpperCase() : '?';
                     const avatarHtml = senderAvatarUrl 
-                        ? `<img src="${senderAvatarUrl}">` 
-                        : (msg.senderName ? msg.senderName.charAt(0).toUpperCase() : '?');
+                        ? `<img src="${senderAvatarUrl}" onerror="this.style.display='none'; this.parentElement.innerText='${avatarInitial}';">` 
+                        : avatarInitial;
 
                     let contentHtml = '';
                     if (msg.messageType === 'image') {
@@ -459,6 +473,7 @@
                         `;
                     }
 
+                    // Only show avatar for received messages, align properly
                     const avatarBlock = !isSent ? `<div class="message-avatar">${avatarHtml}</div>` : '';
                     const crownHtml = msg.isAdmin ? SVG_CROWN : '';
 
@@ -500,7 +515,7 @@
             window.toggleSendButton(); // Reset button back to mic
 
             try {
-                await ensureChatMembership(); // FIX: Ensure membership exists before sending
+                await ensureChatMembership(); // Try to ensure before sending
                 await addDoc(collection(db, 'chat_messages'), {
                     groupId: ROOM_ID,
                     uid: currentUser.uid,
@@ -513,7 +528,7 @@
             } catch (err) {
                 console.error(err);
                 logSecurityEvent('global_chat_send_failed', { reason: err.message });
-                alert("Message failed to send: " + err.message); // FIX: Show exact error
+                alert("Message failed to send: " + err.message); // Show exact error
                 // Restore text so user doesn't lose it
                 input.value = text;
                 window.toggleSendButton();
@@ -567,7 +582,7 @@
             }
             
             const container = document.getElementById('messages-container');
-            container.innerHTML += `<div class="message-bubble sent" style="align-self:flex-end;"><div class="message-text" style="font-style:italic; opacity:0.7;">Uploading image...</div></div>`;
+            container.innerHTML += `<div class="message-row sent"><div class="message-bubble"><div class="message-text" style="font-style:italic; opacity:0.7;">Uploading image...</div></div></div>`;
             container.scrollTop = container.scrollHeight;
 
             try {
@@ -625,7 +640,7 @@
                     const file = new File([audioBlob], "voice.webm", { type: 'audio/webm' });
 
                     const container = document.getElementById('messages-container');
-                    container.innerHTML += `<div class="message-bubble sent" style="align-self:flex-end;"><div class="message-text" style="font-style:italic; opacity:0.7;">Uploading voice note...</div></div>`;
+                    container.innerHTML += `<div class="message-row sent"><div class="message-bubble"><div class="message-text" style="font-style:italic; opacity:0.7;">Uploading voice note...</div></div></div>`;
                     container.scrollTop = container.scrollHeight;
 
                     try {
@@ -634,7 +649,6 @@
                         formData.append('file', file);
                         formData.append('upload_preset', CLOUDINARY.uploadPreset);
 
-                        // 🚨 FIXED: Changed /video/upload to /auto/upload
                         const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/auto/upload`, {
                             method: 'POST', body: formData
                         });

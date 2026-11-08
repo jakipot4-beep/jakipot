@@ -20,11 +20,17 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
+        /* BULLETPROOF LAYOUT: Forces browser to keep input visible when keyboard opens */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
         body { 
             background: var(--bg-deep); color: var(--text-primary); 
-            height: 100vh; 
-            height: 100dvh; /* FIX: Dynamic viewport height for mobile keyboard */
-            display: flex; flex-direction: column; overflow: hidden; 
+            display: flex; flex-direction: column;
         }
 
         .chat-header {
@@ -61,20 +67,35 @@
         .icon-btn:hover { background: rgba(255,255,255,0.05); }
         .icon-btn svg { width: 20px; height: 20px; fill: var(--text-primary); }
 
-        #chat-screen { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        #chat-screen { flex: 1; display: flex; flex-direction: column; min-height: 0; }
         
         .messages-container {
             flex: 1; overflow-y: auto; padding: 20px;
-            display: flex; flex-direction: column; gap: 12px;
+            display: flex; flex-direction: column; gap: 15px;
             background-image: 
                 linear-gradient(rgba(9, 9, 11, 0.9), rgba(9, 9, 11, 0.9)), 
                 url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
             background-size: cover; background-position: center; background-attachment: fixed;
         }
 
-        .message-bubble { max-width: 80%; display: flex; flex-direction: column; }
-        .message-bubble.sent { align-self: flex-end; align-items: flex-end; }
-        .message-bubble.received { align-self: flex-start; align-items: flex-start; }
+        /* FIX: Message rows with avatars */
+        .message-row { display: flex; gap: 8px; align-items: flex-end; max-width: 85%; }
+        .message-row.sent { align-self: flex-end; flex-direction: row-reverse; }
+        .message-row.received { align-self: flex-start; flex-direction: row; }
+        
+        .msg-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: var(--bg-elevated);
+            display: grid; place-items: center;
+            font-weight: 800; font-size: 14px;
+            overflow: hidden; flex-shrink: 0;
+            border: 1px solid var(--border-light);
+        }
+        .msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .msg-content { display: flex; flex-direction: column; }
+        .message-row.sent .msg-content { align-items: flex-end; }
+        .message-row.received .msg-content { align-items: flex-start; }
         
         .message-sender { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; margin-left: 4px; font-weight: 600; }
         
@@ -83,8 +104,8 @@
             word-wrap: break-word; color: var(--text-primary);
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .message-bubble.sent .message-text { background: var(--chat-sent); border-radius: 18px 18px 0 18px; }
-        .message-bubble.received .message-text { background: var(--chat-received); border-radius: 18px 18px 18px 0; }
+        .message-row.sent .message-text { background: var(--chat-sent); border-radius: 18px 18px 0 18px; }
+        .message-row.received .message-text { background: var(--chat-received); border-radius: 18px 18px 18px 0; }
         
         .message-image { 
             max-width: 100%; 
@@ -105,7 +126,7 @@
             padding: 12px 15px; background: var(--bg-surface); border-top: 1px solid var(--border-light);
             display: flex; align-items: center; gap: 8px; padding-bottom: max(12px, env(safe-area-inset-bottom));
             z-index: 10;
-            flex-shrink: 0; /* FIX: Prevent input area from shrinking */
+            flex-shrink: 0; /* FIX: Prevents input box from shrinking */
         }
         
         .chat-input {
@@ -233,6 +254,7 @@
 
         let currentUser = null;
         let currentUserData = null;
+        let otherUserData = null; // NEW: Store other user data for avatars
         let activeRoomId = null;
         let otherUid = null; 
         
@@ -250,11 +272,6 @@
         if (!activeRoomId) {
             window.location.replace('chat-rooms.html');
         }
-
-        // FIX: Scroll to top when keyboard opens to keep input visible
-        document.getElementById('chat-input').addEventListener('focus', () => {
-            setTimeout(() => { window.scrollTo(0, 0); }, 300);
-        });
 
         // Toggle Mic to Send Button
         window.toggleSendButton = () => {
@@ -312,7 +329,7 @@
                 }
             } catch (e) {
                 console.error('Could not create chat membership', e);
-                throw new Error("Could not join chat room. Please try again."); // FIX: Throw error
+                // We do NOT throw here so the message can still attempt to send
             }
         }
 
@@ -340,12 +357,14 @@
             } else if (otherUid) {
                 onSnapshot(doc(db, 'users', otherUid), (otherDoc) => {
                     if (otherDoc.exists()) {
+                        otherUserData = otherDoc.data(); // NEW: Store for message avatars
                         const otherData = otherDoc.data();
                         const headerAvatarEl = document.getElementById('header-avatar');
                         const headerNameEl = document.getElementById('header-name');
                         
+                        // FIX: Robust fallback if image fails
                         if (otherData.profilePicUrl) {
-                            headerAvatarEl.innerHTML = `<img src="${otherData.profilePicUrl}" alt="Avatar">`;
+                            headerAvatarEl.innerHTML = `<img src="${otherData.profilePicUrl}" alt="Avatar" onerror="this.style.display='none'; this.parentElement.innerText='${(otherData.fullName || chatName).charAt(0).toUpperCase()}';">`;
                         } else {
                             headerAvatarEl.innerText = (otherData.fullName || chatName).charAt(0).toUpperCase();
                         }
@@ -356,7 +375,7 @@
                     }
                 });
             } else if (chatAvatar) {
-                document.getElementById('header-avatar').innerHTML = `<img src="${chatAvatar}">`;
+                document.getElementById('header-avatar').innerHTML = `<img src="${chatAvatar}" alt="Avatar" onerror="this.style.display='none'; this.parentElement.innerText='${chatName.charAt(0).toUpperCase()}';">`;
             }
 
             loadMessages();
@@ -406,11 +425,27 @@
                         contentHtml = `<div class="message-text">${msg.textContent}</div>`;
                     }
 
+                    // NEW: Build Avatar HTML
+                    const senderAvatar = isSent 
+                        ? (currentUserData?.profilePicUrl || null) 
+                        : (otherUserData?.profilePicUrl || chatAvatar || null);
+                    
+                    const avatarInitial = isSent 
+                        ? (currentUserData?.fullName || 'U').charAt(0).toUpperCase() 
+                        : chatName.charAt(0).toUpperCase();
+
+                    const avatarHtml = senderAvatar 
+                        ? `<img src="${senderAvatar}" alt="Avatar" onerror="this.style.display='none'; this.parentElement.innerText='${avatarInitial}';">` 
+                        : avatarInitial;
+
                     container.innerHTML += `
-                        <div class="message-bubble ${isSent ? 'sent' : 'received'}">
-                            ${!isSent && activeRoomId === 'global_chat' ? `<div class="message-sender">${msg.senderName}</div>` : ''}
-                            ${contentHtml}
-                            <div class="message-time">${timeStr}</div>
+                        <div class="message-row ${isSent ? 'sent' : 'received'}">
+                            <div class="msg-avatar">${avatarHtml}</div>
+                            <div class="msg-content">
+                                ${!isSent && activeRoomId === 'global_chat' ? `<div class="message-sender">${msg.senderName}</div>` : ''}
+                                ${contentHtml}
+                                <div class="message-time">${timeStr}</div>
+                            </div>
                         </div>
                     `;
                 });
@@ -467,7 +502,7 @@
             }
             
             const container = document.getElementById('messages-container');
-            container.innerHTML += `<div class="message-bubble sent"><div class="message-text" style="font-style:italic; opacity:0.7;">Uploading image...</div></div>`;
+            container.innerHTML += `<div class="message-row sent"><div class="msg-avatar">...</div><div class="msg-content"><div class="message-text" style="font-style:italic; opacity:0.7;">Uploading image...</div></div></div>`;
             container.scrollTop = container.scrollHeight;
 
             try {
@@ -528,7 +563,7 @@
                     const file = new File([audioBlob], "voice.webm", { type: 'audio/webm' });
 
                     const container = document.getElementById('messages-container');
-                    container.innerHTML += `<div class="message-bubble sent"><div class="message-text" style="font-style:italic; opacity:0.7;">Uploading voice note...</div></div>`;
+                    container.innerHTML += `<div class="message-row sent"><div class="msg-avatar">...</div><div class="msg-content"><div class="message-text" style="font-style:italic; opacity:0.7;">Uploading voice note...</div></div></div>`;
                     container.scrollTop = container.scrollHeight;
 
                     try {
