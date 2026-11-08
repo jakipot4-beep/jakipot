@@ -93,11 +93,25 @@
         .quick-btn { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 6px 0; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
         .quick-btn:hover { background: rgba(0, 229, 255, 0.1); color: var(--neon-cyan); }
 
-        .action-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 900; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px; background: linear-gradient(90deg, #0052d4, #4364f7, #6fb1fc); color: var(--text-white); box-shadow: 0 4px 15px rgba(67, 100, 247, 0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+        .action-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 900; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px; background: linear-gradient(90deg, #0052d4, #4364f7, #6fb1fc); color: var(--text-white); box-shadow: 0 4px 15px rgba(67, 100, 247, 0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; opacity: 0.85; }
         .action-btn .btn-main-text { font-size: 15px; }
         .action-btn .btn-sub-text { font-size: 13px; opacity: 0.8; font-weight: 700; }
-        .action-btn.stop { background: linear-gradient(90deg, #ff3366, #ff6b6b); box-shadow: 0 4px 15px rgba(255, 51, 102, 0.4); }
-        .action-btn:disabled { background: rgba(255,255,255,0.1); color: var(--text-muted); cursor: not-allowed; box-shadow: none; }
+        .action-btn.stop { background: linear-gradient(90deg, #ff3366, #ff6b6b); box-shadow: 0 4px 15px rgba(255, 51, 102, 0.4); opacity: 1; }
+        .action-btn:disabled { background: rgba(255,255,255,0.1); color: var(--text-muted); cursor: not-allowed; box-shadow: none; opacity: 1; }
+        
+        /* NEW: GREEN READY BUTTON */
+        .action-btn.ready { 
+            background: linear-gradient(90deg, #10b981, #059669); 
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); 
+            color: #fff; 
+            cursor: not-allowed; 
+            opacity: 1;
+            animation: pulse-green 1.5s infinite;
+        }
+        @keyframes pulse-green {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(16, 185, 129, 0.6); }
+            50% { transform: scale(1.02); box-shadow: 0 0 25px rgba(16, 185, 129, 0.9); }
+        }
 
         .timeout-overlay { position: absolute; inset: 0; background: rgba(4, 11, 22, 0.95); z-index: 50; display: flex; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .timeout-overlay.active { opacity: 1; pointer-events: auto; }
@@ -346,22 +360,6 @@
         }
 
         // ==========================================
-        // FLAGS
-        // ==========================================
-        function getFlagSVG(code) {
-            switch(code) {
-                case 'us': return `<svg viewBox="0 0 60 40"><rect fill="#B22234" width="60" height="40"/><rect fill="#fff" y="3" width="60" height="3"/><rect fill="#fff" y="9" width="60" height="3"/><rect fill="#fff" y="15" width="60" height="3"/><rect fill="#fff" y="21" width="60" height="3"/><rect fill="#fff" y="27" width="60" height="3"/><rect fill="#fff" y="33" width="60" height="3"/><rect fill="#3C3B6E" width="24" height="22"/></svg>`;
-                case 'uk': return `<svg viewBox="0 0 60 40"><rect fill="#012169" width="60" height="40"/><path d="M0,0 L60,40 M60,0 L0,40" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,40 M60,0 L0,40" stroke="#C8102E" stroke-width="4"/><path d="M30,0 L30,40 M0,20 L60,20" stroke="#fff" stroke-width="10"/><path d="M30,0 L30,40 M0,20 L60,20" stroke="#C8102E" stroke-width="6"/></svg>`;
-                case 'jp': return `<svg viewBox="0 0 60 40"><rect fill="#fff" width="60" height="40"/><circle cx="30" cy="20" r="12" fill="#bc002d"/></svg>`;
-                case 'br': return `<svg viewBox="0 0 60 40"><rect fill="#009c3b" width="60" height="40"/><polygon points="30,5 55,20 30,35 5,20" fill="#ffdf00"/><circle cx="30" cy="20" r="8" fill="#002776"/></svg>`;
-                case 'ng': return `<svg viewBox="0 0 60 40"><rect fill="#008751" width="60" height="40"/><rect fill="#fff" x="20" width="20" height="40"/></svg>`;
-                case 'zm': return `<svg viewBox="0 0 60 40"><rect fill="#198a00" width="60" height="40"/><rect fill="#de2010" x="40" y="20" width="15" height="10"/><rect fill="#000" x="40" y="30" width="15" height="10"/><rect fill="#ef7d00" x="40" y="10" width="15" height="10"/></svg>`;
-                case 'za': return `<svg viewBox="0 0 60 40"><rect fill="#002395" width="60" height="20"/><rect fill="#DE3831" y="20" width="60" height="20"/><path d="M0,0 L25,20 L0,40" fill="#007A4D"/><path d="M0,10 L20,20 L0,30" fill="#FFB612"/><path d="M0,15 L15,20 L0,25" fill="#000"/></svg>`;
-                default: return `<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="18" fill="#334155"/></svg>`;
-            }
-        }
-
-        // ==========================================
         // INIT
         // ==========================================
         window.addEventListener('load', () => {
@@ -440,7 +438,7 @@
         window.adjustBet = (amount) => {
             initAudio();
             playClick();
-            if (gameStatus === 'running') return;
+            if (gameStatus === 'running' || hasBetThisRound) return;
             betAmount = Math.max(50, betAmount + amount);
             document.getElementById('bet-input').value = betAmount;
             updateButtonText();
@@ -449,7 +447,7 @@
         window.setBet = (amount) => {
             initAudio();
             playClick();
-            if (gameStatus === 'running') return;
+            if (gameStatus === 'running' || hasBetThisRound) return;
             betAmount = amount;
             document.getElementById('bet-input').value = betAmount;
             updateButtonText();
@@ -554,7 +552,6 @@
                 const roundDoc = snapshot.docs[0];
                 const data = roundDoc.data();
                 
-                // 🚨 FIX: Wait for the server timestamp to resolve
                 if (!data.startTime) return; 
 
                 const startTimeMs = data.startTime.toMillis();
@@ -576,7 +573,6 @@
                     subscribeToLiveBets(currentRoundId);
                 }
                 
-                // Handle status from DB
                 if (data.status === 'crashed') {
                     if (gameStatus !== 'crashed') {
                         triggerCrashUI(data.finalMultiplier || data.crashPoint);
@@ -587,12 +583,10 @@
                     }
                 } else if (data.status === 'waiting') {
                     if (now >= runStartTimeMs) {
-                        // If time passed but status is still waiting, start flying
                         if (gameStatus === 'waiting' || gameStatus === 'idle') {
                             startRound(runStartTimeMs);
                         }
                     } else {
-                        // Still in countdown phase
                         if (gameStatus === 'idle' || gameStatus === 'crashed') {
                             startCountdown(startTimeMs);
                         }
@@ -633,6 +627,7 @@
                 
                 activePlayers.sort((a, b) => (b.isSelf ? 1 : 0) - (a.isSelf ? 1 : 0) || a.name.localeCompare(b.name));
                 renderPlayers();
+                updateUIState(); // Update button immediately when bet is detected
             });
         }
 
@@ -714,7 +709,6 @@
             gameStatus = 'crashed';
             cancelAnimationFrame(animationFrame);
             
-            // Local UI crash
             triggerCrashUI(crashMultiplier);
             
             let wonTheRace = false;
@@ -725,7 +719,7 @@
                     const roundSnap = await transaction.get(roundRef);
                     
                     if (!roundSnap.exists()) return;
-                    if (roundSnap.data().status === 'crashed') return; // Already crashed by another client
+                    if (roundSnap.data().status === 'crashed') return; 
                     
                     transaction.update(roundRef, {
                         status: 'crashed',
@@ -739,7 +733,6 @@
                 console.warn("Crash transaction failed:", e);
             }
             
-            // Only the winner handles the bet cleanup
             if (wonTheRace) {
                 try {
                     const q = query(collection(db, 'live_bets'), where('roundId', '==', currentRoundId), where('status', '==', 'active'));
@@ -788,12 +781,11 @@
                     clearInterval(countdownOverlayInterval);
                     overlay.classList.remove('active');
                     
-                    // ALL clients try to create the next round - transaction lock ensures only one wins
                     const tryCreate = async () => {
-                        if (gameStatus !== 'crashed') return; // onSnapshot caught a new round
+                        if (gameStatus !== 'crashed') return; 
                         const success = await createNewRoundAtomic();
                         if (!success && gameStatus === 'crashed') {
-                            setTimeout(tryCreate, 2000); // Retry every 2s if failed
+                            setTimeout(tryCreate, 2000); 
                         }
                     };
                     tryCreate();
@@ -805,11 +797,16 @@
             const btn = document.getElementById('action-btn');
 
             if (gameStatus === 'waiting') {
-                btn.innerHTML = myBetId 
-                    ? `<span class="btn-main-text">AWAITING...</span>` 
-                    : `<span class="btn-main-text">PLACE TREND</span><span class="btn-sub-text">${currencySymbol}${betAmount}</span>`;
-                btn.className = 'action-btn place-bet';
-                btn.disabled = !!myBetId;
+                if (myBetId) {
+                    // 🚨 NEW: GREEN READY BUTTON
+                    btn.innerHTML = `<span class="btn-main-text">READY ✓</span><span class="btn-sub-text">WAITING...</span>`;
+                    btn.className = 'action-btn ready';
+                    btn.disabled = true;
+                } else {
+                    btn.innerHTML = `<span class="btn-main-text">START TREND</span><span class="btn-sub-text">${currencySymbol}${betAmount}</span>`;
+                    btn.className = 'action-btn';
+                    btn.disabled = false;
+                }
             } 
             else if (gameStatus === 'running') {
                 document.getElementById('status-text').innerText = 'Analyzing Trend...';
@@ -818,13 +815,13 @@
                     btn.disabled = false;
                 } else {
                     btn.innerHTML = `<span class="btn-main-text">MONITORING...</span>`;
-                    btn.className = 'action-btn place-bet';
+                    btn.className = 'action-btn';
                     btn.disabled = true;
                 }
             } 
             else if (gameStatus === 'crashed') {
                 btn.innerHTML = `<span class="btn-main-text">WAITING...</span>`;
-                btn.className = 'action-btn place-bet';
+                btn.className = 'action-btn';
                 btn.disabled = true;
             }
         }
@@ -844,6 +841,10 @@
         async function placeBet() {
             if (betAmount < 50) { alert(`Minimum trend amount is ${currencySymbol}50`); return; }
             if (betAmount > userBalance) { alert('Insufficient balance!'); return; }
+
+            const btn = document.getElementById('action-btn');
+            btn.innerHTML = `<span class="btn-main-text">PLACING BET...</span>`;
+            btn.disabled = true;
 
             try {
                 const batch = writeBatch(db);
@@ -879,6 +880,7 @@
             } catch (e) { 
                 console.error(e); 
                 alert("Transaction failed."); 
+                updateUIState(); // Reset button on failure
             }
         }
 
