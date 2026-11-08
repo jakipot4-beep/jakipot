@@ -197,10 +197,12 @@
         <div class="nav-tab" onclick="switchTab('activations', this)">🚀 Activations</div>
         <div class="nav-tab" onclick="switchTab('kyc', this)">🛡️ KYC</div>
         <div class="nav-tab" onclick="switchTab('users', this)">👥 Users</div>
+        <div class="nav-tab" onclick="switchTab('vip', this)">👑 VIP</div>
         <div class="nav-tab" onclick="switchTab('deposits', this)">💰 Deposits</div>
         <div class="nav-tab" onclick="switchTab('withdrawals', this)">🏦 Withdrawals</div>
         <div class="nav-tab" onclick="switchTab('plans', this)">📈 Plans</div>
         <div class="nav-tab" onclick="switchTab('machine', this)">🏭 Trending Machine</div>
+        <div class="nav-tab" onclick="switchTab('challenge', this)">⚔️ Challenge</div>
         <div class="nav-tab" onclick="switchTab('live-trending', this)">📉 Live Trending Engine</div>
         <div class="nav-tab" onclick="switchTab('chat', this)">💬 Live Chat</div>
         <div class="nav-tab" onclick="switchTab('settings', this)">⚙️ Settings</div>
@@ -242,7 +244,7 @@
             </div>
         </div>
 
-        <!-- NEW: ADMIN PROFILE TAB -->
+        <!-- ADMIN PROFILE TAB -->
         <div class="tab-panel" id="tab-profile">
             <div class="page-title">My Admin Profile</div>
             <div class="form-card" style="text-align: center;">
@@ -265,13 +267,11 @@
             <div class="page-title">Pending Activations ($0.25)</div>
             <div class="list-container" id="activations-list"></div>
 
-            <!-- NEW SECTION: Approved but waiting for code entry -->
             <div class="page-title" style="margin-top: 40px; color: var(--gold);">Approved - Awaiting Code Entry</div>
             <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px; margin-top: -15px;">If a user lost their code or the 7-day timer expired, you can regenerate a new code for them here.</p>
             <div class="list-container" id="approved-activations-list"></div>
         </div>
 
-        <!-- KYC TAB -->
         <div class="tab-panel" id="tab-kyc">
             <div class="page-title">KYC Document Reviews</div>
             <div class="list-container" id="kyc-list"></div>
@@ -280,6 +280,12 @@
         <div class="tab-panel" id="tab-users">
             <div class="page-title">Manage Users</div>
             <div class="list-container" id="users-list"></div>
+        </div>
+
+        <!-- NEW: VIP TAB -->
+        <div class="tab-panel" id="tab-vip">
+            <div class="page-title">VIP Requests</div>
+            <div class="list-container" id="vip-list"></div>
         </div>
 
         <div class="tab-panel" id="tab-deposits">
@@ -292,7 +298,6 @@
             <div class="list-container" id="withdrawals-list"></div>
         </div>
 
-        <!-- PLANS TAB (with Total Income) -->
         <div class="tab-panel" id="tab-plans">
             <div class="page-title">Create New Locked Plan</div>
             <div class="form-card">
@@ -325,7 +330,6 @@
                         <label>Duration (Days)</label>
                         <input type="number" id="plan-duration" placeholder="10">
                     </div>
-                    <!-- NEW: Total Income Field -->
                     <div class="input-group">
                         <label>Total Income</label>
                         <input type="number" id="plan-total" placeholder="e.g. 1100">
@@ -347,6 +351,11 @@
                         <label>Country Code (for flag)</label>
                         <input type="text" id="machine-country-code" placeholder="e.g. zm, us, jp" maxlength="2">
                     </div>
+                    <!-- NEW: Seller Name / Location -->
+                    <div class="input-group">
+                        <label>Seller Name / Location</label>
+                        <input type="text" id="machine-seller" placeholder="e.g. Lusaka Branch">
+                    </div>
                 </div>
                 <div class="form-grid">
                     <div class="input-group"><label>Duration (Days)</label><input type="number" id="machine-duration" placeholder="7"></div>
@@ -358,6 +367,39 @@
             </div>
             <div class="page-title" style="margin-top: 30px;">Active Machines</div>
             <div class="list-container" id="machines-list"></div>
+        </div>
+
+        <!-- NEW: CHALLENGE TAB -->
+        <div class="tab-panel" id="tab-challenge">
+            <div class="page-title">Create PvP Challenge</div>
+            <div class="form-card">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Player A (Challenger)</label>
+                        <select id="challenger-select"></select>
+                    </div>
+                    <div class="input-group">
+                        <label>Player B (Opponent)</label>
+                        <select id="opponent-select"></select>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Game Type</label>
+                        <select id="challenge-game">
+                            <option value="draughts">Draughts</option>
+                            <option value="cards">Cards</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Bet Amount</label>
+                        <input type="number" id="challenge-amount" placeholder="e.g. 100">
+                    </div>
+                </div>
+                <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;" onclick="createChallenge()">CREATE CHALLENGE</button>
+            </div>
+            <div class="page-title" style="margin-top: 30px;">Active Challenges</div>
+            <div class="list-container" id="challenges-list"></div>
         </div>
 
         <div class="tab-panel" id="tab-live-trending">
@@ -508,7 +550,9 @@
                 loadSettings(); 
                 loadMachines();
                 loadUsersCache();
-                loadAdminProfile(); // Load Profile
+                loadAdminProfile();
+                loadChallengeSelects();
+                listenToChallenges();
             } else {
                 alert("Access Denied. You are not an Admin.");
                 window.location.replace('home.html'); 
@@ -557,7 +601,7 @@
             } catch (err) {
                 console.error(err);
                 alert("Failed to upload image.");
-                loadAdminProfile(); // reset
+                loadAdminProfile();
             }
             input.value = '';
         };
@@ -575,7 +619,6 @@
                 alert("Failed to update name.");
             }
         };
-
 
         window.previewPlanImage = () => {
             const url = document.getElementById('plan-img').value.trim();
@@ -598,32 +641,138 @@
                 if (lastChatGroupsSnapshot) {
                     renderChatSidebar();
                 }
+                loadChallengeSelects(); // Refresh selects when users change
             });
         }
 
-        function initDashboard() {
-            // Users List
-            onSnapshot(collection(db, 'users'), (snap) => {
-                const list = document.getElementById('users-list');
+        // --- CHALLENGE SELECT POPULATION ---
+        function loadChallengeSelects() {
+            const cSelect = document.getElementById('challenger-select');
+            const oSelect = document.getElementById('opponent-select');
+            if (!cSelect || !oSelect) return;
+            
+            cSelect.innerHTML = '<option value="">Select Player A...</option>';
+            oSelect.innerHTML = '<option value="">Select Player B...</option>';
+            
+            Object.keys(userCache).forEach(uid => {
+                const u = userCache[uid];
+                if (u.role === 'admin') return;
+                cSelect.innerHTML += `<option value="${uid}">${u.fullName} (${u.email})</option>`;
+                oSelect.innerHTML += `<option value="${uid}">${u.fullName} (${u.email})</option>`;
+            });
+        }
+
+        window.createChallenge = async () => {
+            const cUid = document.getElementById('challenger-select').value;
+            const oUid = document.getElementById('opponent-select').value;
+            const game = document.getElementById('challenge-game').value;
+            const amount = parseFloat(document.getElementById('challenge-amount').value);
+            
+            if (!cUid || !oUid || !amount || cUid === oUid) { alert("Please select two different players and a valid amount."); return; }
+            
+            try {
+                await addDoc(collection(db, 'game_challenges'), {
+                    challengerUid: cUid,
+                    opponentUid: oUid,
+                    gameName: game,
+                    amount: amount,
+                    status: 'pending',
+                    challengerAccepted: false,
+                    opponentAccepted: false,
+                    winnerUid: '',
+                    createdAt: serverTimestamp()
+                });
+                alert("Challenge created successfully!");
+                document.getElementById('challenge-amount').value = '';
+            } catch(e) { alert("Failed to create challenge: " + e.message); }
+        };
+
+        function listenToChallenges() {
+            onSnapshot(collection(db, 'game_challenges'), (snap) => {
+                const list = document.getElementById('challenges-list');
                 list.innerHTML = '';
-                document.getElementById('stat-users').innerText = snap.size;
+                
+                if (snap.empty) { list.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:20px;">No challenges created yet.</div>'; return; }
                 
                 snap.forEach(doc => {
-                    const u = doc.data();
-                    const isBlocked = u.status === 'suspended';
+                    const d = doc.data();
+                    const cName = userCache[d.challengerUid]?.fullName || 'Player A';
+                    const oName = userCache[d.opponentUid]?.fullName || 'Player B';
+                    
+                    let statusBadge = `<span class="badge badge-pending">Pending</span>`;
+                    if (d.status === 'completed') statusBadge = `<span class="badge badge-active">Completed</span>`;
                     
                     list.innerHTML += `
                         <div class="row-card">
                             <div class="row-info">
+                                <div class="row-title">${cName} vs ${oName}</div>
+                                <div class="row-sub">Game: ${d.gameName} | Amount: <span style="color:var(--emerald)">K${d.amount}</span></div>
+                                <div class="row-sub">A: ${d.challengerAccepted ? '✅' : '❌'} | B: ${d.opponentAccepted ? '✅' : '❌'}</div>
+                            </div>
+                            <div class="row-actions">
+                                ${statusBadge}
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function initDashboard() {
+            // Users List (Updated)
+            onSnapshot(collection(db, 'users'), async (snap) => {
+                const list = document.getElementById('users-list');
+                list.innerHTML = '';
+                document.getElementById('stat-users').innerText = snap.size;
+                
+                for (const doc of snap.docs) {
+                    const u = doc.data();
+                    const isBlocked = u.status === 'suspended';
+                    
+                    // Fetch active plans
+                    const plansSnap = await getDocs(query(collection(db, 'user_investments'), where('uid', '==', doc.id), where('status', '==', 'active')));
+                    const plansList = plansSnap.docs.map(p => p.data().planName).join(', ') || 'None';
+
+                    list.innerHTML += `
+                        <div class="row-card">
+                            <div class="row-info">
                                 <div class="row-title">${u.fullName || 'User'}</div>
-                                <div class="row-sub">Phone: <span>${u.phone || 'N/A'}</span></div>
+                                <div class="row-sub">Email: <span>${u.email || 'N/A'}</span> | Phone: <span>${u.phone || 'N/A'}</span></div>
+                                <div class="row-sub">Currency: <span>${u.currency || 'ZMW'}</span> | VIP: <span>${u.vipLevel || 0}</span></div>
+                                <div class="row-sub">Active Plans: <span>${plansList}</span></div>
                             </div>
                             <div class="row-actions">
                                 <span class="badge ${isBlocked ? 'badge-blocked' : 'badge-active'}">${isBlocked ? 'Blocked' : 'Active'}</span>
                                 <button class="btn btn-neutral" onclick="openBalanceModal('${doc.id}', ${u.balance || 0})">💰 Adjust</button>
-                                <button class="btn ${isBlocked ? 'btn-approve' : 'btn-reject'}" onclick="toggleBlock('${doc.id}', '${u.status}')">
-                                    ${isBlocked ? 'Unblock' : 'Block'}
-                                </button>
+                                <button class="btn ${isBlocked ? 'btn-approve' : 'btn-reject'}" onclick="toggleBlock('${doc.id}', '${u.status}')">${isBlocked ? 'Unblock' : 'Block'}</button>
+                                <button class="btn btn-reject" onclick="deleteUser('${doc.id}')">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            // VIP REQUESTS LISTENER
+            onSnapshot(query(collection(db, 'vip_requests'), where('status', '==', 'pending')), (snap) => {
+                const list = document.getElementById('vip-list');
+                if (!list) return;
+                list.innerHTML = '';
+                
+                if(snap.empty) { list.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:20px;">No pending VIP requests.</div>'; return; }
+                
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const userName = userCache[d.uid]?.fullName || 'Unknown User';
+                    
+                    list.innerHTML += `
+                        <div class="row-card">
+                            <div class="row-info">
+                                <div class="row-title">${userName}</div>
+                                <div class="row-sub">Requested: <span style="color:var(--gold)">VIP ${d.vipTier}</span> for K${d.amount}</div>
+                            </div>
+                            <div class="row-actions">
+                                <button class="btn btn-approve" onclick="approveVipRequest('${doc.id}', '${d.uid}', ${d.amount})">Deduct & Approve</button>
+                                <button class="btn btn-reject" onclick="rejectVipRequest('${doc.id}')">❌</button>
                             </div>
                         </div>
                     `;
@@ -636,10 +785,7 @@
                 if (!list) return;
                 list.innerHTML = '';
                 
-                if(snap.empty) {
-                    list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No pending KYC documents.</div>';
-                    return;
-                }
+                if(snap.empty) { list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No pending KYC documents.</div>'; return; }
 
                 for (const doc of snap.docs) {
                     const d = doc.data();
@@ -686,19 +832,15 @@
                 }
             });
 
-            // PENDING ACTIVATIONS (type: activation)
+            // PENDING ACTIVATIONS
             onSnapshot(query(collection(db, 'deposits'), where('status', '==', 'pending'), where('type', '==', 'activation')), async (snap) => {
                 const list = document.getElementById('activations-list');
                 const dashStat = document.getElementById('stat-activations');
                 if (!list) return;
-
                 list.innerHTML = '';
                 dashStat.innerText = snap.size;
 
-                if(snap.empty) {
-                    list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No pending activations.</div>';
-                    return;
-                }
+                if(snap.empty) { list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No pending activations.</div>'; return; }
 
                 for (const doc of snap.docs) {
                     const d = doc.data();
@@ -738,10 +880,7 @@
                 if (!list) return;
                 list.innerHTML = '';
                 
-                if (snap.empty) {
-                    list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No users awaiting activation.</div>';
-                    return;
-                }
+                if (snap.empty) { list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No users awaiting activation.</div>'; return; }
 
                 snap.forEach(doc => {
                     const u = doc.data();
@@ -760,35 +899,38 @@
                 });
             });
 
-            // DEPOSITS (type: deposit)
+            // DEPOSITS (with time)
             onSnapshot(query(collection(db, 'deposits'), where('status', '==', 'pending'), where('type', '==', 'deposit')), async (snap) => {
                 const list = document.getElementById('deposits-list');
                 const dashStat = document.getElementById('stat-deposits');
                 if (!list) return;
-
                 list.innerHTML = '';
                 dashStat.innerText = snap.size;
 
-                if(snap.empty) {
-                    list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No pending deposits.</div>';
-                    return;
-                }
+                if(snap.empty) { list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No pending deposits.</div>'; return; }
 
                 for (const doc of snap.docs) {
                     const d = doc.data();
                     let userName = "Unknown User";
+                    let userPhone = d.phone || "N/A";
                     try {
                         const uSnap = await getDoc(doc(db, 'users', d.uid));
-                        if (uSnap.exists()) userName = uSnap.data().fullName || "No Name";
+                        if (uSnap.exists()) {
+                            userName = uSnap.data().fullName || "No Name";
+                            userPhone = uSnap.data().phone || userPhone;
+                        }
                     } catch (e) { }
+
+                    const timeStr = d.createdAt ? new Date(d.createdAt.toMillis()).toLocaleString() : 'N/A';
 
                     list.innerHTML += `
                         <div class="row-card" style="align-items: flex-start; flex-direction: column; padding: 20px;">
                             <div style="display: flex; justify-content: space-between; width: 100%; flex-wrap: wrap; gap: 15px;">
                                 <div class="row-info">
                                     <div class="row-title" style="color: var(--emerald);">${userName}</div>
+                                    <div class="row-sub">Phone: <span>${userPhone}</span></div>
                                     <div class="row-sub">Amount: <span style="color: var(--emerald); font-size: 18px;">${d.currency} ${d.amount}</span></div>
-                                    <div class="row-sub">Method: <span>${d.method || 'MTN'}</span></div>
+                                    <div class="row-sub">Submitted: <span>${timeStr}</span></div>
                                 </div>
                                 <div class="row-actions">
                                     <button class="btn btn-approve" onclick="approveDeposit('${doc.id}', '${d.uid}', ${d.amount})">✅ Approve</button>
@@ -805,21 +947,25 @@
                 }
             });
 
-            // Withdrawals List
-            onSnapshot(query(collection(db, 'withdrawals'), where('status', '==', 'pending')), (snap) => {
+            // Withdrawals List (with time)
+            onSnapshot(query(collection(db, 'withdrawals'), where('status', '==', 'pending')), async (snap) => {
                 const list = document.getElementById('withdrawals-list');
                 list.innerHTML = '';
                 document.getElementById('stat-withdrawals').innerText = snap.size;
                 
                 if(snap.empty) list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No pending withdrawals.</div>';
 
-                snap.forEach(doc => {
+                for (const doc of snap.docs) {
                     const w = doc.data();
+                    let userName = userCache[w.uid]?.fullName || "Unknown";
+                    const timeStr = w.createdAt ? new Date(w.createdAt.toMillis()).toLocaleString() : 'N/A';
+                    
                     list.innerHTML += `
                         <div class="row-card">
                             <div class="row-info">
-                                <div class="row-title">Withdrawal Request</div>
-                                <div class="row-sub">Amount: <span style="color: var(--danger);">${w.amount}</span> | Phone: <span>${w.destinationPhone}</span></div>
+                                <div class="row-title">${userName}</div>
+                                <div class="row-sub">Phone: <span>${w.destinationPhone}</span></div>
+                                <div class="row-sub">Amount: <span style="color: var(--danger);">${w.amount}</span> | Time: <span>${timeStr}</span></div>
                             </div>
                             <div class="row-actions">
                                 <button class="btn btn-approve" onclick="approveWithdrawal('${doc.id}')">Mark Paid</button>
@@ -827,7 +973,7 @@
                             </div>
                         </div>
                     `;
-                });
+                }
             });
 
             // CHAT GROUPS LISTENER
@@ -839,17 +985,13 @@
 
         function renderChatSidebar() {
             if (!lastChatGroupsSnapshot) return;
-            
             const list = document.getElementById('chat-user-list');
             list.innerHTML = '';
 
             list.innerHTML += `
                 <div class="chat-user-item global-chat-item" id="chat-item-global_chat" onclick="openChat('global_chat', 'Global Community', '')">
                     <div class="chat-avatar-circle global">🌍</div>
-                    <div class="chat-preview">
-                        <h4>Global Community</h4>
-                        <p>Everyone's chat room</p>
-                    </div>
+                    <div class="chat-preview"><h4>Global Community</h4><p>Everyone's chat room</p></div>
                 </div>
             `;
 
@@ -857,7 +999,6 @@
             lastChatGroupsSnapshot.forEach(doc => {
                 const data = doc.data();
                 if (doc.id === 'global_chat') return;
-                
                 const lastTime = data.lastMessageTime?.toMillis() || data.createdAt?.toMillis() || 0;
                 chats.push({ id: doc.id, ...data, _lastTimeMs: lastTime });
             });
@@ -865,7 +1006,7 @@
             chats.sort((a, b) => b._lastTimeMs - a._lastTimeMs);
 
             if (chats.length === 0) {
-                list.innerHTML += `<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">No private chats yet. Users will appear here when they message you.</div>`;
+                list.innerHTML += `<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">No private chats yet.</div>`;
                 return;
             }
 
@@ -875,28 +1016,18 @@
                     const uids = chat.id.replace('private_', '').split('_');
                     otherUid = uids.find(id => id !== currentAdmin.uid);
                 }
-                
                 const otherUser = otherUid ? userCache[otherUid] : null;
                 const userName = otherUser?.fullName || chat.userName || 'User';
                 const userAvatar = otherUser?.profilePicUrl || chat.userAvatar;
                 const initial = userName.charAt(0).toUpperCase();
-                
                 const lastMsg = chat.lastMessage || 'No messages yet';
-                const timeStr = chat._lastTimeMs > 0 
-                    ? new Date(chat._lastTimeMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    : '';
-
-                const avatarHtml = userAvatar 
-                    ? `<img src="${userAvatar}" alt="${initial}">` 
-                    : initial;
+                const timeStr = chat._lastTimeMs > 0 ? new Date(chat._lastTimeMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                const avatarHtml = userAvatar ? `<img src="${userAvatar}" alt="${initial}">` : initial;
 
                 list.innerHTML += `
                     <div class="chat-user-item" id="chat-item-${chat.id}" onclick="openChat('${chat.id}', '${userName.replace(/'/g, "\\'")}', '${userAvatar || ''}')">
                         <div class="chat-avatar-circle">${avatarHtml}</div>
-                        <div class="chat-preview">
-                            <h4>${userName}</h4>
-                            <p>${lastMsg}</p>
-                        </div>
+                        <div class="chat-preview"><h4>${userName}</h4><p>${lastMsg}</p></div>
                         <div class="chat-time-badge">${timeStr}</div>
                     </div>
                 `;
@@ -906,36 +1037,67 @@
         window.switchTab = (tabId, element) => {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(m => m.classList.remove('active'));
-            
             document.getElementById(`tab-${tabId}`).classList.add('active');
             element.classList.add('active');
         };
 
-        // --- ACTIVATIONS ACTIONS ---
+        // --- VIP ACTIONS ---
+        window.approveVipRequest = async (requestId, uid, amount) => {
+            try {
+                const batch = writeBatch(db);
+                const walletRef = doc(db, 'wallets', uid);
+                const txRef = doc(collection(db, 'transactions'));
+                const userRef = doc(db, 'users', uid);
+                const reqRef = doc(db, 'vip_requests', requestId);
+
+                // 1. Deduct funds
+                batch.update(walletRef, { balance: increment(-amount), lastTxId: txRef.id });
+                batch.set(txRef, { uid: uid, type: 'vip_purchase', amount: -amount, status: 'completed', createdAt: serverTimestamp() });
+                
+                // 2. Update user VIP level
+                const reqSnap = await getDoc(reqRef);
+                const vipTier = reqSnap.data().vipTier;
+                batch.update(userRef, { vipLevel: vipTier });
+
+                // 3. Update request status
+                batch.update(reqRef, { status: 'approved' });
+                
+                await batch.commit();
+                alert("VIP Approved and funds deducted. Click 'Generate Code' next.");
+            } catch (e) { alert("Failed: " + e.message); }
+        };
+
+        window.rejectVipRequest = async (requestId) => {
+            if(confirm("Reject this VIP request?")) {
+                await updateDoc(doc(db, 'vip_requests', requestId), { status: 'rejected' });
+            }
+        };
+
+        window.generateVipCode = async (requestId) => {
+            try {
+                const code = Math.floor(100000000000 + Math.random() * 900000000000).toString();
+                await updateDoc(doc(db, 'vip_requests', requestId), { vipTicketCode: code, status: 'code_generated' });
+                alert(`✅ VIP Code Generated: ${code}\n\nSend this to the user.`);
+            } catch (e) { alert("Failed to generate code."); }
+        };
+
+        // --- ACTIONS ---
         window.generateActivationCode = async (depositId, uid) => {
             try {
                 const code = Math.floor(100000 + Math.random() * 900000).toString();
                 await updateDoc(doc(db, 'deposits', depositId), { status: 'approved', approvedAt: serverTimestamp() });
                 await updateDoc(doc(db, 'users', uid), { status: 'approved', verificationCode: code, updatedAt: serverTimestamp() });
                 alert(`✅ Activation Code Generated: ${code}\n\nSend this code to the user.`);
-            } catch (error) {
-                alert("Failed to generate code.");
-            }
+            } catch (error) { alert("Failed to generate code."); }
         };
 
         window.regenerateUserCode = async (uid) => {
             if (!confirm("Are you sure you want to generate a brand new code for this user?")) return;
             try {
                 const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-                await updateDoc(doc(db, 'users', uid), { 
-                    verificationCode: newCode, 
-                    updatedAt: serverTimestamp() 
-                });
-                alert(`✅ New Activation Code Generated: ${newCode}\n\nTell the user to check their screen or send it to them.`);
-            } catch (error) {
-                console.error(error);
-                alert("Failed to regenerate code.");
-            }
+                await updateDoc(doc(db, 'users', uid), { verificationCode: newCode, updatedAt: serverTimestamp() });
+                alert(`✅ New Activation Code Generated: ${newCode}`);
+            } catch (error) { alert("Failed to regenerate code."); }
         };
 
         window.rejectDeposit = async (depositId) => {
@@ -944,6 +1106,15 @@
                 await updateDoc(doc(db, 'deposits', depositId), { status: 'rejected' });
                 alert("Request rejected.");
             } catch (e) { alert("Failed to reject."); }
+        };
+
+        window.deleteUser = async (uid) => {
+            if(!confirm("WARNING: Are you sure you want to delete this user completely? This cannot be undone.")) return;
+            try {
+                await deleteDoc(doc(db, 'users', uid));
+                await deleteDoc(doc(db, 'wallets', uid));
+                alert("User deleted.");
+            } catch (e) { alert("Failed to delete user: " + e.message); }
         };
 
         window.toggleBlock = async (uid, currentStatus) => {
@@ -1002,18 +1173,15 @@
                 batch.update(walletRef, { balance: increment(amount), lastTxId: txRef.id });
                 batch.set(txRef, { uid: uid, type: 'deposit', amount: amount, status: 'completed', createdAt: serverTimestamp() });
 
-                // REFERRAL LOGIC (Trigger only if deposit is K30+)
                 if (amount >= 30) {
                     const userSnap = await getDoc(doc(db, 'users', uid));
                     if (userSnap.exists() && userSnap.data().referredBy) {
                         const referredByCode = userSnap.data().referredBy;
-                        
                         const q = query(collection(db, 'users'), where('myReferralCode', '==', referredByCode), limit(1));
                         const referrerSnap = await getDocs(q);
                         
                         if (!referrerSnap.empty) {
                             const referrerUid = referrerSnap.docs[0].id;
-                            
                             const refQuery = query(collection(db, 'referrals'), where('referredUid', '==', uid));
                             const existingRef = await getDocs(refQuery);
                             
@@ -1031,7 +1199,6 @@
                         }
                     }
                 }
-
                 await batch.commit();
                 alert("Deposit Approved and Referral Processed!");
             } catch (e) { 
@@ -1096,6 +1263,7 @@
                         <div class="row-card">
                             <div class="row-info">
                                 <div class="row-title">${m.countryName} Market (${m.durationDays} Days)</div>
+                                <div class="row-sub">Seller/Location: <span>${m.sellerName || 'N/A'}</span></div>
                                 <div class="row-sub">Min: <span>${m.minAmount}</span> | Max: <span>${m.maxAmount}</span> | Mult: <span>${m.payoutMultiplier}x</span></div>
                             </div>
                             <div class="row-actions"><button class="btn btn-reject" onclick="deleteMachine('${doc.id}')">Delete</button></div>
@@ -1108,15 +1276,21 @@
         window.createMachine = async () => {
             const countryName = document.getElementById('machine-country-name').value.trim();
             const countryCode = document.getElementById('machine-country-code').value.trim().toLowerCase();
+            const sellerName = document.getElementById('machine-seller').value.trim();
             const duration = parseInt(document.getElementById('machine-duration').value);
             const min = parseFloat(document.getElementById('machine-min').value);
             const max = parseFloat(document.getElementById('machine-max').value);
             const multiplier = parseFloat(document.getElementById('machine-multiplier').value);
-            if (!countryName || !countryCode || !duration || !min || !max || !multiplier) { alert("Please fill all fields."); return; }
-            await addDoc(collection(db, 'trending_machines'), { countryName, countryCode, durationDays: duration, minAmount: min, maxAmount: max, payoutMultiplier: multiplier, isActive: true, createdAt: serverTimestamp() });
+            
+            if (!countryName || !countryCode || !sellerName || !duration || !min || !max || !multiplier) { alert("Please fill all fields."); return; }
+            
+            await addDoc(collection(db, 'trending_machines'), { 
+                countryName, countryCode, sellerName, durationDays: duration, minAmount: min, maxAmount: max, payoutMultiplier: multiplier, isActive: true, createdAt: serverTimestamp() 
+            });
             alert("Trending Machine Created!");
             document.getElementById('machine-country-name').value = ''; 
             document.getElementById('machine-country-code').value = ''; 
+            document.getElementById('machine-seller').value = '';
             document.getElementById('machine-duration').value = ''; 
             document.getElementById('machine-min').value = ''; 
             document.getElementById('machine-max').value = ''; 
@@ -1206,7 +1380,6 @@
                 });
                 currentRoundId = roundRef.id;
 
-                // Wait 10 seconds for players to bet
                 await new Promise(r => engineTimeout = setTimeout(r, 10000));
                 if (!engineRunning) return;
 
@@ -1328,18 +1501,12 @@
                     const isAdmin = senderUid === currentAdmin.uid;
                     const text = msg.textContent || msg.text || '';
                     const msgType = msg.messageType || 'text';
-                    const timeStr = msg._time > 0 
-                        ? new Date(msg._time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                        : '';
+                    const timeStr = msg._time > 0 ? new Date(msg._time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
                     let contentHtml = '';
-                    if (msgType === 'image' && msg.imageUrl) {
-                        contentHtml = `<img src="${msg.imageUrl}" class="msg-image" alt="Image">`;
-                    } else if (msgType === 'voice' && msg.voiceNoteUrl) {
-                        contentHtml = `<audio controls src="${msg.voiceNoteUrl}"></audio>`;
-                    } else {
-                        contentHtml = text;
-                    }
+                    if (msgType === 'image' && msg.imageUrl) contentHtml = `<img src="${msg.imageUrl}" class="msg-image" alt="Image">`;
+                    else if (msgType === 'voice' && msg.voiceNoteUrl) contentHtml = `<audio controls src="${msg.voiceNoteUrl}"></audio>`;
+                    else contentHtml = text;
 
                     const showSenderName = !isAdmin && chatId === 'global_chat';
 

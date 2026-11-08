@@ -553,6 +553,10 @@
 
                 const roundDoc = snapshot.docs[0];
                 const data = roundDoc.data();
+                
+                // 🚨 FIX: Wait for the server timestamp to resolve
+                if (!data.startTime) return; 
+
                 const startTimeMs = data.startTime.toMillis();
                 const runStartTimeMs = startTimeMs + (timeToStart * 1000);
                 const now = Date.now();
