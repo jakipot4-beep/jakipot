@@ -45,10 +45,9 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-        /*  KEYBOARD FIX: 100dvh + position fixed on body */
         html, body { 
             height: 100%; 
-            height: 100dvh; /* shrinks when keyboard opens on modern browsers */
+            height: 100dvh;
             margin: 0; 
             padding: 0; 
             overflow: hidden; 
@@ -61,13 +60,12 @@
             display: flex; 
             flex-direction: column;
             transition: background-color 0.3s, color 0.3s;
-            position: fixed; /*  Locks body to viewport — keyboard-safe */
+            position: fixed;
             inset: 0;
             width: 100%;
             height: 100dvh;
         }
 
-        /* HEADER */
         .chat-header {
             display: flex; align-items: center; gap: 12px; padding: 10px 15px;
             background: var(--bg-surface); border-bottom: 1px solid var(--border-light);
@@ -89,13 +87,12 @@
         .icon-btn { background: transparent; border: none; cursor: pointer; padding: 8px; border-radius: 50%; }
         .icon-btn svg { width: 22px; height: 22px; fill: var(--text-primary); }
 
-        /* MESSAGES AREA */
         #chat-screen { 
             flex: 1; 
             display: flex; 
             flex-direction: column; 
             min-height: 0; 
-            overflow: hidden; /*  KEYBOARD FIX */
+            overflow: hidden;
         }
         
         .messages-container {
@@ -177,7 +174,6 @@
         html.light-mode .message-row.received .message-time,
         body.light-mode .message-row.received .message-time { color: #999; }
 
-        /* INPUT AREA — keyboard-safe */
         .chat-input-area {
             padding: 10px 15px; background: var(--bg-surface); 
             display: flex; align-items: flex-end; gap: 8px; 
@@ -265,7 +261,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
-        import { getFirestore, collection, doc, getDoc, setDoc, addDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp, getDocs, runTransaction } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, getDoc, setDoc, addDoc, query, where, limit, onSnapshot, serverTimestamp, getDocs, runTransaction } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
@@ -305,7 +301,6 @@
         }
         applyPreferences();
 
-        //  KEYBOARD FIX: scroll to bottom when keyboard opens
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', () => {
                 const c = document.getElementById('messages-container');
@@ -398,10 +393,9 @@
             } catch (e) { console.warn('ensureChatMembership:', e); }
         }
 
-        //  NEW: Ensure chat_groups doc exists for private chats so both users see the conversation
         async function ensureChatGroupDoc() {
             if (!currentUser || !activeRoomId) return;
-            if (isGroupChat) return; // Groups are created by admin
+            if (isGroupChat) return;
 
             try {
                 const groupRef = doc(db, 'chat_groups', activeRoomId);
@@ -426,7 +420,6 @@
             }
         }
 
-        //  NEW: Update lastMessage preview so dashboard shows it
         async function updateLastMessage(preview) {
             if (!activeRoomId) return;
             try {
@@ -443,7 +436,6 @@
             if (!user) { window.location.replace('login.html'); return; }
             currentUser = user;
 
-            // Determine otherUid BEFORE ensureChatGroupDoc (needed for members array)
             if (!isGroupChat) {
                 const uids = activeRoomId.replace('private_', '').split('_');
                 otherUid = uids.find(id => id !== currentUser.uid);
@@ -540,36 +532,45 @@
             };
         };
 
+        // ============================================================
+        // LOAD MESSAGES — no composite index required
+        // ============================================================
         function loadMessages() {
             const container = document.getElementById('messages-container');
+
             const q = query(
                 collection(db, 'chat_messages'),
                 where('groupId', '==', activeRoomId),
-                orderBy('timestamp', 'asc'),
-                limit(100)
+                limit(200)
             );
 
             onSnapshot(q, (snapshot) => {
-                if (!snapshot.empty) {
-                    const lastDoc = snapshot.docs[snapshot.docs.length - 1];
-                    if (lastMessageId && lastMessageId !== lastDoc.id) {
-                        const lastMsg = lastDoc.data();
-                        if (lastMsg.uid !== currentUser.uid) playSound('receive');
+                const msgs = [];
+                snapshot.forEach(docSnap => {
+                    const m = docSnap.data();
+                    const time = m.timestamp?.toMillis?.() || m.createdAt?.toMillis?.() || 0;
+                    msgs.push({ ...m, _time: time, _id: docSnap.id });
+                });
+                msgs.sort((a, b) => a._time - b._time);
+
+                if (msgs.length > 0) {
+                    const last = msgs[msgs.length - 1];
+                    if (lastMessageId && last._id !== lastMessageId && last.uid !== currentUser.uid) {
+                        playSound('receive');
                     }
-                    lastMessageId = lastDoc.id;
+                    lastMessageId = last._id;
                 }
 
                 container.innerHTML = '<div class="date-divider">Today</div>';
 
-                if (snapshot.empty) {
+                if (msgs.length === 0) {
                     container.innerHTML += `<div style="text-align: center; color: var(--text-secondary); margin-top: 20px;">No messages yet. Say hi! </div>`;
                     return;
                 }
 
-                snapshot.forEach(docSnap => {
-                    const msg = docSnap.data();
+                msgs.forEach(msg => {
                     const isSent = msg.uid === currentUser.uid;
-                    const timeStr = msg.timestamp ? new Date(msg.timestamp.toMillis()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                    const timeStr = msg._time ? new Date(msg._time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
                     
                     let contentHtml = '';
                     let avatarHtml = '';
@@ -637,13 +638,22 @@
                     `;
                 });
                 container.scrollTop = container.scrollHeight;
+            }, (error) => {
+                console.error("Message listener error:", error);
+                container.innerHTML = `<div style="color:#ef4444; padding:20px; text-align:center; font-size:13px;">
+                     Could not load messages.<br>
+                    <small style="color:var(--text-secondary);">${error.message}</small>
+                </div>`;
             });
         }
 
+        // ============================================================
+        // SEND MESSAGE — message first, housekeeping best-effort
+        // ============================================================
         window.sendMessage = async () => {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
-            if (!text) return;
+            if (!text || !currentUser) return;
 
             const now = Date.now();
             if (now - lastMessageTime < 500) return;
@@ -652,10 +662,8 @@
             input.value = '';
             window.toggleSendButton(); 
 
+            //  STEP 1: Send the message — if this fails, alert the user
             try {
-                await ensureChatMembership();
-                await ensureChatGroupDoc(); //  Ensure doc exists before sending
-
                 await addDoc(collection(db, 'chat_messages'), {
                     groupId: activeRoomId,
                     uid: currentUser.uid,
@@ -664,22 +672,29 @@
                     textContent: text,
                     timestamp: serverTimestamp()
                 });
-
-                await updateLastMessage(text); //  Update preview
                 playSound('sent');
             } catch (error) {
-                console.error("Message failed:", error);
-                alert("Failed to send: " + error.message);
+                console.error("Message send FAILED:", error);
+                alert("Failed to send: " + error.message + "\n\nTry refreshing if this keeps happening.");
                 input.value = text;
                 window.toggleSendButton();
+                return;
             }
+
+            //  STEP 2: Housekeeping — never blocks the message
+            try { await ensureChatMembership(); } catch (e) { console.warn(e); }
+            try { await ensureChatGroupDoc(); } catch (e) { console.warn(e); }
+            try { await updateLastMessage(text); } catch (e) { console.warn(e); }
         };
 
         window.handleEnter = (e) => { if (e.key === 'Enter') sendMessage(); };
 
+        // ============================================================
+        // UPLOAD IMAGE — message first
+        // ============================================================
         window.uploadImage = async (input) => {
             const file = input.files[0];
-            if (!file) return;
+            if (!file || !currentUser) return;
             if (file.size > MAX_FILE_SIZE) { alert("Max 5MB"); return; }
             
             const container = document.getElementById('messages-container');
@@ -687,9 +702,6 @@
             container.scrollTop = container.scrollHeight;
 
             try {
-                await ensureChatMembership();
-                await ensureChatGroupDoc();
-
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', CLOUDINARY.uploadPreset);
@@ -697,25 +709,33 @@
                 const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, { method: 'POST', body: formData });
                 const data = await res.json();
 
-                if (data.secure_url) {
-                    await addDoc(collection(db, 'chat_messages'), {
-                        groupId: activeRoomId,
-                        uid: currentUser.uid,
-                        senderName: currentUserData?.fullName || 'User',
-                        messageType: 'image',
-                        imageUrl: data.secure_url,
-                        timestamp: serverTimestamp()
-                    });
-                    await updateLastMessage(' Image');
-                    playSound('sent');
-                } else throw new Error(data.error?.message || 'Upload failed');
+                if (!data.secure_url) throw new Error(data.error?.message || 'Upload failed');
+
+                //  Send message FIRST
+                await addDoc(collection(db, 'chat_messages'), {
+                    groupId: activeRoomId,
+                    uid: currentUser.uid,
+                    senderName: currentUserData?.fullName || 'User',
+                    messageType: 'image',
+                    imageUrl: data.secure_url,
+                    timestamp: serverTimestamp()
+                });
+                playSound('sent');
+
+                //  Then housekeeping
+                try { await ensureChatMembership(); } catch (e) {}
+                try { await ensureChatGroupDoc(); } catch (e) {}
+                try { await updateLastMessage(' Image'); } catch (e) {}
             } catch (err) {
                 console.error(err);
-                alert('Image upload failed: ' + err.message);
+                alert('Image send failed: ' + err.message);
             }
             input.value = '';
         };
 
+        // ============================================================
+        // VOICE RECORDING — message first
+        // ============================================================
         window.toggleRecording = async () => {
             if (isRecording) {
                 mediaRecorder.stop();
@@ -732,7 +752,6 @@
                 mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
                 
                 mediaRecorder.onstop = async () => {
-                    //  Stop mic stream so indicator turns off
                     stream.getTracks().forEach(t => t.stop());
 
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
@@ -745,9 +764,6 @@
                     container.scrollTop = container.scrollHeight;
 
                     try {
-                        await ensureChatMembership();
-                        await ensureChatGroupDoc();
-
                         const formData = new FormData();
                         formData.append('file', file);
                         formData.append('upload_preset', CLOUDINARY.uploadPreset);
@@ -755,21 +771,26 @@
                         const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/auto/upload`, { method: 'POST', body: formData });
                         const data = await res.json();
 
-                        if (data.secure_url) {
-                            await addDoc(collection(db, 'chat_messages'), {
-                                groupId: activeRoomId,
-                                uid: currentUser.uid,
-                                senderName: currentUserData?.fullName || 'User',
-                                messageType: 'voice',
-                                voiceNoteUrl: data.secure_url,
-                                timestamp: serverTimestamp()
-                            });
-                            await updateLastMessage(' Voice message');
-                            playSound('sent');
-                        } else throw new Error('Upload failed');
+                        if (!data.secure_url) throw new Error('Upload failed');
+
+                        //  Send message FIRST
+                        await addDoc(collection(db, 'chat_messages'), {
+                            groupId: activeRoomId,
+                            uid: currentUser.uid,
+                            senderName: currentUserData?.fullName || 'User',
+                            messageType: 'voice',
+                            voiceNoteUrl: data.secure_url,
+                            timestamp: serverTimestamp()
+                        });
+                        playSound('sent');
+
+                        //  Then housekeeping
+                        try { await ensureChatMembership(); } catch (e) {}
+                        try { await ensureChatGroupDoc(); } catch (e) {}
+                        try { await updateLastMessage(' Voice message'); } catch (e) {}
                     } catch (err) {
                         console.error(err);
-                        alert('Voice upload failed: ' + err.message);
+                        alert('Voice send failed: ' + err.message);
                     }
                 };
 
