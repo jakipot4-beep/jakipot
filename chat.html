@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>MyChat - Chat</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- ðŸš¨ FIX: Apply theme instantly BEFORE page draws -->
     <script>
         (function() {
             try {
@@ -19,9 +18,6 @@
     </script>
 
     <style>
-        /* =========================================
-           1. THEME & VARIABLES
-           ========================================= */
         :root {
             --bg-surface: #0B141A;       
             --chat-bg: #0B141A;          
@@ -35,7 +31,6 @@
             --default-wallpaper: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1.5"><circle cx="20" cy="20" r="5"/><path d="M50 10 l5 10 l-10 0 z"/><rect x="70" y="60" width="10" height="10" rx="2"/><path d="M10 80 q10 -10 20 0"/><circle cx="80" cy="20" r="3"/><path d="M30 60 l5 5 l-10 0 z"/><rect x="40" y="80" width="15" height="5" rx="2"/></g></svg>');
         }
 
-        /* ðŸš¨ FIX: Support both html.light-mode and body.light-mode */
         html.light-mode, body.light-mode {
             --bg-surface: #FFFFFF;
             --chat-bg: #EFEAE2;
@@ -49,13 +44,27 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+
+        /*  KEYBOARD FIX: 100dvh + position fixed on body */
+        html, body { 
+            height: 100%; 
+            height: 100dvh; /* shrinks when keyboard opens on modern browsers */
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            overscroll-behavior: none;
+        }
 
         body { 
             background-color: var(--chat-bg); 
             color: var(--text-primary); 
-            display: flex; flex-direction: column;
+            display: flex; 
+            flex-direction: column;
             transition: background-color 0.3s, color 0.3s;
+            position: fixed; /*  Locks body to viewport — keyboard-safe */
+            inset: 0;
+            width: 100%;
+            height: 100dvh;
         }
 
         /* HEADER */
@@ -81,7 +90,13 @@
         .icon-btn svg { width: 22px; height: 22px; fill: var(--text-primary); }
 
         /* MESSAGES AREA */
-        #chat-screen { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+        #chat-screen { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 0; 
+            overflow: hidden; /*  KEYBOARD FIX */
+        }
         
         .messages-container {
             flex: 1; overflow-y: auto; padding: 15px;
@@ -90,6 +105,7 @@
             background-image: var(--default-wallpaper);
             background-size: 150px 150px;
             transition: background 0.3s;
+            -webkit-overflow-scrolling: touch;
         }
 
         .date-divider {
@@ -128,7 +144,6 @@
         
         .message-image { max-width: 100%; max-height: 250px; border-radius: 12px; margin-bottom: 5px; border: 1px solid var(--border-light); cursor: pointer; object-fit: cover; }
 
-        /* Voice Note */
         .voice-bubble { display: flex; align-items: center; gap: 10px; min-width: 240px; padding: 8px 12px !important; }
         .voice-avatar { position: relative; width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; }
         .voice-avatar img, .voice-avatar > div { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
@@ -154,7 +169,6 @@
         body.light-mode .message-row.sent .voice-time-text { color: #667781; }
         .voice-bubble audio { display: none; }
 
-        /* Timestamps */
         .message-time { font-size: 10px; margin-top: 4px; text-align: right; display: flex; justify-content: flex-end; align-items: center; gap: 4px; }
         .message-row.sent .message-time { color: #667781; }
         html.light-mode .message-row.sent .message-time,
@@ -163,12 +177,13 @@
         html.light-mode .message-row.received .message-time,
         body.light-mode .message-row.received .message-time { color: #999; }
 
-        /* INPUT AREA */
+        /* INPUT AREA — keyboard-safe */
         .chat-input-area {
             padding: 10px 15px; background: var(--bg-surface); 
             display: flex; align-items: flex-end; gap: 8px; 
             padding-bottom: max(10px, env(safe-area-inset-bottom));
             z-index: 10; flex-shrink: 0;
+            position: relative;
         }
         .input-wrapper { flex: 1; background: #2A3942; border-radius: 20px; display: flex; align-items: center; padding: 5px 10px; transition: background 0.3s; }
         html.light-mode .input-wrapper,
@@ -185,7 +200,6 @@
         .mic-btn.recording { background: var(--danger, #ef4444); animation: pulse 1s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 
-        /* Image Viewer */
         #image-viewer { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); z-index: 9999; justify-content: center; align-items: center; }
         #image-viewer.active { display: flex; }
         #image-viewer img { max-width: 100%; max-height: 90vh; object-fit: contain; }
@@ -195,7 +209,6 @@
 </head>
 <body>
 
-    <!-- HEADER -->
     <header class="chat-header">
         <button class="back-btn" onclick="history.back()">
             <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
@@ -217,11 +230,9 @@
         </div>
     </header>
 
-    <!-- CHAT AREA -->
     <section id="chat-screen">
         <div class="messages-container" id="messages-container">
             <div class="date-divider">Today</div>
-            <!-- Messages load here -->
         </div>
         
         <div class="chat-input-area">
@@ -244,7 +255,6 @@
         </div>
     </section>
 
-    <!-- Image Viewer -->
     <div id="image-viewer" onclick="closeImageViewer()">
         <button class="close-viewer" onclick="closeImageViewer()">
             <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
@@ -252,11 +262,10 @@
         <img id="viewer-img" src="" alt="Full screen image" onclick="event.stopPropagation()">
     </div>
 
-    <!-- FIREBASE LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
-        import { getFirestore, collection, doc, getDoc, setDoc, addDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, getDoc, setDoc, addDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp, getDocs, runTransaction } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
@@ -274,20 +283,15 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // ==========================================
-        // APPLY PREFERENCES (Theme & Wallpaper)
-        // ==========================================
         function applyPreferences() {
             const theme = localStorage.getItem('mychat_theme');
             if (theme === 'light') {
                 document.documentElement.classList.add('light-mode');
                 document.body.classList.add('light-mode');
             }
-
             const wpBg = localStorage.getItem('mychat_wallpaper_bg');
             const wpColor = localStorage.getItem('mychat_wallpaper_color');
             const chatContainer = document.querySelector('.messages-container');
-            
             if (chatContainer) {
                 if (wpBg) {
                     chatContainer.style.backgroundImage = wpBg;
@@ -299,12 +303,16 @@
                 }
             }
         }
-        
         applyPreferences();
 
-        // ==========================================
-        // SOUNDS
-        // ==========================================
+        //  KEYBOARD FIX: scroll to bottom when keyboard opens
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                const c = document.getElementById('messages-container');
+                if (c) setTimeout(() => { c.scrollTop = c.scrollHeight; }, 100);
+            });
+        }
+
         let audioCtx;
         function playSound(type) {
             if (localStorage.getItem('mychat_sound') === '0') return;
@@ -320,16 +328,14 @@
                     osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.05);
                     gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.1);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
                 } else {
                     osc.type = 'triangle';
                     osc.frequency.setValueAtTime(400, audioCtx.currentTime);
                     osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.05);
                     gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.15);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.15);
                 }
             } catch (e) { }
         }
@@ -389,13 +395,62 @@
                         joinedAt: serverTimestamp()
                     });
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { console.warn('ensureChatMembership:', e); }
+        }
+
+        //  NEW: Ensure chat_groups doc exists for private chats so both users see the conversation
+        async function ensureChatGroupDoc() {
+            if (!currentUser || !activeRoomId) return;
+            if (isGroupChat) return; // Groups are created by admin
+
+            try {
+                const groupRef = doc(db, 'chat_groups', activeRoomId);
+                await runTransaction(db, async (t) => {
+                    const snap = await t.get(groupRef);
+                    if (!snap.exists()) {
+                        t.set(groupRef, {
+                            name: chatName || 'Private Chat',
+                            avatarUrl: '',
+                            createdBy: currentUser.uid,
+                            type: 'private',
+                            members: [currentUser.uid, otherUid],
+                            uids: [currentUser.uid, otherUid],
+                            lastMessage: '',
+                            lastMessageTime: serverTimestamp(),
+                            createdAt: serverTimestamp()
+                        });
+                    }
+                });
+            } catch (e) {
+                console.warn('ensureChatGroupDoc:', e);
+            }
+        }
+
+        //  NEW: Update lastMessage preview so dashboard shows it
+        async function updateLastMessage(preview) {
+            if (!activeRoomId) return;
+            try {
+                await setDoc(doc(db, 'chat_groups', activeRoomId), {
+                    lastMessage: preview,
+                    lastMessageTime: serverTimestamp()
+                }, { merge: true });
+            } catch (e) {
+                console.warn('updateLastMessage:', e);
+            }
         }
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.replace('login.html'); return; }
             currentUser = user;
+
+            // Determine otherUid BEFORE ensureChatGroupDoc (needed for members array)
+            if (!isGroupChat) {
+                const uids = activeRoomId.replace('private_', '').split('_');
+                otherUid = uids.find(id => id !== currentUser.uid);
+            }
+
             await ensureChatMembership();
+            await ensureChatGroupDoc();
 
             onSnapshot(doc(db, 'users', user.uid), (userDoc) => {
                 if (userDoc.exists()) currentUserData = userDoc.data();
@@ -418,9 +473,6 @@
                 });
             } else {
                 document.getElementById('header-status').innerText = 'Online';
-                const uids = activeRoomId.replace('private_', '').split('_');
-                otherUid = uids.find(id => id !== currentUser.uid);
-
                 onSnapshot(doc(db, 'users', otherUid), (otherDoc) => {
                     if (otherDoc.exists()) {
                         const data = otherDoc.data();
@@ -490,7 +542,6 @@
 
         function loadMessages() {
             const container = document.getElementById('messages-container');
-
             const q = query(
                 collection(db, 'chat_messages'),
                 where('groupId', '==', activeRoomId),
@@ -511,7 +562,7 @@
                 container.innerHTML = '<div class="date-divider">Today</div>';
 
                 if (snapshot.empty) {
-                    container.innerHTML += `<div style="text-align: center; color: var(--text-secondary); margin-top: 20px;">No messages yet. Say hi! ðŸ‘‹</div>`;
+                    container.innerHTML += `<div style="text-align: center; color: var(--text-secondary); margin-top: 20px;">No messages yet. Say hi! </div>`;
                     return;
                 }
 
@@ -602,7 +653,9 @@
             window.toggleSendButton(); 
 
             try {
-                await ensureChatMembership(); 
+                await ensureChatMembership();
+                await ensureChatGroupDoc(); //  Ensure doc exists before sending
+
                 await addDoc(collection(db, 'chat_messages'), {
                     groupId: activeRoomId,
                     uid: currentUser.uid,
@@ -611,10 +664,12 @@
                     textContent: text,
                     timestamp: serverTimestamp()
                 });
+
+                await updateLastMessage(text); //  Update preview
                 playSound('sent');
             } catch (error) {
                 console.error("Message failed:", error);
-                alert("Failed to send. Please check connection.");
+                alert("Failed to send: " + error.message);
                 input.value = text;
                 window.toggleSendButton();
             }
@@ -633,6 +688,8 @@
 
             try {
                 await ensureChatMembership();
+                await ensureChatGroupDoc();
+
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', CLOUDINARY.uploadPreset);
@@ -649,11 +706,12 @@
                         imageUrl: data.secure_url,
                         timestamp: serverTimestamp()
                     });
+                    await updateLastMessage(' Image');
                     playSound('sent');
                 } else throw new Error(data.error?.message || 'Upload failed');
             } catch (err) {
                 console.error(err);
-                alert('Image upload failed.');
+                alert('Image upload failed: ' + err.message);
             }
             input.value = '';
         };
@@ -671,9 +729,12 @@
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
 
-                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
                 
                 mediaRecorder.onstop = async () => {
+                    //  Stop mic stream so indicator turns off
+                    stream.getTracks().forEach(t => t.stop());
+
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                     if (audioBlob.size > MAX_FILE_SIZE) { alert("Voice too long."); return; }
                     if (audioBlob.size < 1000) return;
@@ -685,6 +746,8 @@
 
                     try {
                         await ensureChatMembership();
+                        await ensureChatGroupDoc();
+
                         const formData = new FormData();
                         formData.append('file', file);
                         formData.append('upload_preset', CLOUDINARY.uploadPreset);
@@ -701,11 +764,12 @@
                                 voiceNoteUrl: data.secure_url,
                                 timestamp: serverTimestamp()
                             });
+                            await updateLastMessage(' Voice message');
                             playSound('sent');
                         } else throw new Error('Upload failed');
                     } catch (err) {
                         console.error(err);
-                        alert('Voice upload failed.');
+                        alert('Voice upload failed: ' + err.message);
                     }
                 };
 
@@ -713,7 +777,7 @@
                 isRecording = true;
                 document.getElementById('mic-btn').classList.add('recording');
             } catch (err) {
-                alert('Microphone denied.');
+                alert('Microphone denied: ' + err.message);
             }
         };
     </script>

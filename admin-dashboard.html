@@ -348,7 +348,7 @@
             </div>
             <div class="form-card">
                 <h3 style="margin-bottom: 10px; color: var(--cyan);">Auto-Crash Sequence (20 Rounds)</h3>
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Set crash points. They will shuffle automatically after 20 rounds.</p>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Set the 20 base crash points. <b style="color: var(--emerald);">After every 20 rounds, the sequence is auto-shuffled</b> so players cannot memorize the pattern.</p>
                 <div class="sequence-scroll-box" style="max-height: 220px; overflow-y: auto; padding-right: 8px; margin-bottom: 20px; border: 1px solid #1e293b; border-radius: 10px; padding: 10px;">
                     <div id="sequence-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;"></div>
                 </div>
@@ -438,7 +438,6 @@
             </div>
         </div>
 
-        <!-- NEW: UPDATES TAB -->
         <div class="tab-panel" id="tab-updates">
             <div class="page-title">Create New Update</div>
             <div class="form-card">
@@ -469,7 +468,6 @@
             </div>
         </div>
 
-        <!-- NEW: NOTIFICATIONS TAB -->
         <div class="tab-panel" id="tab-notifications">
             <div class="page-title">Create Notification / News</div>
             <div class="form-card">
@@ -581,6 +579,7 @@
         let currentRoundId = null;
         let currentCrashPoint = 2.00;
         let crashSequence = [];
+        let currentLoopIndex = 0;
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.replace('login.html'); return; }
@@ -1800,7 +1799,7 @@
         };
 
         // ============================================================
-        // ENGINE
+        // ENGINE — WITH AUTO-SHUFFLE AFTER EVERY 20 ROUNDS
         // ============================================================
         async function loadCrashSequence() {
             const grid = document.getElementById('sequence-grid');
@@ -1819,16 +1818,34 @@
             }
         }
 
+        // Fisher-Yates shuffle — returns a new shuffled array
+        function fisherYatesShuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
         window.saveCrashSequence = async () => {
             let sequence = [];
             for (let i = 0; i < 20; i++) {
                 const val = parseFloat(document.getElementById(`crash-input-${i}`).value);
                 sequence.push(isNaN(val) || val < 1.01 ? 1.01 : val);
             }
-            await setDoc(doc(db, 'settings', 'crash_sequence'), { rounds: sequence, updatedAt: serverTimestamp() });
-            await setDoc(doc(db, 'settings', 'game_counter'), { index: 0 });
-            loadCrashSequence();
-            alert("Sequence Saved! Engine Restarted from Round 1.");
+            await setDoc(doc(db, 'settings', 'crash_sequence'), { 
+                rounds: sequence, 
+                updatedAt: serverTimestamp() 
+            });
+            await setDoc(doc(db, 'settings', 'game_counter'), { 
+                index: 0, 
+                loop: 0, 
+                shuffledRounds: sequence,
+                updatedAt: serverTimestamp() 
+            });
+            await loadCrashSequence();
+            alert("✅ Sequence Saved!\n\nEngine restarted from Round 1.\n🔀 The sequence will auto-shuffle after every 20 rounds so players cannot memorize it.");
         };
 
         window.toggleEngine = async () => {
@@ -1842,7 +1859,27 @@
             document.getElementById('engine-toggle-btn').className = "btn btn-reject";
             document.getElementById('engine-toggle-btn').style.cssText = "width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;";
             await loadCrashSequence();
-            currentRoundIndex = 0;
+            
+            // Read current loop state from Firestore so we continue from where the game really is
+            try {
+                const counterSnap = await getDoc(doc(db, 'settings', 'game_counter'));
+                if (counterSnap.exists()) {
+                    const c = counterSnap.data();
+                    currentRoundIndex = c.index || 0;
+                    currentLoopIndex = c.loop || 0;
+                    // Use the currently shuffled order if present
+                    if (c.shuffledRounds && c.shuffledRounds.length === 20) {
+                        crashSequence = c.shuffledRounds;
+                    }
+                } else {
+                    currentRoundIndex = 0;
+                    currentLoopIndex = 0;
+                }
+            } catch (e) {
+                currentRoundIndex = 0;
+                currentLoopIndex = 0;
+            }
+            
             runRound();
         }
 
@@ -1859,7 +1896,23 @@
 
         async function runRound() {
             if (!engineRunning) return;
-            if (currentRoundIndex >= crashSequence.length) currentRoundIndex = 0;
+
+            // 🔀 When we've completed 20 rounds → shuffle and reset
+            if (currentRoundIndex >= 20) {
+                const shuffled = fisherYatesShuffle(crashSequence);
+                crashSequence = shuffled;
+                currentRoundIndex = 0;
+                currentLoopIndex++;
+                try {
+                    await setDoc(doc(db, 'settings', 'game_counter'), {
+                        index: 0,
+                        loop: currentLoopIndex,
+                        shuffledRounds: shuffled,
+                        updatedAt: serverTimestamp()
+                    });
+                } catch (e) { console.warn('Shuffle save failed:', e); }
+                document.getElementById('engine-state-display').innerText = `🔀 Sequence shuffled! (Loop ${currentLoopIndex + 1})`;
+            }
 
             const crashPoint = crashSequence[currentRoundIndex];
             currentCrashPoint = crashPoint;
@@ -1873,12 +1926,23 @@
             try {
                 const roundRef = await addDoc(collection(db, 'live_trends'), {
                     roundNumber: currentRoundIndex + 1,
+                    loopNumber: currentLoopIndex + 1,
                     crashPoint: crashPoint,
                     status: 'waiting',
                     startTime: serverTimestamp(),
                     createdAt: serverTimestamp()
                 });
                 currentRoundId = roundRef.id;
+
+                // Update game_counter.index for the NEXT round (or 20 to trigger shuffle)
+                try {
+                    await setDoc(doc(db, 'settings', 'game_counter'), {
+                        index: currentRoundIndex + 1,
+                        loop: currentLoopIndex,
+                        shuffledRounds: crashSequence,
+                        updatedAt: serverTimestamp()
+                    });
+                } catch (e) { console.warn('Counter save failed:', e); }
 
                 await new Promise(r => engineTimeout = setTimeout(r, 10000));
                 if (!engineRunning) return;
@@ -1952,7 +2016,6 @@
             currentChatName = userName;
             currentChatAvatar = userAvatar || '';
 
-            // Switch to Chat tab if we're coming from Groups tab
             const chatTab = document.getElementById('tab-chat');
             if (!chatTab.classList.contains('active')) {
                 document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -2034,7 +2097,7 @@
         };
 
         // ============================================================
-        // SEND MESSAGE (FULLY FIXED)
+        // SEND MESSAGE
         // ============================================================
         window.sendMessage = async () => {
             const input = document.getElementById('chat-input');
