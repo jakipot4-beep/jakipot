@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JAKIPOT - Investment Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-deep: #060b19;
+            --bg-card: #0f172a;
+            --bg-elevated: #1e293b;
+            --gold: #fbbf24;
+            --gold-glow: rgba(251, 191, 36, 0.4);
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.4);
+            --cyan: #38bdf8;
+            --cyan-glow: rgba(56, 189, 248, 0.4);
+            --white: #ffffff;
+            --text-muted: #94a3b8;
+            --border-light: rgba(255, 255, 255, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg-deep); 
+            color: var(--white); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.1) 0%, transparent 50%);
+            background-attachment: fixed;
+            opacity: 0; /* Hidden until auth is confirmed */
+            transition: opacity 0.5s ease;
+        }
+
+        /* ==========================================
+           WELCOME LOADER (GOLD J)
+           ========================================== */
+        .loader-overlay {
+            position: fixed; inset: 0;
+            background: #040b16;
+            z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        .loader-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .loader-j {
+            font-size: 80px;
+            font-weight: 900;
+            color: var(--gold);
+            text-shadow: 0 0 20px var(--gold-glow), 0 0 40px var(--gold-glow);
+            animation: pulse-gold 1.5s infinite alternate;
+            margin-bottom: 20px;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -3px;
+        }
+
+        .loader-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            padding: 0 20px;
+            animation: fade-in-out 2s infinite alternate;
+        }
+
+        @keyframes pulse-gold {
+            0% { transform: scale(0.95); text-shadow: 0 0 10px var(--gold-glow); }
+            100% { transform: scale(1.05); text-shadow: 0 0 30px var(--gold), 0 0 60px var(--gold-glow); }
+        }
+
+        @keyframes fade-in-out {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* HEADER */
+        .top-header {
+            display: flex; align-items: center; gap: 15px;
+            padding: 20px; 
+            background: rgba(6, 11, 25, 0.85); 
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-light);
+            position: sticky; top: 0; z-index: 50;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border-light);
+            width: 40px; height: 40px; border-radius: 50%;
+            display: grid; place-items: center; cursor: pointer;
+            transition: 0.2s; color: var(--white);
+            text-decoration: none;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.1); }
+        .back-btn svg { width: 20px; height: 20px; fill: currentColor; }
+        .header-title { font-size: 20px; font-weight: 900; letter-spacing: 0.5px; }
+
+        /* MAIN CONTENT */
+        .main-content {
+            padding: 25px 20px 50px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        .section-desc {
+            font-size: 14px; color: var(--text-muted); font-weight: 500;
+            margin-bottom: 25px; line-height: 1.5;
+        }
+
+        /* ==========================================
+           INVESTMENT CARDS (WIDE LANDSCAPE DESIGN)
+           ========================================== */
+        .investment-list {
+            display: flex; flex-direction: column; gap: 16px;
+        }
+
+        .inv-card {
+            display: flex; align-items: center; gap: 18px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            padding: 20px;
+            text-decoration: none; color: var(--white);
+            position: relative; overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .inv-card:hover { transform: translateX(5px); }
+
+        /* Card Themes */
+        .inv-card.live-trending { border-left: 4px solid var(--cyan); }
+        .inv-card.live-trending:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(56, 189, 248, 0.15); }
+        
+        .inv-card.locked-plans { border-left: 4px solid var(--gold); }
+        .inv-card.locked-plans:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(251, 191, 36, 0.15); }
+        
+        .inv-card.trending-machine { border-left: 4px solid var(--emerald); }
+        .inv-card.trending-machine:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(16, 185, 129, 0.15); }
+
+        /* Card Icon */
+        .inv-icon {
+            width: 55px; height: 55px; flex-shrink: 0;
+            border-radius: 16px; display: grid; place-items: center;
+            font-size: 26px;
+        }
+        .live-trending .inv-icon { background: rgba(56, 189, 248, 0.1); color: var(--cyan); }
+        .locked-plans .inv-icon { background: rgba(251, 191, 36, 0.1); color: var(--gold); }
+        .trending-machine .inv-icon { background: rgba(16, 185, 129, 0.1); color: var(--emerald); }
+
+        /* Card Info */
+        .inv-info { flex: 1; }
+        .inv-info h3 { font-size: 17px; font-weight: 800; margin-bottom: 4px; }
+        .inv-info p { font-size: 12px; color: var(--text-muted); font-weight: 500; line-height: 1.4; }
+
+        /* Card Arrow */
+        .inv-arrow {
+            font-size: 20px; color: var(--text-muted);
+            transition: 0.2s; padding: 0 5px;
+        }
+        .inv-card:hover .inv-arrow { color: var(--white); transform: translateX(5px); }
+        .live-trending:hover .inv-arrow { color: var(--cyan); }
+        .locked-plans:hover .inv-arrow { color: var(--gold); }
+        .trending-machine:hover .inv-arrow { color: var(--emerald); }
+
+    </style>
+</head>
+<body>
+
+    <!-- ✅ WELCOME LOADER -->
+    <div class="loader-overlay" id="loader">
+        <div class="loader-j">J</div>
+        <div class="loader-text">Welcome to investment place for jakipot</div>
+    </div>
+
+    <!-- MAIN APP CONTENT -->
+    <header class="top-header">
+        <!-- ✅ Back button to home.html -->
+        <a href="home.html" class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </a>
+        <div class="header-title">Investment Hub</div>
+    </header>
+
+    <main class="main-content">
+        <div class="section-desc">
+            Grow your wealth with our premium investment opportunities. Choose a plan below to get started.
+        </div>
+
+        <div class="investment-list">
+            
+            <!-- 1. LIVE TRENDING -->
+            <a href="live-trending.html" class="inv-card live-trending">
+                <div class="inv-icon">📈</div>
+                <div class="inv-info">
+                    <h3>Live Trending</h3>
+                    <p>Play the multiplier crash game. Cash out before the plane flies away!</p>
+                </div>
+                <div class="inv-arrow">➔</div>
+            </a>
+
+            <!-- 2. LOCKED PLANS -->
+            <a href="locked-plans.html" class="inv-card locked-plans">
+                <div class="inv-icon">🔒</div>
+                <div class="inv-info">
+                    <h3>Locked Plans</h3>
+                    <p>Secure your funds for a set period and earn guaranteed daily returns.</p>
+                </div>
+                <div class="inv-arrow">➔</div>
+            </a>
+
+            <!-- 3. TRENDING MACHINE -->
+            <a href="trending-machine.html" class="inv-card trending-machine">
+                <div class="inv-icon">🏭</div>
+                <div class="inv-info">
+                    <h3>Trending Machine</h3>
+                    <p>Invest in market trends and earn high yield multipliers.</p>
+                </div>
+                <div class="inv-arrow">➔</div>
+            </a>
+
+        </div>
+    </main>
+
+    <!-- Firebase Auth Check -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+            authDomain: "jakipot.firebaseapp.com",
+            projectId: "jakipot",
+            storageBucket: "jakipot.firebasestorage.app",
+            messagingSenderId: "396191754293",
+            appId: "1:396191754293:web:5b11a11d82e773d19ee97c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Check Authentication
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                // Not logged in -> Redirect to login
+                window.location.replace('login.html');
+                return;
+            }
+            
+            // Logged in -> Fade out loader and show content
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+                document.body.style.opacity = '1';
+            }, 2000); // 2 seconds to enjoy the welcome screen
+        });
+    </script>
+</body>
+</html>
