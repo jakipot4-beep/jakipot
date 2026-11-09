@@ -551,4 +551,148 @@
 
         window.setTheme = (isDark) => {
             localStorage.setItem(KEYS.theme, isDark ? 'dark' : 'light');
-            document.body.classList.toggle('dark-mode
+            document.body.classList.toggle('dark-mode', isDark);
+            showToast(isDark ? '🌙 Dark mode enabled' : '☀️ Light mode enabled');
+        };
+
+        function loadWallpaperPreview() {
+            const wpBg = localStorage.getItem(KEYS.wallpaperBg);
+            const wpColor = localStorage.getItem(KEYS.wallpaperColor);
+            const box = document.getElementById('wp-preview');
+            
+            if (wpBg) {
+                box.style.backgroundImage = wpBg;
+                box.style.backgroundSize = wpBg.includes('data:image') ? '50px' : 'cover';
+                box.style.backgroundPosition = 'center';
+                box.style.backgroundColor = wpColor || '#0B141A';
+            } else {
+                box.style.backgroundImage = 'none';
+                box.style.backgroundColor = '#0B141A';
+            }
+        }
+
+        function applyFontSize() {
+            const size = localStorage.getItem(KEYS.fontSize) || 'medium';
+            document.querySelectorAll('.font-pick-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.size === size);
+            });
+        }
+
+        window.setFontSize = (size) => {
+            localStorage.setItem(KEYS.fontSize, size);
+            applyFontSize();
+            showToast(`Font size: ${size}`);
+        };
+
+        window.saveToggle = (key, val) => {
+            const keyMap = {
+                sound: KEYS.sound, vibrate: KEYS.vibrate, preview: KEYS.preview,
+                receipts: KEYS.receipts, lastseen: KEYS.lastseen, enter_send: KEYS.enterSend, autodownload: KEYS.autodownload
+            };
+            if (keyMap[key]) localStorage.setItem(keyMap[key], val ? '1' : '0');
+        };
+
+        function loadToggles() {
+            const defaults = { sound: true, vibrate: true, preview: true, receipts: true, lastseen: true, enter_send: true, autodownload: true };
+            const config = [
+                { id: 'sound-toggle', key: KEYS.sound, def: defaults.sound },
+                { id: 'vibrate-toggle', key: KEYS.vibrate, def: defaults.vibrate },
+                { id: 'preview-toggle', key: KEYS.preview, def: defaults.preview },
+                { id: 'receipts-toggle', key: KEYS.receipts, def: defaults.receipts },
+                { id: 'lastseen-toggle', key: KEYS.lastseen, def: defaults.lastseen },
+                { id: 'enter-toggle', key: KEYS.enterSend, def: defaults.enter_send },
+                { id: 'autodownload-toggle', key: KEYS.autodownload, def: defaults.autodownload }
+            ];
+            config.forEach(({ id, key, def }) => {
+                const stored = localStorage.getItem(key);
+                const val = stored === null ? def : stored === '1';
+                const el = document.getElementById(id);
+                if (el) el.checked = val;
+            });
+        }
+
+        function calculateStorage() {
+            let total = 0, cache = 0;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key) || '';
+                const size = (key.length + value.length) * 2; 
+                total += size;
+                if (key.startsWith('mychat_cache_') || key.startsWith('mychat_media_')) cache += size;
+            }
+            return { total, cache };
+        }
+
+        function formatBytes(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        function updateStorageBar() {
+            const { total, cache } = calculateStorage();
+            document.getElementById('storage-used').innerText = formatBytes(total);
+            document.getElementById('storage-cache').innerText = formatBytes(cache);
+
+            const LIMIT = 5 * 1024 * 1024;
+            const pct = Math.min(100, (total / LIMIT) * 100);
+            const fill = document.getElementById('storage-fill');
+            fill.style.width = pct + '%';
+
+            if (pct > 70) fill.style.background = '#ef4444';
+            else if (pct > 40) fill.style.background = '#f59e0b';
+            else fill.style.background = 'var(--green)';
+        }
+
+        window.clearCache = () => {
+            const preserve = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('mychat_cache_') || key.startsWith('mychat_media_') || key.startsWith('mychat_temp_')) {
+                    preserve.push(key);
+                }
+            }
+            preserve.forEach(k => localStorage.removeItem(k));
+            closeModal('clear-cache-modal');
+            updateStorageBar();
+            showToast('✅ Cache cleared');
+        };
+
+        window.exportData = () => {
+            const data = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('mychat_')) {
+                    data[key] = localStorage.getItem(key);
+                }
+            }
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mychat-settings-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            closeModal('clear-cache-modal');
+            showToast('📥 Data exported');
+        };
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        applyTheme();
+        loadToggles();
+        applyFontSize();
+        loadWallpaperPreview();
+        updateStorageBar();
+
+        window.addEventListener('pageshow', () => {
+            applyTheme();
+            loadWallpaperPreview();
+            updateStorageBar();
+        });
+
+        setInterval(updateStorageBar, 10000);
+    </script>
+</body>
+</html>

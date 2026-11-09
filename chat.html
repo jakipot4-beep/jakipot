@@ -2,38 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>MyChat - Chat</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        /* =========================================
-           1. THEME & VARIABLES (DARK MODE DEFAULT)
-           ========================================= */
         :root {
             --bg-surface: #0B141A;       
             --chat-bg: #0B141A;          
             --text-primary: #FFFFFF;
             --text-secondary: #8696A0;
             --border-light: rgba(255, 255, 255, 0.08);
-            
-            /* Message Bubbles */
             --msg-sent-bg: #005C4B;      
             --msg-sent-text: #FFFFFF;
             --msg-received-bg: #202C33;  
             --msg-received-text: #FFFFFF;
-            
-            /* Default Doodle Wallpaper */
             --default-wallpaper: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1.5"><circle cx="20" cy="20" r="5"/><path d="M50 10 l5 10 l-10 0 z"/><rect x="70" y="60" width="10" height="10" rx="2"/><path d="M10 80 q10 -10 20 0"/><circle cx="80" cy="20" r="3"/><path d="M30 60 l5 5 l-10 0 z"/><rect x="40" y="80" width="15" height="5" rx="2"/></g></svg>');
         }
 
-        /* LIGHT MODE OVERRIDES (White Theme) */
         body.light-mode {
             --bg-surface: #FFFFFF;
             --chat-bg: #EFEAE2;
             --text-primary: #000000;
             --text-secondary: #667781;
             --border-light: rgba(0, 0, 0, 0.08);
-            
             --msg-sent-bg: #D9FDD3;      
             --msg-sent-text: #000000;
             --msg-received-bg: #FFFFFF;  
@@ -42,41 +33,24 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
 
         body { 
             background-color: var(--chat-bg); 
             color: var(--text-primary); 
             display: flex; flex-direction: column;
             transition: background-color 0.3s, color 0.3s;
+            height: 100dvh; /* Dynamic viewport height */
         }
 
-        /* =========================================
-           2. HEADER
-           ========================================= */
         .chat-header {
             display: flex; align-items: center; gap: 12px; padding: 10px 15px;
             background: var(--bg-surface); border-bottom: 1px solid var(--border-light);
             height: 65px; z-index: 10; flex-shrink: 0;
-            transition: background-color 0.3s;
         }
-        
-        .back-btn {
-            background: transparent; border: none; cursor: pointer;
-            width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
-        }
+        .back-btn { background: transparent; border: none; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; }
         .back-btn svg { width: 24px; height: 24px; fill: var(--text-primary); }
-        
-        .chat-title-area { 
-            flex: 1; display: flex; align-items: center; gap: 12px; 
-            cursor: pointer; border-radius: 10px; 
-        }
-        
+        .chat-title-area { flex: 1; display: flex; align-items: center; gap: 12px; cursor: pointer; border-radius: 10px; }
         .chat-avatar-header {
             width: 40px; height: 40px; border-radius: 50%; 
             background: var(--msg-received-bg); color: var(--text-primary);
@@ -84,17 +58,12 @@
             border: 1px solid var(--border-light);
         }
         .chat-avatar-header img { width: 100%; height: 100%; object-fit: cover; }
-        
         .chat-title-text h3 { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
         .chat-title-text p { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
-        
         .header-actions { display: flex; gap: 5px; }
         .icon-btn { background: transparent; border: none; cursor: pointer; padding: 8px; border-radius: 50%; }
         .icon-btn svg { width: 22px; height: 22px; fill: var(--text-primary); }
 
-        /* =========================================
-           3. MESSAGES AREA
-           ========================================= */
         #chat-screen { flex: 1; display: flex; flex-direction: column; min-height: 0; }
         
         .messages-container {
@@ -104,6 +73,7 @@
             background-image: var(--default-wallpaper);
             background-size: 150px 150px;
             transition: background 0.3s;
+            -webkit-overflow-scrolling: touch;
         }
 
         .date-divider {
@@ -129,175 +99,78 @@
         .message-row.sent .msg-content { align-items: flex-end; }
         .message-row.received .msg-content { align-items: flex-start; }
         
-        /* Sender Name (Only for Groups) */
-        .message-sender {
-            font-size: 12px; font-weight: 600; color: #53BDEB; 
-            margin-bottom: 2px; margin-left: 2px;
-        }
+        .message-sender { font-size: 12px; font-weight: 600; color: #53BDEB; margin-bottom: 2px; margin-left: 2px; }
 
         .message-text {
             padding: 10px 14px; font-size: 15px; line-height: 1.4;
             word-wrap: break-word; position: relative;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
+        .message-row.sent .message-text { background: var(--msg-sent-bg); color: var(--msg-sent-text); border-radius: 16px 16px 0 16px; }
+        .message-row.received .message-text { background: var(--msg-received-bg); color: var(--msg-received-text); border-radius: 16px 16px 16px 0; }
         
-        .message-row.sent .message-text { 
-            background: var(--msg-sent-bg); color: var(--msg-sent-text); 
-            border-radius: 16px 16px 0 16px; 
-        }
-        
-        .message-row.received .message-text { 
-            background: var(--msg-received-bg); color: var(--msg-received-text); 
-            border-radius: 16px 16px 16px 0; 
-        }
-        
-        .message-image { 
-            max-width: 100%; max-height: 250px; border-radius: 12px; 
-            margin-bottom: 5px; border: 1px solid var(--border-light); 
-            cursor: pointer; object-fit: cover;
-        }
+        .message-image { max-width: 100%; max-height: 250px; border-radius: 12px; margin-bottom: 5px; border: 1px solid var(--border-light); cursor: pointer; object-fit: cover; }
 
-        /* =========================================
-           CUSTOM VOICE NOTE UI
-           ========================================= */
-        .voice-bubble {
-            display: flex; align-items: center; gap: 10px; 
-            min-width: 240px; padding: 8px 12px !important;
-        }
-
-        .voice-avatar {
-            position: relative; width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-        }
-        .voice-avatar img, .voice-avatar > div {
-            width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
-        }
-        .voice-avatar .mic-icon {
-            position: absolute; bottom: -2px; right: -2px; 
-            background: #00A884; border-radius: 50%; width: 18px; height: 18px; 
-            display: grid; place-items: center; border: 2px solid var(--msg-sent-bg);
-        }
+        .voice-bubble { display: flex; align-items: center; gap: 10px; min-width: 240px; padding: 8px 12px !important; }
+        .voice-avatar { position: relative; width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; }
+        .voice-avatar img, .voice-avatar > div { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .voice-avatar .mic-icon { position: absolute; bottom: -2px; right: -2px; background: #00A884; border-radius: 50%; width: 18px; height: 18px; display: grid; place-items: center; border: 2px solid var(--msg-sent-bg); }
         .message-row.received .voice-avatar .mic-icon { border-color: var(--msg-received-bg); }
         .voice-avatar .mic-icon svg { width: 10px; height: 10px; fill: #FFF; }
-
-        .voice-play-btn {
-            background: transparent; border: none; cursor: pointer; 
-            display: grid; place-items: center; padding: 0;
-            width: 24px; height: 24px; color: var(--text-secondary);
-        }
+        .voice-play-btn { background: transparent; border: none; cursor: pointer; display: grid; place-items: center; padding: 0; width: 24px; height: 24px; color: var(--text-secondary); }
         .voice-play-btn svg { width: 24px; height: 24px; fill: currentColor; }
         .message-row.sent .voice-play-btn { color: #667781; }
         body.light-mode .message-row.sent .voice-play-btn { color: #8696A0; }
         body.light-mode .message-row.received .voice-play-btn { color: #8696A0; }
-
-        .voice-progress {
-            flex: 1; height: 24px; display: flex; align-items: center; 
-            position: relative; cursor: pointer;
-        }
-        .voice-progress-track {
-            width: 100%; height: 3px; background: rgba(255,255,255,0.2); 
-            border-radius: 2px; position: relative;
-        }
+        .voice-progress { flex: 1; height: 24px; display: flex; align-items: center; position: relative; cursor: pointer; }
+        .voice-progress-track { width: 100%; height: 3px; background: rgba(255,255,255,0.2); border-radius: 2px; position: relative; }
         .message-row.sent .voice-progress-track { background: rgba(0,0,0,0.2); }
         body.light-mode .message-row.received .voice-progress-track { background: rgba(0,0,0,0.1); }
-        
-        .voice-progress-fill {
-            position: absolute; left: 0; top: 0; height: 100%; 
-            background: #00A884; width: 0%; border-radius: 2px;
-        }
-        .voice-progress-thumb {
-            position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-            width: 10px; height: 10px; background: #FFF; border-radius: 50%;
-            box-shadow: 0 0 3px rgba(0,0,0,0.3); pointer-events: none;
-        }
-        
-        .voice-time-text {
-            font-size: 11px; color: var(--text-secondary); 
-            min-width: 32px; text-align: right; font-weight: 500;
-        }
+        .voice-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: #00A884; width: 0%; border-radius: 2px; }
+        .voice-progress-thumb { position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 10px; height: 10px; background: #FFF; border-radius: 50%; box-shadow: 0 0 3px rgba(0,0,0,0.3); pointer-events: none; }
+        .voice-time-text { font-size: 11px; color: var(--text-secondary); min-width: 32px; text-align: right; font-weight: 500; }
         body.light-mode .message-row.sent .voice-time-text { color: #667781; }
-
-        /* Hidden Audio Tag */
         .voice-bubble audio { display: none; }
 
-        /* =========================================
-           TIMESTAMPS & CHECKMARKS
-           ========================================= */
-        .message-time { 
-            font-size: 10px; margin-top: 4px; text-align: right; 
-            display: flex; justify-content: flex-end; align-items: center; gap: 4px;
-        }
+        .message-time { font-size: 10px; margin-top: 4px; text-align: right; display: flex; justify-content: flex-end; align-items: center; gap: 4px; }
         .message-row.sent .message-time { color: #667781; }
         body.light-mode .message-row.sent .message-time { color: #667781; }
         .message-row.received .message-time { color: rgba(255,255,255,0.5); }
         body.light-mode .message-row.received .message-time { color: #999; }
 
-        /* =========================================
-           4. INPUT AREA
-           ========================================= */
         .chat-input-area {
             padding: 10px 15px; background: var(--bg-surface); 
             display: flex; align-items: flex-end; gap: 8px; 
             padding-bottom: max(10px, env(safe-area-inset-bottom));
             z-index: 10; flex-shrink: 0;
-            transition: background-color 0.3s;
         }
-        
-        .input-wrapper {
-            flex: 1; background: #2A3942; border-radius: 20px;
-            display: flex; align-items: center; padding: 5px 10px;
-            transition: background 0.3s;
-        }
+        .input-wrapper { flex: 1; background: #2A3942; border-radius: 20px; display: flex; align-items: center; padding: 5px 10px; transition: background 0.3s; }
         body.light-mode .input-wrapper { background: #FFFFFF; }
-
-        .chat-input {
-            flex: 1; background: transparent; border: none;
-            padding: 10px; color: var(--text-primary); font-size: 15px; 
-            outline: none; resize: none;
-        }
-        
-        .action-btn {
-            width: 45px; height: 45px; border-radius: 50%; border: none; 
-            display: grid; place-items: center; cursor: pointer; flex-shrink: 0;
-            transition: transform 0.2s, background 0.2s;
-        }
+        .chat-input { flex: 1; background: transparent; border: none; padding: 10px; color: var(--text-primary); font-size: 15px; outline: none; resize: none; }
+        .action-btn { width: 45px; height: 45px; border-radius: 50%; border: none; display: grid; place-items: center; cursor: pointer; flex-shrink: 0; transition: transform 0.2s, background 0.2s; }
         .action-btn:active { transform: scale(0.9); }
-        
         .attach-btn { background: transparent; }
         .attach-btn svg { width: 24px; height: 24px; fill: var(--text-secondary); }
-        
         .mic-btn { background: #00A884; }
         .mic-btn svg { width: 22px; height: 22px; fill: #FFFFFF; }
-        
         .send-btn { background: #00A884; }
         .send-btn svg { width: 20px; height: 20px; fill: #FFFFFF; }
-        
         .mic-btn.recording { background: var(--danger, #ef4444); animation: pulse 1s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 
-        /* Full Screen Image Viewer */
-        #image-viewer {
-            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95);
-            z-index: 9999; justify-content: center; align-items: center;
-        }
+        #image-viewer { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); z-index: 9999; justify-content: center; align-items: center; }
         #image-viewer.active { display: flex; }
         #image-viewer img { max-width: 100%; max-height: 90vh; object-fit: contain; }
-        .close-viewer {
-            position: absolute; top: 20px; right: 20px;
-            background: rgba(255,255,255,0.2); border: none; border-radius: 50%;
-            width: 40px; height: 40px; display: grid; place-items: center;
-            cursor: pointer; color: white;
-        }
+        .close-viewer { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; border-radius: 50%; width: 40px; height: 40px; display: grid; place-items: center; cursor: pointer; color: white; }
         .close-viewer svg { width: 24px; height: 24px; fill: white; }
     </style>
 </head>
 <body>
 
-    <!-- HEADER -->
     <header class="chat-header">
         <button class="back-btn" onclick="history.back()">
             <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         </button>
-        
         <div class="chat-title-area" onclick="viewProfile()">
             <div class="chat-avatar-header" id="header-avatar">?</div>
             <div class="chat-title-text">
@@ -305,7 +178,6 @@
                 <p id="header-status">Loading...</p>
             </div>
         </div>
-
         <div class="header-actions">
             <button class="icon-btn" onclick="alert('Video call feature coming soon!')">
                 <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
@@ -316,11 +188,9 @@
         </div>
     </header>
 
-    <!-- CHAT AREA -->
     <section id="chat-screen">
         <div class="messages-container" id="messages-container">
             <div class="date-divider">Today</div>
-            <!-- Messages load here -->
         </div>
         
         <div class="chat-input-area">
@@ -333,19 +203,16 @@
                 <input type="text" id="chat-input" class="chat-input" placeholder="Message" oninput="toggleSendButton()" onkeypress="handleEnter(event)">
             </div>
             
-            <!-- MIC BUTTON -->
             <button class="action-btn mic-btn" id="mic-btn" onclick="toggleRecording()">
                 <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
             </button>
             
-            <!-- SEND BUTTON -->
             <button class="action-btn send-btn" id="send-btn" onclick="sendMessage()" style="display: none;">
                 <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
             </button>
         </div>
     </section>
 
-    <!-- Image Viewer -->
     <div id="image-viewer" onclick="closeImageViewer()">
         <button class="close-viewer" onclick="closeImageViewer()">
             <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
@@ -353,7 +220,6 @@
         <img id="viewer-img" src="" alt="Full screen image" onclick="event.stopPropagation()">
     </div>
 
-    <!-- FIREBASE LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
@@ -369,25 +235,16 @@
         };
 
         const CLOUDINARY = { cloudName: 'jakipot', uploadPreset: 'jakipot_unsigned' };
-        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+        const MAX_FILE_SIZE = 5 * 1024 * 1024; 
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // ==========================================
-        // APPLY USER PREFERENCES (Theme & Wallpaper)
-        // ==========================================
         function applyPreferences() {
-            // 1. Apply Theme (Dark is default, Light if explicitly set)
             const theme = localStorage.getItem('mychat_theme');
-            if (theme === 'light') {
-                document.body.classList.add('light-mode');
-            } else {
-                document.body.classList.remove('light-mode');
-            }
+            if (theme === 'light') document.body.classList.add('light-mode');
 
-            // 2. Apply Wallpaper
             const wpBg = localStorage.getItem('mychat_wallpaper_bg');
             const wpColor = localStorage.getItem('mychat_wallpaper_color');
             const chatContainer = document.querySelector('.messages-container');
@@ -406,42 +263,31 @@
         
         applyPreferences();
 
-        // ==========================================
-        // SOUND EFFECTS (Web Audio API)
-        // ==========================================
         let audioCtx;
         function playSound(type) {
             if (localStorage.getItem('mychat_sound') === '0') return;
-            
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
-                
                 if (type === 'sent') {
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(800, audioCtx.currentTime);
                     osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.05);
                     gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.1);
-                } else if (type === 'receive') {
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+                } else {
                     osc.type = 'triangle';
                     osc.frequency.setValueAtTime(400, audioCtx.currentTime);
                     osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.05);
                     gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.15);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.15);
                 }
-            } catch (e) {
-                console.warn('Audio API not supported or blocked', e);
-            }
+            } catch (e) { }
         }
 
         let currentUser = null;
@@ -450,7 +296,6 @@
         let isGroupChat = false;
         let otherUid = null; 
         let lastMessageId = null; 
-        
         let userCache = {};
 
         let mediaRecorder;
@@ -462,23 +307,17 @@
         activeRoomId = urlParams.get('roomId');
         let chatName = urlParams.get('name') || 'Chat';
         
-        if (!activeRoomId) {
-            window.location.replace('dashboard.html');
-        }
-
+        if (!activeRoomId) window.location.replace('dashboard.html');
         isGroupChat = !activeRoomId.startsWith('private_');
 
         window.toggleSendButton = () => {
             const text = document.getElementById('chat-input').value.trim();
             const micBtn = document.getElementById('mic-btn');
             const sendBtn = document.getElementById('send-btn');
-            
             if (text.length > 0) {
-                micBtn.style.display = 'none';
-                sendBtn.style.display = 'grid';
+                micBtn.style.display = 'none'; sendBtn.style.display = 'grid';
             } else {
-                micBtn.style.display = 'grid';
-                sendBtn.style.display = 'none';
+                micBtn.style.display = 'grid'; sendBtn.style.display = 'none';
             }
         };
 
@@ -504,9 +343,7 @@
                         joinedAt: serverTimestamp()
                     });
                 }
-            } catch (e) {
-                console.error('Could not create chat membership', e);
-            }
+            } catch (e) { console.error('Membership error:', e); }
         }
 
         onAuthStateChanged(auth, async (user) => {
@@ -529,13 +366,9 @@
                         const data = groupDoc.data();
                         chatName = data.name || chatName; 
                         document.getElementById('header-name').innerText = chatName;
-                        
                         const avatarEl = document.getElementById('header-avatar');
-                        if (data.avatarUrl) {
-                            avatarEl.innerHTML = `<img src="${data.avatarUrl}" alt="Group">`;
-                        } else {
-                            avatarEl.innerText = chatName.charAt(0).toUpperCase();
-                        }
+                        if (data.avatarUrl) avatarEl.innerHTML = `<img src="${data.avatarUrl}" alt="Group">`;
+                        else avatarEl.innerText = chatName.charAt(0).toUpperCase();
                     }
                 });
             } else {
@@ -547,17 +380,10 @@
                     if (otherDoc.exists()) {
                         const data = otherDoc.data();
                         userCache[otherUid] = data; 
-                        
                         const avatarEl = document.getElementById('header-avatar');
-                        if (data.profilePicUrl) {
-                            avatarEl.innerHTML = `<img src="${data.profilePicUrl}" alt="Avatar">`;
-                        } else {
-                            avatarEl.innerText = (data.fullName || chatName).charAt(0).toUpperCase();
-                        }
-                        
-                        if (data.fullName) {
-                            document.getElementById('header-name').innerText = data.fullName;
-                        }
+                        if (data.profilePicUrl) avatarEl.innerHTML = `<img src="${data.profilePicUrl}" alt="Avatar">`;
+                        else avatarEl.innerText = (data.fullName || chatName).charAt(0).toUpperCase();
+                        if (data.fullName) document.getElementById('header-name').innerText = data.fullName;
                     }
                 });
             }
@@ -565,20 +391,11 @@
             loadMessages();
         });
 
-        // ==========================================
-        // UPDATED: PROFILE NAVIGATION LOGIC
-        // ==========================================
         window.viewProfile = () => {
-            if (isGroupChat) {
-                // Redirect to group info page
-                window.location.href = `group.html?roomId=${activeRoomId}`;
-            } else if (otherUid) {
-                // Redirect to friend profile page
-                window.location.href = `friend.html?uid=${otherUid}`;
-            }
+            if (isGroupChat) window.location.href = `group.html?roomId=${activeRoomId}`;
+            else if (otherUid) window.location.href = `friend.html?uid=${otherUid}`;
         };
 
-        // Helper to format audio time
         function formatTime(seconds) {
             if (isNaN(seconds)) return '0:00';
             const m = Math.floor(seconds / 60);
@@ -586,7 +403,6 @@
             return `${m}:${s.toString().padStart(2, '0')}`;
         }
 
-        // Custom Voice Player Logic
         window.playVoice = function(btn) {
             const container = btn.closest('.voice-bubble');
             const audio = container.querySelector('audio');
@@ -643,9 +459,7 @@
                     const lastDoc = snapshot.docs[snapshot.docs.length - 1];
                     if (lastMessageId && lastMessageId !== lastDoc.id) {
                         const lastMsg = lastDoc.data();
-                        if (lastMsg.uid !== currentUser.uid) {
-                            playSound('receive');
-                        }
+                        if (lastMsg.uid !== currentUser.uid) playSound('receive');
                     }
                     lastMessageId = lastDoc.id;
                 }
@@ -677,12 +491,10 @@
 
                     if (msg.messageType === 'image') {
                         contentHtml = `<img src="${msg.imageUrl}" class="message-image" onclick="openImageViewer('${msg.imageUrl}')">`;
-                        
                         if (!isSent) {
                             avatarHtml = `<div class="msg-avatar">${senderPic ? `<img src="${senderPic}">` : avatarInitial}</div>`;
                             if (isGroupChat) senderNameHtml = `<div class="message-sender">${senderName}</div>`;
                         }
-
                     } else if (msg.messageType === 'voice') {
                         contentHtml = `
                             <div class="message-text voice-bubble">
@@ -705,14 +517,9 @@
                                 <audio src="${msg.voiceNoteUrl}" preload="metadata"></audio>
                             </div>
                         `;
-                        
-                        if (!isSent && isGroupChat) {
-                            senderNameHtml = `<div class="message-sender">${senderName}</div>`;
-                        }
-
+                        if (!isSent && isGroupChat) senderNameHtml = `<div class="message-sender">${senderName}</div>`;
                     } else {
                         contentHtml = `<div class="message-text">${msg.textContent}</div>`;
-                        
                         if (!isSent) {
                             avatarHtml = `<div class="msg-avatar">${senderPic ? `<img src="${senderPic}">` : avatarInitial}</div>`;
                             if (isGroupChat) senderNameHtml = `<div class="message-sender">${senderName}</div>`;
@@ -744,10 +551,7 @@
             if (!text) return;
 
             const now = Date.now();
-            if (now - lastMessageTime < 500) {
-                alert("Please wait a moment before sending.");
-                return;
-            }
+            if (now - lastMessageTime < 500) return;
             lastMessageTime = now;
 
             input.value = '';
@@ -766,7 +570,7 @@
                 playSound('sent');
             } catch (error) {
                 console.error("Message failed:", error);
-                alert("Failed to send message. Please check your connection.");
+                alert("Failed to send. Check connection.");
                 input.value = text;
                 window.toggleSendButton();
             }
@@ -777,12 +581,7 @@
         window.uploadImage = async (input) => {
             const file = input.files[0];
             if (!file) return;
-
-            if (file.size > MAX_FILE_SIZE) {
-                alert("Image is too large. Maximum size is 5MB.");
-                input.value = '';
-                return;
-            }
+            if (file.size > MAX_FILE_SIZE) { alert("Max 5MB"); input.value = ''; return; }
             
             const container = document.getElementById('messages-container');
             container.innerHTML += `<div class="message-row sent"><div class="msg-content"><div class="message-text" style="opacity:0.7;">Uploading image...</div></div></div>`;
@@ -790,14 +589,11 @@
 
             try {
                 await ensureChatMembership();
-
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', CLOUDINARY.uploadPreset);
 
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, {
-                    method: 'POST', body: formData
-                });
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, { method: 'POST', body: formData });
                 const data = await res.json();
 
                 if (data.secure_url) {
@@ -810,12 +606,10 @@
                         timestamp: serverTimestamp()
                     });
                     playSound('sent');
-                } else {
-                    throw new Error(data.error?.message || 'Cloudinary upload failed');
-                }
+                } else throw new Error('Upload failed');
             } catch (err) {
                 console.error(err);
-                alert('Image upload failed: ' + err.message);
+                alert('Image upload failed.');
             }
             input.value = '';
         };
@@ -837,30 +631,21 @@
                 
                 mediaRecorder.onstop = async () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    
-                    if (audioBlob.size > MAX_FILE_SIZE) {
-                        alert("Voice note too long. Please record a shorter message.");
-                        return;
-                    }
-                    if (audioBlob.size < 1000) {
-                        return;
-                    }
+                    if (audioBlob.size > MAX_FILE_SIZE) { alert("Voice too long."); return; }
+                    if (audioBlob.size < 1000) return;
 
                     const file = new File([audioBlob], "voice.webm", { type: 'audio/webm' });
                     const container = document.getElementById('messages-container');
-                    container.innerHTML += `<div class="message-row sent"><div class="msg-content"><div class="message-text" style="opacity:0.7;">Uploading voice note...</div></div></div>`;
+                    container.innerHTML += `<div class="message-row sent"><div class="msg-content"><div class="message-text" style="opacity:0.7;">Uploading voice...</div></div></div>`;
                     container.scrollTop = container.scrollHeight;
 
                     try {
                         await ensureChatMembership();
-
                         const formData = new FormData();
                         formData.append('file', file);
                         formData.append('upload_preset', CLOUDINARY.uploadPreset);
 
-                        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/auto/upload`, {
-                            method: 'POST', body: formData
-                        });
+                        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/auto/upload`, { method: 'POST', body: formData });
                         const data = await res.json();
 
                         if (data.secure_url) {
@@ -873,12 +658,10 @@
                                 timestamp: serverTimestamp()
                             });
                             playSound('sent');
-                        } else {
-                            throw new Error(data.error?.message || 'Cloudinary voice upload failed');
-                        }
+                        } else throw new Error('Upload failed');
                     } catch (err) {
                         console.error(err);
-                        alert('Voice note upload failed: ' + err.message);
+                        alert('Voice upload failed.');
                     }
                 };
 
@@ -886,7 +669,7 @@
                 isRecording = true;
                 document.getElementById('mic-btn').classList.add('recording');
             } catch (err) {
-                alert('Microphone access denied. Please allow it in your browser settings.');
+                alert('Microphone denied.');
             }
         };
     </script>

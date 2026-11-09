@@ -6,9 +6,6 @@
     <title>MyChat - Me</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        /* =========================================
-           1. THEME VARIABLES
-           ========================================= */
         :root {
             --bg-color: #FFFFFF;
             --nav-bg: #FFFFFF;
@@ -92,7 +89,6 @@
             cursor: pointer;
         }
         
-        /* Camera Icon on Cover */
         .cover-edit-btn {
             position: absolute;
             bottom: 15px;
@@ -109,7 +105,6 @@
         }
         .cover-edit-btn svg { width: 22px; height: 22px; fill: currentColor; }
 
-        /* Big Circular Avatar */
         .avatar-container {
             position: relative;
             width: 160px;
@@ -134,7 +129,6 @@
         }
         .avatar-img img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Camera Icon on Avatar */
         .avatar-edit-badge {
             position: absolute;
             bottom: 5px;
@@ -442,22 +436,25 @@
         <div class="form-wrapper">
             <div class="section-title">Personal Details</div>
             
-            <!-- FORM FIELDS -->
+            <!-- NAME IS READ-ONLY (LOCKED) -->
             <div class="form-group">
                 <label class="form-label">Display Name (Read-Only)</label>
                 <input type="text" id="input-name" class="form-input" disabled>
             </div>
 
+            <!-- USERNAME IS EDITABLE -->
             <div class="form-group">
                 <label class="form-label">Username (Starts with @)</label>
                 <input type="text" id="input-username" class="form-input" placeholder="@johndoe">
             </div>
 
+            <!-- DOB IS EDITABLE -->
             <div class="form-group">
                 <label class="form-label">Date of Birth</label>
                 <input type="date" id="input-dob" class="form-input">
             </div>
 
+            <!-- PHONE IS READ-ONLY (LOCKED) -->
             <div class="form-group">
                 <label class="form-label">Phone Number (Linked to Jakipot Account)</label>
                 <input type="tel" id="input-phone" class="form-input" disabled>
@@ -491,7 +488,6 @@
             </div>
             <span>Chat</span>
         </a>
-        <!-- UPDATED TO CONTACT.HTML -->
         <a href="contact.html" class="nav-item">
             <div class="nav-icon-wrapper">
                 <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
@@ -516,7 +512,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
-        // 🛑 CHANGED: Imported onSnapshot for real-time updates
         import { getFirestore, doc, onSnapshot, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -540,18 +535,15 @@
 
         let currentUser = null;
 
-        // 1. Theme Memory
         const THEME_KEY = 'mychat_theme';
         if (localStorage.getItem(THEME_KEY) === 'dark') {
             document.body.classList.add('dark-mode');
         }
 
-        // 2. Auth & Load Data (Real-Time)
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.replace('login.html'); return; }
             currentUser = user;
 
-            // 🛑 CHANGED: Using onSnapshot to listen for real-time changes
             onSnapshot(doc(db, 'users', user.uid), (userDoc) => {
                 if (userDoc.exists()) {
                     const data = userDoc.data();
@@ -560,14 +552,16 @@
                     document.getElementById('display-name').innerText = name;
                     document.getElementById('profile-phone').innerText = data.phone || 'No phone';
                     
+                    // These are read-only fields (locked)
                     document.getElementById('input-name').value = name;
                     document.getElementById('input-phone').value = data.phone || '';
+                    
+                    // These are editable fields
                     document.getElementById('input-username').value = data.username || '';
                     document.getElementById('input-dob').value = data.dob || '';
 
                     const avatarContainer = document.getElementById('avatar-container');
                     if (data.profilePicUrl) {
-                        // Only update if different to prevent flickering
                         if (avatarContainer.querySelector('img')?.src !== data.profilePicUrl) {
                             avatarContainer.innerHTML = `<img src="${data.profilePicUrl}" alt="Profile">`;
                         }
@@ -587,7 +581,6 @@
             });
         });
 
-        // 3. Cover Photo Upload
         document.getElementById('cover-upload-input').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file || !currentUser) return;
@@ -611,7 +604,6 @@
                         coverPicUrl: data.secure_url,
                         updatedAt: serverTimestamp()
                     });
-                    // The onSnapshot will catch this and update the UI instantly
                 } else {
                     throw new Error('Upload failed');
                 }
@@ -623,7 +615,6 @@
             }
         });
 
-        // 4. Profile Picture Upload
         document.getElementById('profile-upload-input').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file || !currentUser) return;
@@ -652,18 +643,16 @@
                         profilePicUrl: data.secure_url,
                         updatedAt: serverTimestamp()
                     });
-                    // The onSnapshot will catch this and update the UI instantly
                 } else {
                     throw new Error('Upload failed');
                 }
             } catch (err) {
                 console.error(err);
                 alert('Failed to upload image.');
-                // onSnapshot will restore the UI automatically
             }
         });
 
-        // 5. Save Profile (Username & DOB)
+        // Save Profile - ONLY saves Username and DOB
         window.saveProfile = async () => {
             const btn = document.getElementById('save-btn');
             const username = document.getElementById('input-username').value.trim();
@@ -686,24 +675,43 @@
                 alert("Profile updated successfully!");
             } catch (error) {
                 console.error(error);
-                alert("Failed to save profile. Please try again.");
+                alert("Failed to save profile: " + error.message);
             } finally {
                 btn.innerText = "SAVE CHANGES";
                 btn.disabled = false;
             }
         };
 
-        // 6. Copy Link
+        // Copy Link (with fallback for all mobile browsers)
         window.copyLink = () => {
             const linkInput = document.getElementById('share-link');
-            linkInput.select();
-            linkInput.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(linkInput.value).then(() => {
-                alert("Link copied to clipboard!");
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-            });
+            const text = linkInput.value;
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("✅ Link copied to clipboard!");
+                }).catch(() => {
+                    fallbackCopy(linkInput);
+                });
+            } else {
+                fallbackCopy(linkInput);
+            }
         };
+
+        function fallbackCopy(input) {
+            input.select();
+            input.setSelectionRange(0, 99999);
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    alert("✅ Link copied to clipboard!");
+                } else {
+                    alert("Press and hold the link to copy it manually.");
+                }
+            } catch (err) {
+                alert("Press and hold the link to copy it manually.");
+            }
+        }
     </script>
 </body>
 </html>
