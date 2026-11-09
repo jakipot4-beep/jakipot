@@ -13,7 +13,7 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        /* ✅ FIX: Mobile Keyboard Support */
+        /* ✅ Mobile Keyboard Support */
         html, body { 
             height: 100%; 
             height: 100dvh;
@@ -85,10 +85,11 @@
         .img-preview-badge { position: absolute; top: 8px; left: 8px; background: rgba(16, 185, 129, 0.9); color: #fff; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; }
 
         /* ============================================================
-           CHAT DESIGN — Soft & Elegant
+           CHAT DESIGN — Responsive Drill-Down Layout
            ============================================================ */
-        .chat-container { display: flex; height: calc(100dvh - 220px); background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-light); overflow: hidden; }
-        .chat-sidebar { width: 300px; border-right: 1px solid var(--border-light); overflow-y: auto; background: rgba(0,0,0,0.2); flex-shrink: 0; }
+        .chat-container { display: flex; height: calc(100dvh - 220px); background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-light); overflow: hidden; position: relative; }
+        
+        .chat-sidebar { width: 300px; border-right: 1px solid var(--border-light); overflow-y: auto; background: rgba(0,0,0,0.2); flex-shrink: 0; transition: transform 0.3s ease; }
         .chat-sidebar::-webkit-scrollbar { width: 4px; }
         .chat-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
@@ -96,11 +97,13 @@
         .chat-user-item:hover { background: rgba(0, 217, 255, 0.05); }
         .chat-user-item.active { background: rgba(0, 217, 255, 0.1); border-left: 3px solid var(--cyan); padding-left: 15px; }
         .chat-user-item.global-chat-item { background: linear-gradient(90deg, rgba(0, 217, 255, 0.08), rgba(16, 185, 129, 0.08)); border-bottom: 2px solid rgba(0, 217, 255, 0.2); }
-        .chat-user-item.global-chat-item:hover { background: linear-gradient(90deg, rgba(0, 217, 255, 0.15), rgba(16, 185, 129, 0.15)); }
-
-        .chat-avatar-circle { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; font-weight: 900; font-size: 16px; background: var(--bg-elevated); color: var(--text-white); overflow: hidden; border: 2px solid rgba(255,255,255,0.1); }
+        
+        .chat-avatar-circle { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; font-weight: 900; font-size: 16px; background: var(--bg-elevated); color: var(--text-white); overflow: hidden; border: 2px solid rgba(255,255,255,0.1); position: relative; }
         .chat-avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
         .chat-avatar-circle.global { background: linear-gradient(135deg, var(--cyan), var(--emerald)); border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 217, 255, 0.4); font-size: 22px; }
+
+        /* ✅ Unread Dot */
+        .unread-dot { position: absolute; top: 0; right: 0; width: 12px; height: 12px; background: var(--emerald); border-radius: 50%; border: 2px solid var(--bg-card); box-shadow: 0 0 8px var(--emerald); display: none; }
 
         .chat-preview { flex: 1; min-width: 0; }
         .chat-preview h4 { font-size: 14px; font-weight: 800; color: var(--text-white); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -108,8 +111,11 @@
         .chat-user-item.active .chat-preview h4 { color: var(--cyan); }
         .chat-time-badge { font-size: 10px; color: var(--text-muted); flex-shrink: 0; align-self: flex-start; margin-top: 3px; }
 
-        .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-card); transition: transform 0.3s ease; }
+        
         .chat-header { display: flex; align-items: center; gap: 12px; padding: 15px 20px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-light); flex-shrink: 0; }
+        .mobile-back-btn { display: none; background: transparent; border: none; color: var(--cyan); font-size: 20px; cursor: pointer; padding: 5px 15px 5px 0; font-weight: 900; }
+        
         .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; background: var(--bg-elevated); overflow: hidden; border: 2px solid var(--cyan); }
         .chat-header-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .chat-header-info h3 { font-size: 15px; font-weight: 800; color: var(--text-white); }
@@ -143,6 +149,17 @@
         .btn-send:hover { background: #00b8d4; }
         .btn-img { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--border-light); background: var(--bg-elevated); color: var(--cyan); font-size: 20px; cursor: pointer; display: grid; place-items: center; transition: 0.2s; flex-shrink: 0; }
         .btn-img:hover { background: #334155; }
+
+        /* ✅ MOBILE RESPONSIVE: Drill down logic */
+        @media (max-width: 768px) {
+            .chat-sidebar { width: 100%; border-right: none; }
+            .chat-main { display: none; width: 100%; }
+            .mobile-back-btn { display: block; }
+            
+            /* When chat is open, hide sidebar and show chat main */
+            .chat-container.chat-open .chat-sidebar { display: none; }
+            .chat-container.chat-open .chat-main { display: flex; }
+        }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 100; }
         .modal-overlay.active { display: flex; }
@@ -389,25 +406,37 @@
         <!-- 💬 SOFT CHAT UI -->
         <div class="tab-panel" id="tab-chat">
             <div class="page-title">Live Support Chat</div>
-            <div class="chat-container">
+            
+            <!-- Chat Container -->
+            <div class="chat-container" id="main-chat-container">
+                
+                <!-- Sidebar (List of chats) -->
                 <div class="chat-sidebar" id="chat-user-list">
                     <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">Loading chats...</div>
                 </div>
+
+                <!-- Chat Area -->
                 <div class="chat-main">
+                    
                     <div class="chat-header" id="chat-header" style="display: none;">
+                        <!-- Back button for mobile -->
+                        <button class="mobile-back-btn" onclick="closeChatMobile()">⬅️</button>
+                        
                         <div class="chat-header-avatar" id="chat-header-avatar">💬</div>
                         <div class="chat-header-info">
                             <h3 id="chat-header-name">Select a chat</h3>
                             <p><span class="online-dot"></span> Online</p>
                         </div>
                     </div>
+                    
                     <div class="chat-history" id="chat-history">
                         <div style="text-align: center; margin-top: 100px; color: var(--text-muted);">
                             <div style="font-size: 50px; margin-bottom: 15px;">💬</div>
-                            <div style="font-size: 14px; font-weight: 700;">Select a chat from the left</div>
-                            <div style="font-size: 12px; margin-top: 5px;">Start a conversation with users or join the Global Community</div>
+                            <div style="font-size: 14px; font-weight: 700;">Select a chat from the list</div>
+                            <div style="font-size: 12px; margin-top: 5px;">Tap a user to start messaging</div>
                         </div>
                     </div>
+                    
                     <div class="chat-input-area" id="chat-input-area" style="display: none;">
                         <input type="file" id="chat-image-input" accept="image/*" hidden onchange="uploadChatImage(this)">
                         <button class="btn-img" onclick="document.getElementById('chat-image-input').click()" title="Send Image">📷</button>
@@ -415,6 +444,7 @@
                         <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMessage()">
                         <button class="btn-send" onclick="sendMessage()">SEND</button>
                     </div>
+                    
                 </div>
             </div>
         </div>
@@ -595,6 +625,9 @@
         const userCache = {};
         let lastChatGroupsSnapshot = null;
 
+        // ✅ Tracking unread messages
+        let unreadChats = JSON.parse(localStorage.getItem('mychat_admin_unread')) || {};
+
         let engineRunning = false;
         let currentRoundIndex = 0;
         let liveMultiplier = 1.00;
@@ -605,7 +638,7 @@
         let crashSequence = [];
         let currentLoopIndex = 0;
 
-        // ✅ Mobile Keyboard Support for Admin Panel
+        // ✅ Mobile Keyboard Support for Admin Panel Chat
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', () => {
                 const chatContainer = document.querySelector('.chat-container');
@@ -1319,9 +1352,15 @@
             const list = document.getElementById('chat-user-list');
             list.innerHTML = '';
 
+            // Check if Global Chat is unread
+            let globalDotHtml = unreadChats['global_chat'] ? '<div class="unread-dot" style="display:block;"></div>' : '';
+
             list.innerHTML += `
                 <div class="chat-user-item global-chat-item" id="chat-item-global_chat" onclick="openChat('global_chat', 'Global Community', '')">
-                    <div class="chat-avatar-circle global">🌍</div>
+                    <div class="chat-avatar-circle global">
+                        🌍
+                        ${globalDotHtml}
+                    </div>
                     <div class="chat-preview"><h4>Global Community</h4><p>Everyone's chat room</p></div>
                 </div>
             `;
@@ -1355,12 +1394,19 @@
                 const lastMsg = chat.lastMessage || 'No messages yet';
                 const timeStr = chat._lastTimeMs > 0 ? new Date(chat._lastTimeMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
                 const avatarHtml = userAvatar ? `<img src="${userAvatar}" alt="${initial}" onerror="this.style.display='none'; this.parentElement.innerText='${initial}';">` : initial;
+                
+                // Check Unread
+                const dotHtml = unreadChats[chat.id] ? '<div class="unread-dot" style="display:block;"></div>' : '';
+
                 const safeName = userName.replace(/'/g, "\\'");
                 const safeAvatar = (userAvatar || '').replace(/'/g, "\\'");
 
                 list.innerHTML += `
                     <div class="chat-user-item" id="chat-item-${chat.id}" onclick="openChat('${chat.id}', '${safeName}', '${safeAvatar}')">
-                        <div class="chat-avatar-circle">${avatarHtml}</div>
+                        <div class="chat-avatar-circle">
+                            ${avatarHtml}
+                            ${dotHtml}
+                        </div>
                         <div class="chat-preview"><h4>${userName}${isGroup ? ' 👥' : ''}</h4><p>${lastMsg}</p></div>
                         <div class="chat-time-badge">${timeStr}</div>
                     </div>
@@ -1488,9 +1534,7 @@
                 await deleteDoc(doc(db, 'chat_groups', groupId));
 
                 if (currentChatId === groupId) {
-                    document.getElementById('chat-header').style.display = 'none';
-                    document.getElementById('chat-input-area').style.display = 'none';
-                    document.getElementById('chat-history').innerHTML = '<div style="text-align: center; margin-top: 100px; color: var(--text-muted);">Select a chat from the left</div>';
+                    closeChatMobile();
                     if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
                     currentChatId = null;
                 }
@@ -1562,6 +1606,11 @@
             document.querySelectorAll('.nav-tab').forEach(m => m.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
             element.classList.add('active');
+            
+            // If switching away from chat on mobile, close it
+            if (tabId !== 'chat' && window.innerWidth <= 768) {
+                closeChatMobile();
+            }
         };
 
         // ============================================================
@@ -2045,7 +2094,7 @@
         };
 
         // ============================================================
-        // OPEN CHAT
+        // OPEN CHAT (Mobile Responsive)
         // ============================================================
         window.openChat = (chatId, userName, userAvatar) => {
             currentChatId = chatId;
@@ -2061,6 +2110,14 @@
                     if (t.textContent.includes('Live Chat')) t.classList.add('active');
                 });
             }
+
+            // ✅ Open mobile view
+            document.getElementById('main-chat-container').classList.add('chat-open');
+
+            // ✅ Mark as read
+            unreadChats[chatId] = false;
+            localStorage.setItem('mychat_admin_unread', JSON.stringify(unreadChats));
+            renderChatSidebar();
 
             document.querySelectorAll('.chat-user-item').forEach(el => el.classList.remove('active'));
             const activeItem = document.getElementById(`chat-item-${chatId}`);
@@ -2144,6 +2201,33 @@
                 history.scrollTop = history.scrollHeight;
             });
         };
+
+        // ✅ Close Mobile Chat View
+        window.closeChatMobile = () => {
+            document.getElementById('main-chat-container').classList.remove('chat-open');
+            if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
+            currentChatId = null;
+        };
+
+        // ✅ Listen for new messages to show dots
+        function listenForUnreadMessages() {
+            onSnapshot(collection(db, 'chat_groups'), (snap) => {
+                snap.docChanges().forEach((change) => {
+                    if (change.type === 'modified') {
+                        const data = change.doc.data();
+                        const id = change.doc.id;
+                        const lastTime = data.lastMessageTime?.toMillis?.() || 0;
+                        
+                        // If it's not the active chat, mark as unread
+                        if (currentChatId !== id && lastTime > 0) {
+                            unreadChats[id] = true;
+                            localStorage.setItem('mychat_admin_unread', JSON.stringify(unreadChats));
+                            renderChatSidebar(); // Update UI
+                        }
+                    }
+                });
+            });
+        }
 
         // ============================================================
         // SEND MESSAGE
@@ -2244,7 +2328,7 @@
             input.value = '';
         };
 
-        // ✅ NEW: Admin Voice Note Recorder
+        // ✅ Admin Voice Note Recorder
         let adminMediaRecorder;
         let adminAudioChunks = [];
         let isAdminRecording = false;
@@ -2320,6 +2404,9 @@
         };
 
         window.logout = async () => { await signOut(auth); window.location.replace('login.html'); };
+
+        // ✅ Start unread listener at bottom
+        listenForUnreadMessages();
     </script>
 </body>
 </html>
