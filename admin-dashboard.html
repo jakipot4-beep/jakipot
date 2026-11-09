@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>JAKIPOT - Admin Control Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -12,7 +12,18 @@
             --text-white: #ffffff; --text-muted: #8b9bb4; --border-light: rgba(255, 255, 255, 0.08);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg-deep); color: var(--text-white); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* ✅ FIX: Mobile Keyboard Support */
+        html, body { 
+            height: 100%; 
+            height: 100dvh;
+            margin: 0; padding: 0; overflow: hidden; overscroll-behavior: none;
+        }
+
+        body { 
+            background: var(--bg-deep); color: var(--text-white); display: flex; flex-direction: column; 
+            transition: background-color 0.3s;
+        }
 
         .top-header { background: var(--bg-card); border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; height: 70px; flex-shrink: 0; }
         .logo-area { font-size: 20px; font-weight: 900; display: flex; align-items: center; gap: 10px; }
@@ -73,7 +84,10 @@
         .img-preview-box img { width: 100%; height: 100%; object-fit: cover; }
         .img-preview-badge { position: absolute; top: 8px; left: 8px; background: rgba(16, 185, 129, 0.9); color: #fff; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; }
 
-        .chat-container { display: flex; height: calc(100vh - 220px); background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-light); overflow: hidden; }
+        /* ============================================================
+           CHAT DESIGN — Soft & Elegant
+           ============================================================ */
+        .chat-container { display: flex; height: calc(100dvh - 220px); background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-light); overflow: hidden; }
         .chat-sidebar { width: 300px; border-right: 1px solid var(--border-light); overflow-y: auto; background: rgba(0,0,0,0.2); flex-shrink: 0; }
         .chat-sidebar::-webkit-scrollbar { width: 4px; }
         .chat-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
@@ -106,17 +120,25 @@
         .chat-history::-webkit-scrollbar { width: 4px; }
         .chat-history::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
-        .msg { max-width: 70%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.4; position: relative; }
+        .msg { max-width: 70%; padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.5; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .msg.admin { align-self: flex-end; background: var(--cyan); color: #000; border-bottom-right-radius: 4px; font-weight: 600; }
         .msg.user { align-self: flex-start; background: var(--bg-elevated); color: var(--text-white); border-bottom-left-radius: 4px; border: 1px solid var(--border-light); }
-        .msg-time { font-size: 9px; opacity: 0.6; margin-top: 4px; font-weight: 600; }
-        .msg img.msg-image { max-width: 100%; border-radius: 10px; margin-bottom: 4px; }
-        .msg audio { max-width: 100%; }
-        .msg-sender-name { font-size: 10px; font-weight: 800; color: var(--gold); margin-bottom: 3px; text-transform: uppercase; }
+        .msg-time { font-size: 10px; opacity: 0.7; margin-top: 6px; font-weight: 600; text-align: right; }
+        .msg img.msg-image { max-width: 100%; border-radius: 12px; margin-bottom: 5px; }
+        .msg-sender-name { font-size: 11px; font-weight: 800; color: var(--gold); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .chat-input-area { padding: 12px 15px; border-top: 1px solid var(--border-light); display: flex; gap: 10px; background: rgba(0,0,0,0.2); flex-shrink: 0; align-items: center; }
-        .chat-input { flex: 1; padding: 14px 18px; border-radius: 24px; border: 1px solid var(--border-light); background: var(--bg-elevated); color: var(--text-white); outline: none; font-size: 14px; }
-        .chat-input:focus { border-color: var(--cyan); }
+        /* ✅ Voice Note UI in Admin */
+        .voice-bubble { display: flex; align-items: center; gap: 12px; min-width: 200px; padding: 5px !important; }
+        .voice-play-btn { background: transparent; border: none; cursor: pointer; display: grid; place-items: center; padding: 0; width: 28px; height: 28px; color: inherit; font-size: 18px; }
+        .voice-progress-container { flex: 1; height: 4px; background: rgba(0,0,0,0.2); border-radius: 2px; position: relative; cursor: pointer; margin-top: 5px; }
+        .msg.user .voice-progress-container { background: rgba(255,255,255,0.2); }
+        .voice-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: currentColor; width: 0%; border-radius: 2px; pointer-events: none; }
+        .voice-time { font-size: 11px; font-weight: 700; min-width: 32px; text-align: right; }
+        .voice-bubble audio { display: none; }
+
+        .chat-input-area { padding: 12px 15px; border-top: 1px solid var(--border-light); display: flex; gap: 10px; background: rgba(0,0,0,0.2); flex-shrink: 0; align-items: center; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+        .chat-input { flex: 1; padding: 14px 18px; border-radius: 24px; border: 1px solid var(--border-light); background: var(--bg-elevated); color: var(--text-white); outline: none; font-size: 14px; transition: 0.3s; }
+        .chat-input:focus { border-color: var(--cyan); background: rgba(30, 41, 59, 0.8); }
         .btn-send { padding: 0 24px; border-radius: 24px; border: none; background: var(--cyan); color: #000; font-weight: 900; cursor: pointer; font-size: 14px; transition: 0.2s; height: 48px; }
         .btn-send:hover { background: #00b8d4; }
         .btn-img { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--border-light); background: var(--bg-elevated); color: var(--cyan); font-size: 20px; cursor: pointer; display: grid; place-items: center; transition: 0.2s; flex-shrink: 0; }
@@ -364,6 +386,7 @@
             </div>
         </div>
 
+        <!-- 💬 SOFT CHAT UI -->
         <div class="tab-panel" id="tab-chat">
             <div class="page-title">Live Support Chat</div>
             <div class="chat-container">
@@ -388,6 +411,7 @@
                     <div class="chat-input-area" id="chat-input-area" style="display: none;">
                         <input type="file" id="chat-image-input" accept="image/*" hidden onchange="uploadChatImage(this)">
                         <button class="btn-img" onclick="document.getElementById('chat-image-input').click()" title="Send Image">📷</button>
+                        <button class="btn-img" id="admin-mic-btn" onclick="toggleAdminRecording()" title="Record Voice">🎤</button>
                         <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMessage()">
                         <button class="btn-send" onclick="sendMessage()">SEND</button>
                     </div>
@@ -580,6 +604,18 @@
         let currentCrashPoint = 2.00;
         let crashSequence = [];
         let currentLoopIndex = 0;
+
+        // ✅ Mobile Keyboard Support for Admin Panel
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                const chatContainer = document.querySelector('.chat-container');
+                if (chatContainer && document.getElementById('tab-chat').classList.contains('active')) {
+                    chatContainer.style.height = `${window.visualViewport.height - 220}px`;
+                    const history = document.getElementById('chat-history');
+                    if (history) setTimeout(() => { history.scrollTop = history.scrollHeight; }, 100);
+                }
+            });
+        }
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.replace('login.html'); return; }
@@ -2078,9 +2114,22 @@
                     const timeStr = msg._time > 0 ? new Date(msg._time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
                     let contentHtml = '';
-                    if (msgType === 'image' && msg.imageUrl) contentHtml = `<img src="${msg.imageUrl}" class="msg-image" alt="Image">`;
-                    else if (msgType === 'voice' && msg.voiceNoteUrl) contentHtml = `<audio controls src="${msg.voiceNoteUrl}"></audio>`;
-                    else contentHtml = text;
+                    if (msgType === 'image' && msg.imageUrl) {
+                        contentHtml = `<img src="${msg.imageUrl}" class="msg-image" alt="Image" onclick="window.open('${msg.imageUrl}', '_blank')">`;
+                    } else if (msgType === 'voice' && msg.voiceNoteUrl) {
+                        contentHtml = `
+                            <div class="voice-bubble">
+                                <button class="voice-play-btn" onclick="this.nextElementSibling.paused ? this.nextElementSibling.play() : this.nextElementSibling.pause()">▶️</button>
+                                <div class="voice-progress-container" onclick="let a=this.nextElementSibling; a.currentTime = (event.offsetX/this.offsetWidth)*a.duration;">
+                                    <div class="voice-progress-fill"></div>
+                                </div>
+                                <div class="voice-time">0:00</div>
+                                <audio src="${msg.voiceNoteUrl}" ontimeupdate="let p=(this.currentTime/this.duration)*100; this.previousElementSibling.firstElementChild.style.width = p+'%'; this.nextElementSibling.innerText = Math.floor(this.currentTime/60)+':'+('0'+Math.floor(this.currentTime%60)).slice(-2);" onended="this.currentTime=0; this.previousElementSibling.firstElementChild.style.width='0%'; this.nextElementSibling.innerText='0:00'; this.previousElementSibling.previousElementSibling.innerText='▶️';"></audio>
+                            </div>
+                        `;
+                    } else {
+                        contentHtml = text;
+                    }
 
                     const showSenderName = !isAdmin && chatId === 'global_chat';
 
@@ -2107,6 +2156,17 @@
             input.value = '';
 
             try {
+                // 1. Send message first
+                await addDoc(collection(db, 'chat_messages'), {
+                    groupId: currentChatId,
+                    uid: currentAdmin.uid,
+                    senderName: 'Admin',
+                    messageType: 'text',
+                    textContent: text,
+                    timestamp: serverTimestamp()
+                });
+
+                // 2. Update group doc
                 const groupRef = doc(db, 'chat_groups', currentChatId);
                 const groupSnap = await getDoc(groupRef);
 
@@ -2127,16 +2187,6 @@
                         lastMessageTime: serverTimestamp()
                     });
                 }
-
-                await addDoc(collection(db, 'chat_messages'), {
-                    groupId: currentChatId,
-                    uid: currentAdmin.uid,
-                    senderName: 'Admin',
-                    messageType: 'text',
-                    textContent: text,
-                    timestamp: serverTimestamp()
-                });
-
             } catch (e) {
                 console.error(e);
                 alert("Failed to send message: " + e.message);
@@ -2159,6 +2209,15 @@
 
                 if (!data.secure_url) throw new Error('Upload failed');
 
+                await addDoc(collection(db, 'chat_messages'), {
+                    groupId: currentChatId,
+                    uid: currentAdmin.uid,
+                    senderName: 'Admin',
+                    messageType: 'image',
+                    imageUrl: data.secure_url,
+                    timestamp: serverTimestamp()
+                });
+
                 const groupRef = doc(db, 'chat_groups', currentChatId);
                 const groupSnap = await getDoc(groupRef);
                 if (!groupSnap.exists()) {
@@ -2178,20 +2237,86 @@
                         lastMessageTime: serverTimestamp()
                     });
                 }
-
-                await addDoc(collection(db, 'chat_messages'), {
-                    groupId: currentChatId,
-                    uid: currentAdmin.uid,
-                    senderName: 'Admin',
-                    messageType: 'image',
-                    imageUrl: data.secure_url,
-                    timestamp: serverTimestamp()
-                });
             } catch (err) {
                 console.error(err);
                 alert("Failed to send image: " + err.message);
             }
             input.value = '';
+        };
+
+        // ✅ NEW: Admin Voice Note Recorder
+        let adminMediaRecorder;
+        let adminAudioChunks = [];
+        let isAdminRecording = false;
+
+        window.toggleAdminRecording = async () => {
+            const btn = document.getElementById('admin-mic-btn');
+            if (isAdminRecording) {
+                adminMediaRecorder.stop();
+                isAdminRecording = false;
+                btn.style.background = 'var(--bg-elevated)';
+                btn.style.color = 'var(--cyan)';
+                btn.innerText = '🎤';
+                return;
+            }
+
+            if (!currentChatId) return;
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                adminMediaRecorder = new MediaRecorder(stream);
+                adminAudioChunks = [];
+
+                adminMediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) adminAudioChunks.push(e.data); };
+                
+                adminMediaRecorder.onstop = async () => {
+                    stream.getTracks().forEach(t => t.stop());
+                    const audioBlob = new Blob(adminAudioChunks, { type: 'audio/webm' });
+                    if (audioBlob.size < 1000) return;
+
+                    btn.innerText = '⏳';
+                    btn.style.background = 'var(--bg-elevated)';
+
+                    try {
+                        const formData = new FormData();
+                        formData.append('file', audioBlob, 'voice.webm');
+                        formData.append('upload_preset', CLOUDINARY.uploadPreset);
+
+                        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/auto/upload`, { method: 'POST', body: formData });
+                        const data = await res.json();
+                        
+                        if (!data.secure_url) throw new Error('Upload failed');
+
+                        await addDoc(collection(db, 'chat_messages'), {
+                            groupId: currentChatId,
+                            uid: currentAdmin.uid,
+                            senderName: 'Admin',
+                            messageType: 'voice',
+                            voiceNoteUrl: data.secure_url,
+                            timestamp: serverTimestamp()
+                        });
+                        
+                        const groupRef = doc(db, 'chat_groups', currentChatId);
+                        const groupSnap = await getDoc(groupRef);
+                        if (groupSnap.exists()) {
+                            await updateDoc(groupRef, { lastMessage: '🎤 Voice message', lastMessageTime: serverTimestamp() });
+                        }
+                    } catch (err) {
+                        alert('Voice send failed: ' + err.message);
+                    } finally {
+                        btn.innerText = '🎤';
+                        btn.style.background = 'var(--bg-elevated)';
+                    }
+                };
+
+                adminMediaRecorder.start();
+                isAdminRecording = true;
+                btn.innerText = '⏹️';
+                btn.style.background = 'var(--danger)';
+                btn.style.color = '#fff';
+            } catch (err) {
+                alert('Microphone denied: ' + err.message);
+            }
         };
 
         window.logout = async () => { await signOut(auth); window.location.replace('login.html'); };
