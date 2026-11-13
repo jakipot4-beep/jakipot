@@ -374,7 +374,7 @@
     storageBucket: "jakipot.firebasestorage.app",
     messagingSenderId: "396191754293",
     appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
-    measurementId: "G-L1CLB5TDHV"
+    measurementId: "G-L1CL5TDHV"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -461,7 +461,8 @@
     currentUser = user;
 
     onSnapshot(doc(db, 'users', user.uid), (snap) => {
-      if (snap.exists()) {
+      // ✅ FIXED: Removed () from exists
+      if (snap.exists) {
         const userCurrency = snap.data().currency || 'ZMW';
         currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
         updateBetDisplay();
@@ -469,7 +470,8 @@
     });
 
     onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
-      if (snap.exists()) {
+      // ✅ FIXED: Removed () from exists
+      if (snap.exists) {
         balance = snap.data().balance || 0;
         balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
         finishLoading();
@@ -525,7 +527,7 @@
     initAudio();
     gameState = 'AIMING';
     aimDirection = 1;
-    aimPosition = -257; // AIM_RANGE
+    aimPosition = -257;
     aimLine.classList.add('active');
     throwBtn.textContent = 'STOP & THROW!';
     throwBtn.style.background = 'linear-gradient(180deg, #dc2626 0%, #991b1b 100%)';
@@ -535,7 +537,7 @@
 
     function animateAim() {
       if (gameState !== 'AIMING') return;
-      aimPosition += aimDirection * 35; // AIM_SPEED
+      aimPosition += aimDirection * 35;
       if (aimPosition >= 257) { aimPosition = 257; aimDirection = -1; }
       else if (aimPosition <= -257) { aimPosition = -257; aimDirection = 1; }
       
@@ -559,15 +561,17 @@
     
     playThrowSound();
 
+    // ✅ FIXED: Calculate startY and endY ONCE, before any setTimeout
+    const rect = targetInner.getBoundingClientRect();
+    const startY = rect.height + 50;
+    const endY = (rect.height / 2) - 50;
+
     // 1. FAKE THROW ANIMATION (Throws to a random spot while waiting for Vercel)
-    const fakePercent = 30 + Math.random() * 40; // 30% to 70%
+    const fakePercent = 30 + Math.random() * 40;
     dartWrapper.classList.add('throwing');
     dartWrapper.style.transform = 'translateX(-50%) translateY(0px)';
     
     setTimeout(() => {
-      const rect = targetInner.getBoundingClientRect();
-      const startY = rect.height + 50;
-      const endY = (rect.height / 2) - 50;
       dartWrapper.style.transform = `translateX(calc(${fakePercent}% - 50%)) translateY(${endY - startY}px)`;
     }, 50);
 
@@ -588,11 +592,11 @@
       balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
       // 4. MOVE DART TO REAL RESULT (from server)
-      const winData = data.winData; // contains { name, multiplier, visualPos }
+      const winData = data.winData;
       const winAmount = data.payoutAmount;
       const visualPercent = winData.visualPos;
 
-      // Animate from fake position to real position
+      // ✅ FIXED: startY and endY are now in scope here
       setTimeout(() => {
         dartWrapper.style.transform = `translateX(calc(${visualPercent}% - 50%)) translateY(${endY - startY}px)`;
         
@@ -641,7 +645,7 @@
           throwBtn.style.display = 'none';
           playAgainBtn.style.display = 'flex';
 
-        }, 400); // Time for dart to fly from fake spot to real spot
+        }, 400);
       }, 200);
 
     } catch (error) {

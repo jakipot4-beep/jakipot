@@ -515,7 +515,8 @@
 
             // Get User Currency
             onSnapshot(doc(db, 'users', user.uid), (snap) => {
-                if (snap.exists()) {
+                // ✅ FIXED: Removed () from exists
+                if (snap.exists) {
                     const data = snap.data();
                     const userCurrency = data.currency || 'ZMW';
                     currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
@@ -526,7 +527,8 @@
 
             // Get Wallet Balance
             onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
-                if (snap.exists()) {
+                // ✅ FIXED: Removed () from exists
+                if (snap.exists) {
                     balance = snap.data().balance || 0;
                     updateUI();
                     finishLoading(); // Hide loader once loaded
@@ -821,4 +823,4 @@
         renderWheel();
     </script>
 </body>
-</html>I 
+</html>

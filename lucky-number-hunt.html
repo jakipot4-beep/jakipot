@@ -500,7 +500,8 @@
     currentUser = user;
 
     onSnapshot(doc(db, 'users', user.uid), (snap) => {
-      if (snap.exists()) {
+      // ✅ FIXED: Removed () from exists
+      if (snap.exists) {
         const userCurrency = snap.data().currency || 'ZMW';
         currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
         updateBetUI();
@@ -508,7 +509,8 @@
     });
 
     onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
-      if (snap.exists()) {
+      // ✅ FIXED: Removed () from exists
+      if (snap.exists) {
         balance = snap.data().balance || 0;
         balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
         finishLoading();

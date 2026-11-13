@@ -96,6 +96,11 @@
     overflow: visible;
   }
   
+  /* ✅ FIX: Force the wheel to rotate around its center */
+  #wheelGroup {
+    transform-origin: 200px 200px;
+  }
+
   /* Pointer */
   .pointer {
     position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
@@ -226,7 +231,6 @@
 <!-- LOADING SCREEN -->
 <div id="loaderOverlay">
   <div class="loader-content">
-    <!-- Jungle themed Animal Mask SVG -->
     <svg class="loader-animal-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="lg-jungle" x1="0" y1="0" x2="1" y2="1">
@@ -373,7 +377,7 @@
     storageBucket: "jakipot.firebasestorage.app",
     messagingSenderId: "396191754293",
     appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
-    measurementId: "G-L1CLB5TDHV"
+    measurementId: "G-L1CL5TDHV"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -471,7 +475,8 @@
     currentUser = user;
 
     onSnapshot(doc(db, 'users', user.uid), (snap) => {
-      if (snap.exists()) {
+      // ✅ FIXED: Removed () from exists
+      if (snap.exists) {
         const userCurrency = snap.data().currency || 'ZMW';
         currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
         updateBetUI();
@@ -479,7 +484,8 @@
     });
 
     onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
-      if (snap.exists()) {
+      // ✅ FIXED: Removed () from exists
+      if (snap.exists) {
         balance = snap.data().balance || 0;
         balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
         finishLoading();
@@ -593,7 +599,8 @@
     let fakeSpeed = 0;
     let fakeInterval = setInterval(() => {
       fakeSpeed += 20;
-      wheelGroup.setAttribute('transform', `rotate(${fakeSpeed} 200 200)`);
+      wheelGroup.style.transition = 'none'; 
+      wheelGroup.style.transform = `rotate(${fakeSpeed}deg)`;
     }, 16);
 
     try {

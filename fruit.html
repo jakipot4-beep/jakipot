@@ -326,7 +326,7 @@
             storageBucket: "jakipot.firebasestorage.app",
             messagingSenderId: "396191754293",
             appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
-            measurementId: "G-L1CLB5TDHV"
+            measurementId: "G-L1CL5TDHV"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -404,7 +404,8 @@
             currentUser = user;
 
             onSnapshot(doc(db, 'users', user.uid), (snap) => {
-                if (snap.exists()) {
+                // ✅ FIXED: Removed () from exists
+                if (snap.exists) {
                     const data = snap.data();
                     userCurrency = data.currency || 'ZMW';
                     currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
@@ -423,7 +424,8 @@
             });
 
             onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
-                if (snap.exists()) {
+                // ✅ FIXED: Removed () from exists
+                if (snap.exists) {
                     userBalance = snap.data().balance || 0;
                     updateBalanceUI();
                     // Finish loading once we get the user data
@@ -633,6 +635,7 @@
                 // 5. SET THE REAL RESULTS FROM SERVER
                 let winAmount = data.payoutAmount;
 
+                // ✅ Handles 'winFruit' correctly based on the play.js we fixed
                 if (data.winFruit) {
                     const serverFruit = fruits.find(f => f.icon === data.winFruit.icon);
                     spinResults = [serverFruit, serverFruit, serverFruit];

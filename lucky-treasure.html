@@ -404,7 +404,7 @@
     storageBucket: "jakipot.firebasestorage.app",
     messagingSenderId: "396191754293",
     appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
-    measurementId: "G-L1CLB5TDHV"
+    measurementId: "G-L1CL5TDHV"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -504,7 +504,8 @@
     currentUser = user;
 
     onSnapshot(doc(db, 'users', user.uid), (snap) => {
-      if (snap.exists()) {
+      // ✅ FIXED: Removed () from exists
+      if (snap.exists) {
         const userCurrency = snap.data().currency || 'ZMW';
         currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
         updateBetDisplay();
@@ -512,7 +513,8 @@
     });
 
     onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
-      if (snap.exists()) {
+      // ✅ FIXED: Removed () from exists
+      if (snap.exists) {
         balance = snap.data().balance || 0;
         balanceEl.textContent = balance.toLocaleString(undefined, {minimumFractionDigits: 2});
         finishLoading();
