@@ -1,6 +1,8 @@
 const admin = require('firebase-admin');
 
-// Initialize Firebase Admin with your specific keys
+// ==========================================
+// INITIALIZE FIREBASE ADMIN
+// ==========================================
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
@@ -69,7 +71,11 @@ module.exports = async (req, res) => {
     const token = req.headers.authorization.split('Bearer ')[1];
     const decodedToken = await admin.auth().verifyIdToken(token);
     const uid = decodedToken.uid;
+    
+    // Extract request body
     const { gameType, betAmount, payload } = req.body;
+    // Handle selectedNum from either payload or top-level (frontend sends top-level)
+    const selectedNum = (payload && payload.selectedNum) || req.body.selectedNum || 1;
 
     const walletRef = db.collection("wallets").doc(uid);
     const userRef = db.collection("users").doc(uid);
@@ -84,10 +90,11 @@ module.exports = async (req, res) => {
 
       let payoutAmount = 0;
       let winData = null;
+      let winFruit = null;
       let finalDailyLoss = 0;
 
       // ==========================================
-      // GAME: FRUIT 777
+      // GAME 1: FRUIT 777
       // ==========================================
       if (gameType === 'fruit_777') {
         const userDoc = await t.get(userRef);
@@ -99,26 +106,30 @@ module.exports = async (req, res) => {
 
         const rand = Math.random() * 100;
         let cumulative = 0;
+        let fruitResult = null;
         
         for (let f of FRUITS) {
             if (f.isJackpot) {
                 if (!isUnlocked) continue;
-                if (rand <= cumulative + 1.0) { winData = f; break; }
+                if (rand <= cumulative + 1.0) { fruitResult = f; break; }
                 continue;
             }
-            if (rand <= cumulative + f.prob) { winData = f; break; }
+            if (rand <= cumulative + f.prob) { fruitResult = f; break; }
             cumulative += f.prob;
         }
 
         const scaleFactor = betAmount / 6;
-        payoutAmount = winData ? winData.basePay * scaleFactor : 0;
+        payoutAmount = fruitResult ? Math.floor(fruitResult.basePay * scaleFactor) : 0;
+        winFruit = fruitResult;
+        winData = fruitResult;
+
         const netLoss = Math.max(0, betAmount - payoutAmount);
-        finalDailyLoss = (winData && winData.isJackpot) ? 0 : (currentDailyLoss + netLoss);
+        finalDailyLoss = (fruitResult && fruitResult.isJackpot) ? 0 : (currentDailyLoss + netLoss);
         t.update(userRef, { fruitDailyLoss: finalDailyLoss, lastFruitPlayDate: todayStr });
       } 
       
       // ==========================================
-      // GAME: SUPER SPIN
+      // GAME 2: SUPER SPIN
       // ==========================================
       else if (gameType === 'super_spin') {
         const totalWeight = SUPER_SPIN.reduce((sum, item) => sum + item.weight, 0);
@@ -134,7 +145,7 @@ module.exports = async (req, res) => {
       }
       
       // ==========================================
-      // GAME: ANIMAL SPIN
+      // GAME 3: ANIMAL SPIN
       // ==========================================
       else if (gameType === 'animal_spin') {
         const rand = Math.random() * 100;
@@ -149,10 +160,9 @@ module.exports = async (req, res) => {
       }
 
       // ==========================================
-      // GAME: LUCKY NUMBER
+      // GAME 4: LUCKY NUMBER
       // ==========================================
       else if (gameType === 'lucky_number') {
-        const selectedNum = payload.selectedNum;
         const isMatch = Math.random() < (1 / 24);
         let drawnNum = Math.floor(Math.random() * 24) + 1;
         
@@ -160,39 +170,60 @@ module.exports = async (req, res) => {
             drawnNum = selectedNum;
             const tierRoll = Math.random();
             let mult = 0;
-            if (tierRoll < 0.70) mult = 10;
-            else if (tierRoll < 0.95) mult = 30;
-            else mult = 150;
+            let resultName = '';
+            
+            if (tierRoll < 0.70) { 
+                mult = 10; 
+                resultName = 'Standard Match'; 
+            } else if (tierRoll < 0.95) { 
+                mult = 30; 
+                resultName = 'Special Match'; 
+            } else { 
+                mult = 150; 
+                resultName = 'Jackpot Match'; 
+            }
+            
             payoutAmount = Math.floor(betAmount * mult);
-            winData = { drawnNum: drawnNum, mult: mult };
+            winData = { drawnNum: drawnNum, mult: mult, resultName: resultName };
         } else {
             while (drawnNum === selectedNum) {
                 drawnNum = Math.floor(Math.random() * 24) + 1;
             }
-            winData = { drawnNum: drawnNum, mult: 0 };
+            winData = { drawnNum: drawnNum, mult: 0, resultName: 'No Match' };
         }
       }
 
       // ==========================================
-      // GAME: LUCKY TARGET
+      // GAME 5: LUCKY TARGET
       // ==========================================
       else if (gameType === 'lucky_target') {
-        // Server decides the zone securely
         const rand = Math.random() * 100;
         let mult = 0;
-        let zone = 'MISS';
+        let zoneName = 'Miss';
+        let visualPos = 50;
         
-        if (rand < 5) { mult = 4.0; zone = 'Bullseye'; }
-        else if (rand < 20) { mult = 1.5; zone = 'Inner'; }
-        else if (rand < 50) { mult = 0.5; zone = 'Middle'; }
-        else if (rand < 80) { mult = 0.15; zone = 'Outer'; }
+        if (rand < 5) { 
+            mult = 4.0; zoneName = 'Bullseye'; 
+            visualPos = 50 + (Math.random() * 4 - 2); 
+        } else if (rand < 20) { 
+            mult = 1.5; zoneName = 'Inner'; 
+            visualPos = Math.random() < 0.5 ? 50 - (4 + Math.random() * 6) : 50 + (4 + Math.random() * 6); 
+        } else if (rand < 50) { 
+            mult = 0.5; zoneName = 'Middle'; 
+            visualPos = Math.random() < 0.5 ? 50 - (10 + Math.random() * 10) : 50 + (10 + Math.random() * 10); 
+        } else if (rand < 80) { 
+            mult = 0.15; zoneName = 'Outer'; 
+            visualPos = Math.random() < 0.5 ? 50 - (20 + Math.random() * 10) : 50 + (20 + Math.random() * 10); 
+        } else {
+            visualPos = Math.random() < 0.5 ? 5 + Math.random() * 15 : 80 + Math.random() * 15;
+        }
         
         payoutAmount = Math.floor(betAmount * mult);
-        winData = { zone: zone, mult: mult };
+        winData = { name: zoneName, mult: mult, visualPos: visualPos };
       }
 
       // ==========================================
-      // GAME: LUCKY TREASURE
+      // GAME 6: LUCKY TREASURE
       // ==========================================
       else if (gameType === 'lucky_treasure') {
         const rand = Math.random() * 100;
@@ -208,7 +239,7 @@ module.exports = async (req, res) => {
       }
 
       else {
-        throw new Error("Unknown game type.");
+        throw new Error("Unknown game type: " + gameType);
       }
 
       // ==========================================
@@ -220,22 +251,31 @@ module.exports = async (req, res) => {
       const txRef = db.collection("transactions").doc();
       t.set(txRef, {
         uid: uid, amount: netChange, type: 'game', gameType: gameType,
-        betAmount: betAmount, payoutAmount: payoutAmount, createdAt: admin.firestore.FieldValue.serverTimestamp()
+        betAmount: betAmount, payoutAmount: payoutAmount,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
 
       t.update(walletRef, { balance: newBalance, lastTxId: txRef.id });
 
       const sessionRef = db.collection("game_sessions").doc();
       t.set(sessionRef, {
-        uid: uid, gameType: gameType, betAmount: betAmount, payoutAmount: payoutAmount, createdAt: admin.firestore.FieldValue.serverTimestamp()
+        uid: uid, gameType: gameType, betAmount: betAmount, payoutAmount: payoutAmount,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
 
-      return { winData, payoutAmount, newBalance, newDailyLoss: finalDailyLoss };
+      return { 
+        winData, 
+        winFruit, 
+        payoutAmount, 
+        newBalance, 
+        newDailyLoss: finalDailyLoss 
+      };
     });
 
     return res.status(200).json({ success: true, ...result });
 
   } catch (error) {
+    console.error("Play Error:", error);
     res.status(500).json({ error: error.message });
   }
 };
