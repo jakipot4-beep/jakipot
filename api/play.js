@@ -7,8 +7,9 @@ if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
       projectId: "jakipot",
-      clientEmail: process.env.FIREBASE_EMAIL, // ✅ Pulls from Vercel
-      privateKey: process.env.FIREBASE_KEY.replace(/\\n/g, '\n'), // ✅ Pulls from Vercel
+      clientEmail: "firebase-adminsdk-fbsvc@jakipot.iam.gserviceaccount.com",
+      // 👇 PASTE YOUR ENTIRE PRIVATE KEY HERE BETWEEN THE QUOTES 👇
+      privateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDKYBAXW0glVn1y\nh1s0vnpyKctH2g0QzXJC+3WMZ8i/XoGzEd50XILjYpEtlYSLc1jEEzS6wxG3Ow3f\nBuP8nQIxENm/+Lo6KCD9Daa6sMW/+F+IPbQXBoSc6OICnK58rnXxGdHuehIIT61C\ngwX0dAeMwVZ0hc+/o1+kMFWvBmIULJ25L7YwMVVvQLL87irW/dUPzSqB5VgmOMFL\n3GyzJ41upDIaG4ch+e2LxSNv0aCXfsmSrCTYaB6YHFc202OPpLnOj2fEH730ZXSu\n2ZSoe5vO/hwxs+3aSwbBIANh+sEYDBlH4S+qvusLtsIrjxscll6Ajf46BcJ4jNXx\nsPNf3eLHAgMBAAECggEAH1js9Sk7DimNCfoEezGMFvX5WnpgrrscGVsJFMQYuOfj\nMEEy05Rm4+DnOwfffZhS5iBReSJxMpAvsF3JX95UMhR5nj5hXlPL9FayflWWdAt9\nhMWGCVEFpqZ+J8hsULzXYQ7OUWHQPEBXRqez+u8kIj3qbecyTG16iZzBEPjspVIT\nWgo1nkKOnZyIoHZ7hgwjGl/1axpbUGNMi8mZOPR0XDZVMo7zztVoV/XCqP88VCAm\noimxC1q75hx75jwouVoS0ZthYpC6v7A7F06qGZVqSrghNSndPdJoPOykDIA0GK1H\nYU8UtxvuBOQErxeqgxEizSKZo/Hzmp5bn2bNCsFf/QKBgQDqu3qvx3blPffHLjsY\ncUh2rkC3r0VE5kqUpnsIA/n0ccF3afJar5hiv+zvy3cR+JpjNtmbyB0rlGRcgZwY\ndbFDfHF8fE3OBjj2WbV25K9eHnUB9y0B40IBJRTvc8FBZnDtfyyuoPcIlso3OMY+\nvVEnyBG4PobRbrfB0Bje/ljI9QKBgQDcthLx/vW0HOE4Cpbg6ASmba1Jmjskd6jA\nRQtS/hfdSVQ5kzG50vKd1tMHba8RHUwz9x5y5Vopc4z1DbRMvYHTaISbVBK21sjg\nI7HhnSAumxou4yhbWRQxI9UWPz5WlDSFGpBD57UrbezReu1v1AaWmuUIzXIRCchp\nw8w+jnkXSwKBgBdGE3oOSumb5U9odA+OW+L4kA4mYLXeJ5LpltVKn6PvC4GtjYwU\nUQWphfKYt+uePKCNtbHOe6XwhqrtZu697J+GXTI8mPJOh6NVbbqmHgU0++EAAwRm\n5gp7BMJhNc4oPBYwP9votdWyLcaf6HgcCUnqemdMO83ULoAXBABIM8FpAoGAJ3I/\nJpMb1MoIkpyJ5L5y/k/B1dLD2TutpFdys62IFFujuvqMu5pxFDat1rkKvfNPiEYV\nYhGNsLTfL3j4jXKdPmyCrsQy6AyxMCYRB7KuasX7wv+EWfcsva+ayPQarxyj2loq\nCIjj/1QRLEtdHkx1tPsQDiexyEvITubYnSGXkMsCgYASeuvEw8p6GMGL0RLMZVLq\nFoLy169tduE7AeklT0TmJKXCrcF25XBcx0KIhJsHaw29vpKCIri7WVJxtBVC53iA\np73uSaH1PeOfnAur8rxMML4AMtH3XgzJ+EQZyVeA/orRV5LT/jMvLXHtC7hMdWNA\n16/IEzRKIU2uu4Y1JFQrLQ==\n-----END PRIVATE KEY-----\n",
     }),
   });
 }
