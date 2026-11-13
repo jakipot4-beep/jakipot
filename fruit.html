@@ -28,6 +28,42 @@
             background-image: radial-gradient(circle at 50% 50%, rgba(0, 217, 255, 0.05) 0%, transparent 60%);
         }
 
+        /* --- LOADER OVERLAY --- */
+        #loader-overlay {
+            position: fixed; inset: 0; z-index: 99999;
+            background: rgba(4, 11, 22, 0.95);
+            backdrop-filter: blur(15px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.6s ease;
+        }
+        #loader-overlay.hidden { opacity: 0; pointer-events: none; }
+        
+        .loader-wheel {
+            width: 80px; height: 80px; border-radius: 50%;
+            border: 4px solid rgba(0, 217, 255, 0.2);
+            border-top: 4px solid var(--gold);
+            border-bottom: 4px solid var(--cyan);
+            animation: spinLoader 1.2s linear infinite;
+            box-shadow: 0 0 30px var(--gold-glow);
+            margin-bottom: 25px;
+        }
+        @keyframes spinLoader { 100% { transform: rotate(360deg); } }
+
+        .loader-title {
+            font-size: 20px; font-weight: 900; color: var(--gold);
+            letter-spacing: 3px; text-transform: uppercase;
+            text-shadow: 0 0 15px var(--gold-glow);
+            margin-bottom: 10px;
+        }
+        .loader-bar-bg {
+            width: 200px; height: 6px; background: rgba(255,255,255,0.1);
+            border-radius: 10px; overflow: hidden; position: relative;
+        }
+        .loader-bar-fill {
+            height: 100%; width: 0%; background: var(--cyan);
+            box-shadow: 0 0 10px var(--cyan); transition: width 0.3s ease;
+        }
+
         .top-header {
             position: absolute; top: 0; left: 0; width: 100%;
             display: flex; align-items: center; justify-content: space-between;
@@ -205,6 +241,15 @@
 </head>
 <body>
 
+    <!-- LOADER OVERLAY -->
+    <div id="loader-overlay">
+        <div class="loader-wheel"></div>
+        <div class="loader-title">Loading Game</div>
+        <div class="loader-bar-bg">
+            <div class="loader-bar-fill" id="loader-bar"></div>
+        </div>
+    </div>
+
     <header class="top-header">
         <button class="back-btn" onclick="window.location.href='home.html'">
             <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
@@ -272,7 +317,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
-        import { getFirestore, doc, collection, serverTimestamp, writeBatch, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
@@ -335,6 +380,25 @@
 
         updateMuteIcon();
 
+        // Fake Loading Progress
+        let loadProgress = 0;
+        const loadBar = document.getElementById('loader-bar');
+        const loadInterval = setInterval(() => {
+            if (loadProgress < 90) {
+                loadProgress += Math.random() * 15;
+                if (loadProgress > 90) loadProgress = 90;
+                loadBar.style.width = loadProgress + '%';
+            }
+        }, 100);
+
+        function finishLoading() {
+            clearInterval(loadInterval);
+            loadBar.style.width = '100%';
+            setTimeout(() => {
+                document.getElementById('loader-overlay').classList.add('hidden');
+            }, 300);
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.replace('login.html'); return; }
             currentUser = user;
@@ -362,6 +426,8 @@
                 if (snap.exists()) {
                     userBalance = snap.data().balance || 0;
                     updateBalanceUI();
+                    // Finish loading once we get the user data
+                    finishLoading();
                 }
             });
 
@@ -445,7 +511,6 @@
                 });
             } 
             else if (type === 'big_win') {
-                // HD Big Win Sound
                 const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
                 notes.forEach((freq, i) => {
                     const osc = audioCtx.createOscillator();
@@ -520,23 +585,6 @@
             updateBetUI();
         }
 
-        function getSpinOutcome() {
-            const rand = Math.random() * 100; 
-            const isUnlocked = dailyLoss >= LOSS_TARGET;
-            
-            let cumulative = 0;
-            for (let f of fruits) {
-                if (f.isJackpot) {
-                    if (!isUnlocked) continue; 
-                    if (rand <= cumulative + 1.0) return f;
-                    continue;
-                }
-                if (rand <= cumulative + f.prob) return f;
-                cumulative += f.prob;
-            }
-            return null; 
-        }
-
         window.spinSlots = async () => {
             initAudio();
             if (isSpinning || isProcessingTx || !currentUser) return;
@@ -549,59 +597,75 @@
             isSpinning = true;
             isProcessingTx = true;
             document.getElementById('spin-btn').disabled = true;
-            
-            const winFruit = getSpinOutcome();
-            let winAmount = 0;
-            const scaleFactor = currentBet / 6;
+            document.getElementById('spin-btn').innerText = "SPINNING...";
 
-            if (winFruit) {
-                spinResults = [winFruit, winFruit, winFruit];
-                winAmount = winFruit.basePay * scaleFactor;
-                lastSpinFruit = winFruit;
-                pendingWin = winAmount; 
-            } else {
-                spinResults = [
-                    fruits[Math.floor(Math.random() * 9)],
-                    fruits[Math.floor(Math.random() * 9)],
-                    fruits[Math.floor(Math.random() * 9)]
-                ];
-                while (spinResults[0].icon === spinResults[1].icon && spinResults[1].icon === spinResults[2].icon) {
-                    spinResults[1] = fruits[Math.floor(Math.random() * 9)];
-                }
-                lastSpinFruit = null;
-                pendingWin = 0;
-            }
-
-            const netLoss = Math.max(0, currentBet - winAmount);
-            const newDailyLoss = dailyLoss + netLoss;
-            const finalDailyLoss = winFruit?.isJackpot ? 0 : newDailyLoss;
+            // 1. FAKE SPIN ANIMATION (Starts instantly)
+            let fakeSpinInterval = setInterval(() => {
+                document.querySelectorAll('.reel-strip').forEach(strip => {
+                    strip.style.transform = `translateY(${Math.random() * -500}px)`;
+                });
+            }, 50);
 
             try {
-                const batch = writeBatch(db);
-                const walletRef = doc(db, 'wallets', currentUser.uid);
-                const userRef = doc(db, 'users', currentUser.uid);
-                const txRef = doc(collection(db, 'transactions'));
-                
-                // ONLY DEDUCT THE BET HERE
-                batch.update(walletRef, { balance: increment(-currentBet), lastTxId: txRef.id });
-                batch.set(txRef, { uid: currentUser.uid, type: 'fruit_777_bet', amount: -currentBet, status: 'completed', createdAt: serverTimestamp() });
-                batch.update(userRef, { fruitDailyLoss: finalDailyLoss, lastFruitPlayDate: lastPlayDate });
+                // 2. GET SECURE TOKEN FROM FIREBASE AUTH
+                const idToken = await currentUser.getIdToken();
 
-                await batch.commit();
-                dailyLoss = finalDailyLoss;
+                // 3. CALL VERCEL SECURE SERVER
+                const response = await fetch('https://jakipot.vercel.app/api/play', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({ gameType: 'fruit_777', betAmount: currentBet })
+                });
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+
+                // 4. STOP FAKE SPIN & UPDATE BALANCES
+                clearInterval(fakeSpinInterval);
+                userBalance = data.newBalance;
+                dailyLoss = data.newDailyLoss;
+                updateBalanceUI();
+                updateBetUI();
+
+                // 5. SET THE REAL RESULTS FROM SERVER
+                let winAmount = data.payoutAmount;
+
+                if (data.winFruit) {
+                    const serverFruit = fruits.find(f => f.icon === data.winFruit.icon);
+                    spinResults = [serverFruit, serverFruit, serverFruit];
+                    lastSpinFruit = serverFruit;
+                    pendingWin = winAmount; 
+                } else {
+                    spinResults = [
+                        fruits[Math.floor(Math.random() * 9)],
+                        fruits[Math.floor(Math.random() * 9)],
+                        fruits[Math.floor(Math.random() * 9)]
+                    ];
+                    while (spinResults[0].icon === spinResults[1].icon && spinResults[1].icon === spinResults[2].icon) {
+                        spinResults[1] = fruits[Math.floor(Math.random() * 9)];
+                    }
+                    lastSpinFruit = null;
+                    pendingWin = 0;
+                }
+
+                isProcessingTx = false;
+                
+                // 6. PLAY THE REAL ANIMATION
+                animateColumn(0, 3000);
+                animateColumn(1, 3500);
+                animateColumn(2, 4000);
 
             } catch (e) {
+                clearInterval(fakeSpinInterval);
                 console.error("Transaction failed:", e);
-                alert("Failed to process spin. Please check your connection.");
+                alert(e.message || "Failed to process spin. Please check your connection.");
                 isSpinning = false; isProcessingTx = false;
                 document.getElementById('spin-btn').disabled = false;
-                return;
+                document.getElementById('spin-btn').innerText = `SPIN - ${currencySymbol}${currentBet}`;
             }
-
-            isProcessingTx = false;
-            animateColumn(0, 3000);
-            animateColumn(1, 3500);
-            animateColumn(2, 4000);
         };
 
         function animateColumn(colIndex, duration) {
@@ -642,6 +706,7 @@
                     if (colIndex === 2) {
                         isSpinning = false;
                         document.getElementById('spin-btn').disabled = false;
+                        document.getElementById('spin-btn').innerText = `SPIN - ${currencySymbol}${currentBet}`;
                         evaluateResult();
                     }
                 }
@@ -651,10 +716,8 @@
 
         function evaluateResult() {
             if (lastSpinFruit) {
-                const scaleFactor = currentBet / 6;
-                const winAmount = lastSpinFruit.basePay * scaleFactor;
+                const winAmount = pendingWin;
                 
-                // If win is 15 or more (based on K6 bet), trigger Big Win
                 if (winAmount >= 15) {
                     showBigWin(winAmount);
                 } else {
@@ -665,7 +728,6 @@
             }
         }
 
-        // --- BIG WIN ANIMATION LOGIC ---
         function showBigWin(winAmount) {
             playSound('big_win');
             const overlay = document.getElementById('big-win-overlay');
@@ -674,14 +736,12 @@
             overlay.classList.add('active');
             
             let startAmount = 0;
-            const duration = 2000; // 2 seconds
+            const duration = 2000; 
             const startTime = performance.now();
             
             function updateCounter(currentTime) {
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / duration, 1);
-                
-                // Easing function for fast start, slow end
                 const easeOut = 1 - Math.pow(1 - progress, 3); 
                 const currentVal = winAmount * easeOut;
                 
@@ -720,46 +780,13 @@
             overlay.classList.add('active');
         }
 
-        // --- COLLECT LOGIC ---
-        window.collectWin = async () => {
-            if (pendingWin <= 0) {
-                // Just close modals if nothing pending
-                document.getElementById('result-overlay').classList.remove('active');
-                document.getElementById('big-win-overlay').classList.remove('active');
-                updateBetUI();
-                return;
-            }
-
-            try {
-                const batch = writeBatch(db);
-                const walletRef = doc(db, 'wallets', currentUser.uid);
-                const txRef = doc(collection(db, 'transactions'));
-                
-                batch.update(walletRef, { balance: increment(pendingWin), lastTxId: txRef.id });
-                batch.set(txRef, { uid: currentUser.uid, type: 'fruit_777_win', amount: pendingWin, status: 'completed', createdAt: serverTimestamp() });
-
-                const sessionRef = doc(collection(db, 'game_sessions'));
-                batch.set(sessionRef, {
-                    uid: currentUser.uid, gameType: 'fruit_777', betAmount: currentBet,
-                    multiplier: (pendingWin / currentBet).toFixed(2),
-                    payoutAmount: pendingWin, status: 'completed', createdAt: serverTimestamp()
-                });
-
-                await batch.commit();
-
-                // Close modals
-                document.getElementById('result-overlay').classList.remove('active');
-                document.getElementById('big-win-overlay').classList.remove('active');
-                
-                // Reset
-                pendingWin = 0;
-                lastSpinFruit = null;
-                updateBetUI();
-
-            } catch (e) {
-                console.error(e);
-                alert("Failed to collect win. Please try again.");
-            }
+        // --- COLLECT LOGIC (Just closes the modal, server already paid) ---
+        window.collectWin = () => {
+            document.getElementById('result-overlay').classList.remove('active');
+            document.getElementById('big-win-overlay').classList.remove('active');
+            pendingWin = 0;
+            lastSpinFruit = null;
+            updateBetUI();
         };
 
     </script>

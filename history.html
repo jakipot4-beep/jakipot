@@ -38,39 +38,51 @@
         .wallet-balance { font-size: 14px; font-weight: 800; color: var(--gold); background: var(--bg-elevated); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(251,191,36,0.3); }
 
         .content-area { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 50px; }
-        .section-title { font-size: 14px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; }
+        .section-title { font-size: 14px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .tx-count { font-size: 11px; font-weight: 700; color: var(--cyan); background: rgba(0, 217, 255, 0.1); padding: 3px 10px; border-radius: 10px; }
 
         .history-list { display: flex; flex-direction: column; gap: 10px; }
 
         .tx-card {
             background: var(--bg-card); border: 1px solid var(--border-light);
             border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center;
+            transition: border-color 0.2s;
         }
+        .tx-card:hover { border-color: rgba(0, 217, 255, 0.3); }
 
-        .tx-left { display: flex; flex-direction: column; gap: 4px; }
-        .tx-title { font-size: 14px; font-weight: 800; color: var(--text-white); }
+        .tx-left { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+        .tx-title { font-size: 14px; font-weight: 800; color: var(--text-white); display: flex; align-items: center; gap: 8px; }
+        .tx-title-icon { font-size: 16px; }
         .tx-date { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+        .tx-details { font-size: 10px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
         
-        .tx-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-        .tx-amount { font-size: 16px; font-weight: 900; }
+        .tx-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; margin-left: 10px; }
+        .tx-amount { font-size: 16px; font-weight: 900; white-space: nowrap; }
         .tx-amount.positive { color: var(--emerald); }
         .tx-amount.negative { color: var(--danger); }
+        .tx-amount.neutral { color: var(--text-muted); }
         
-        .tx-status { font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+        .tx-status { font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
         .status-completed { background: rgba(16, 185, 129, 0.15); color: var(--emerald); }
         .status-pending { background: rgba(251, 191, 36, 0.15); color: var(--gold); }
         .status-failed { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
 
         .empty-state {
-            text-align: center; padding: 50px 20px; color: var(--text-muted); font-size: 14px;
+            text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 14px;
             display: flex; flex-direction: column; align-items: center; gap: 15px;
         }
         .empty-state svg { width: 70px; height: 70px; fill: var(--bg-elevated); opacity: 0.8; }
-        .empty-state span { font-weight: 600; }
+        .empty-state span { font-weight: 600; line-height: 1.5; }
 
         .loader-wrap { display: flex; justify-content: center; padding: 40px; }
         .spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--cyan); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-box {
+            background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5; padding: 15px; border-radius: 10px; font-size: 13px; font-weight: 600;
+            text-align: center; line-height: 1.5;
+        }
 
     </style>
 </head>
@@ -85,17 +97,19 @@
     </header>
 
     <main class="content-area">
-        <div class="section-title">All Transactions</div>
+        <div class="section-title">
+            <span>All Transactions</span>
+            <span class="tx-count" id="tx-count">0</span>
+        </div>
         <div class="history-list" id="history-list">
             <div class="loader-wrap"><div class="spinner"></div></div>
         </div>
     </main>
 
     <script type="module">
-        // LOCKED TO 13.1.0 AS REQUESTED
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
-        import { getFirestore, doc, collection, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+        import { getFirestore, doc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
@@ -104,7 +118,7 @@
             storageBucket: "jakipot.firebasestorage.app",
             messagingSenderId: "396191754293",
             appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
-            measurementId: "G-L1CLB5TDHV"
+            measurementId: "G-L1CL5TDHV"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -113,7 +127,7 @@
 
         let currentUser = null;
         let currencySymbol = 'K';
-        let allTransactions = []; // Store in memory
+        let allTransactions = [];
         let unsubscribeHistory = null;
 
         const CURRENCY_MAP = {
@@ -124,54 +138,84 @@
             'PKR': '₨', 'BDT': '৳'
         };
 
-        // Professional Transaction Type Mappings
+        // Comprehensive Transaction Type Mapping
         const TYPE_LABELS = {
-            'deposit': 'Deposit',
-            'withdrawal': 'Withdrawal',
-            'withdrawal_refund': 'Withdrawal Refund',
-            'investment': 'Plan Investment',
-            'payout': 'Game Win',
-            'bet': 'Game Bet',
-            'game_bet': 'Game Bet',
-            'game_win': 'Game Win',
-            'fruit_777_result': 'Fruit 777',
-            'admin_adjustment': 'Admin Adjustment',
-            'referral_bonus': 'Referral Bonus',
-            'bonus': 'Bonus'
+            // Deposits & Withdrawals
+            'deposit': { label: 'Deposit', icon: '💰' },
+            'withdrawal': { label: 'Withdrawal', icon: '🏦' },
+            'withdrawal_refund': { label: 'Withdrawal Refund', icon: '↩️' },
+            
+            // Investments
+            'investment': { label: 'Plan Investment', icon: '📈' },
+            'invest_buy': { label: 'Plan Investment', icon: '📈' },
+            'invest_claim': { label: 'Investment Claim', icon: '💎' },
+            'payout': { label: 'Investment Payout', icon: '💎' },
+            
+            // Games
+            'game': { label: 'Game', icon: '🎮' },
+            'game_bet': { label: 'Game Bet', icon: '🎮' },
+            'game_win': { label: 'Game Win', icon: '🏆' },
+            'bet': { label: 'Game Bet', icon: '🎮' },
+            'fruit_777_bet': { label: 'Fruit 777 Bet', icon: '🎰' },
+            'fruit_777_win': { label: 'Fruit 777 Win', icon: '🎰' },
+            'fruit_777_result': { label: 'Fruit 777', icon: '🎰' },
+            
+            // VIP & Referrals
+            'vip_purchase': { label: 'VIP Purchase', icon: '👑' },
+            'referral_bonus': { label: 'Referral Bonus', icon: '🎁' },
+            'bonus': { label: 'Bonus', icon: '🎁' },
+            
+            // Admin
+            'admin_adjustment': { label: 'Admin Adjustment', icon: '⚙️' },
+            'challenge_win': { label: 'Challenge Win', icon: '🏆' },
+            'challenge_refund': { label: 'Challenge Refund', icon: '↩️' }
+        };
+
+        // Game type display names
+        const GAME_NAMES = {
+            'fruit_777': 'Fruit 777',
+            'super_spin': 'Super Spin',
+            'animal_spin': 'Animal Spin',
+            'lucky_number': 'Lucky Number',
+            'lucky_target': 'Lucky Target',
+            'lucky_treasure': 'Lucky Treasure',
+            'pool_8ball': 'Pro Pool 8-Ball',
+            'poker_4card': '4-Card Poker'
         };
 
         onAuthStateChanged(auth, (user) => {
             if (!user) { window.location.replace('login.html'); return; }
             currentUser = user;
 
-            // 1. Listen to User Profile (Currency) - Only re-renders, doesn't re-subscribe
+            // Listen to user currency
             onSnapshot(doc(db, 'users', user.uid), (snap) => {
                 if (snap.exists()) {
                     const curr = snap.data().currency || 'ZMW';
                     currencySymbol = CURRENCY_MAP[curr] || curr;
-                    renderTransactions(); // Re-render in-memory data with new symbol
+                    renderTransactions();
                 }
             });
 
-            // 2. Listen to Wallet Balance for header
+            // Listen to wallet balance
             onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
                 if (snap.exists()) {
                     const bal = snap.data().balance || 0;
                     document.getElementById('wallet-balance').innerText = `${currencySymbol}${bal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                } else {
+                    document.getElementById('wallet-balance').innerText = `${currencySymbol}0.00`;
                 }
             });
 
-            // 3. Subscribe to transactions ONCE
             setupTransactionListener(user.uid);
         });
 
         function setupTransactionListener(uid) {
             if (unsubscribeHistory) unsubscribeHistory();
 
+            // ⚠️ KEY FIX: No orderBy here to avoid the composite index requirement
             const q = query(
                 collection(db, 'transactions'),
-                where('uid', '==', uid),
-                orderBy('createdAt', 'desc')
+                where('uid', '==', uid)
             );
 
             unsubscribeHistory = onSnapshot(q, (snapshot) => {
@@ -179,12 +223,22 @@
                 snapshot.forEach((doc) => {
                     allTransactions.push({ id: doc.id, ...doc.data() });
                 });
+                
+                // Sort client-side by createdAt (newest first)
+                allTransactions.sort((a, b) => {
+                    const aTime = a.createdAt?.toMillis?.() || 0;
+                    const bTime = b.createdAt?.toMillis?.() || 0;
+                    return bTime - aTime;
+                });
+                
                 renderTransactions();
             }, (error) => {
                 console.error("History query error:", error);
                 document.getElementById('history-list').innerHTML = `
-                    <div class="empty-state">
-                        <span>Could not load history. Please refresh.</span>
+                    <div class="error-box">
+                        Failed to load history.<br>
+                        <strong>${error.message}</strong><br><br>
+                        Please check that your Firestore rules allow reading transactions, then refresh.
                     </div>
                 `;
             });
@@ -192,54 +246,104 @@
 
         function renderTransactions() {
             const list = document.getElementById('history-list');
+            const countEl = document.getElementById('tx-count');
             list.innerHTML = '';
+            countEl.innerText = allTransactions.length;
 
             if (allTransactions.length === 0) {
                 list.innerHTML = `
                     <div class="empty-state">
                         <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-                        <span>No transactions yet. Start playing to see your history here.</span>
+                        <span>No transactions yet.<br>Start playing or depositing to see your history here.</span>
                     </div>
                 `;
                 return;
             }
 
             allTransactions.forEach((tx) => {
-                // Format Amount
-                const isPositive = tx.amount > 0;
-                const sign = isPositive ? '+' : '-';
-                const amountFormatted = `${sign}${currencySymbol}${Math.abs(tx.amount).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                // ==========================================
+                // FORMAT AMOUNT
+                // ==========================================
+                const amount = Number(tx.amount) || 0;
+                const isPositive = amount > 0;
+                const isNeutral = amount === 0;
+                const sign = isPositive ? '+' : (amount < 0 ? '-' : '');
+                const amountFormatted = `${sign}${currencySymbol}${Math.abs(amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                 
-                // Format Date
+                // ==========================================
+                // FORMAT DATE
+                // ==========================================
                 let dateStr = 'Just now';
-                if (tx.createdAt) {
-                    try {
-                        const date = tx.createdAt.toDate();
+                try {
+                    if (tx.createdAt) {
+                        const date = tx.createdAt.toDate ? tx.createdAt.toDate() : new Date(tx.createdAt);
                         dateStr = date.toLocaleString('en-GB', { 
                             day: '2-digit', month: 'short', year: 'numeric', 
                             hour: '2-digit', minute: '2-digit' 
                         });
-                    } catch (e) { }
+                    }
+                } catch (e) { dateStr = 'Processing...'; }
+
+                // ==========================================
+                // FORMAT TITLE
+                // ==========================================
+                const typeInfo = TYPE_LABELS[tx.type] || {
+                    label: (tx.type || 'Unknown').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                    icon: '📝'
+                };
+                
+                let displayTitle = typeInfo.label;
+                let displayIcon = typeInfo.icon;
+                
+                // If it's a game and we have gameType, show the specific game
+                if ((tx.type === 'game' || tx.type === 'game_bet' || tx.type === 'game_win') && tx.gameType) {
+                    const gameName = GAME_NAMES[tx.gameType] || tx.gameType;
+                    displayTitle = gameName;
+                    displayIcon = '🎮';
+                }
+                
+                // If it's a fruit bet/win specifically
+                if (tx.type === 'fruit_777_bet' || tx.type === 'fruit_777_win') {
+                    displayTitle = 'Fruit 777';
+                    displayIcon = '🎰';
                 }
 
-                // Professional Title
-                let title = TYPE_LABELS[tx.type] || tx.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
-                // Status
+                // ==========================================
+                // FORMAT STATUS
+                // ==========================================
+                let status = tx.status || 'completed'; // Default to completed
                 let statusClass = 'status-completed';
-                if (tx.status === 'pending') statusClass = 'status-pending';
-                if (tx.status === 'failed' || tx.status === 'rejected') statusClass = 'status-failed';
+                let statusText = status.toUpperCase();
+                
+                if (status === 'pending') { statusClass = 'status-pending'; }
+                if (status === 'failed' || status === 'rejected') { statusClass = 'status-failed'; statusText = 'FAILED'; }
+
+                // ==========================================
+                // EXTRA DETAILS (Bet & Payout info)
+                // ==========================================
+                let detailsHtml = '';
+                if (tx.betAmount && tx.payoutAmount !== undefined) {
+                    const bet = Number(tx.betAmount);
+                    const pay = Number(tx.payoutAmount);
+                    if (bet > 0) {
+                        detailsHtml = `<div class="tx-details">Bet: ${currencySymbol}${bet.toLocaleString()} → Payout: ${currencySymbol}${pay.toLocaleString()}</div>`;
+                    }
+                }
 
                 const card = document.createElement('div');
                 card.className = 'tx-card';
                 card.innerHTML = `
                     <div class="tx-left">
-                        <div class="tx-title">${title}</div>
+                        <div class="tx-title">
+                            <span class="tx-title-icon">${displayIcon}</span>
+                            ${displayTitle}
+                        </div>
                         <div class="tx-date">${dateStr}</div>
+                        ${detailsHtml}
                     </div>
                     <div class="tx-right">
-                        <div class="tx-amount ${isPositive ? 'positive' : 'negative'}">${amountFormatted}</div>
-                        <div class="tx-status ${statusClass}">${tx.status}</div>
+                        <div class="tx-amount ${isNeutral ? 'neutral' : (isPositive ? 'positive' : 'negative')}">${amountFormatted}</div>
+                        <div class="tx-status ${statusClass}">${statusText}</div>
                     </div>
                 `;
                 list.appendChild(card);

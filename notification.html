@@ -11,20 +11,27 @@
            ========================================= */
         :root {
             --bg: #FFFFFF;
+            --bg-alt: #F7F9F8;
             --text-main: #000000;
             --text-muted: #555555;
             --primary-orange: #FF8C00;
             --link-blue: #007BFF;
             --border: #E4EAE6;
+            --admin-blue: #007AFF;
+            --admin-blue-dark: #0055b3;
+            --danger: #ef4444;
         }
 
         body.dark-mode {
             --bg: #0B141A;
+            --bg-alt: #162128;
             --text-main: #FFFFFF;
             --text-muted: #8696A0;
             --primary-orange: #FF9800;
             --link-blue: #00D9FF;
             --border: #222D34;
+            --admin-blue: #38bdf8;
+            --admin-blue-dark: #2563eb;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -46,118 +53,299 @@
             padding: 15px 20px; background: var(--bg);
             position: sticky; top: 0; z-index: 10;
             border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
         }
 
         .back-btn {
             background: transparent; border: none; cursor: pointer;
             width: 36px; height: 36px; border-radius: 50%;
             display: grid; place-items: center; color: var(--text-main);
+            transition: background 0.2s;
         }
+        .back-btn:hover { background: var(--bg-alt); }
         .back-btn svg { width: 24px; height: 24px; fill: currentColor; }
 
-        .header h1 { font-size: 20px; font-weight: 800; color: var(--primary-orange); }
+        .header h1 { font-size: 20px; font-weight: 800; color: var(--text-main); }
+        .header .subtitle { font-size: 12px; color: var(--text-muted); font-weight: 500; }
 
         /* =========================================
-           3. MAIN CONTENT (BOOK STYLE)
+           3. VIEWS CONTAINER
            ========================================= */
-        .content { 
-            flex: 1; 
-            padding: 30px 25px; 
-            max-width: 700px; 
-            margin: 0 auto; 
-            width: 100%;
+        .views-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .view {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
             overflow-y: auto;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            background: var(--bg);
         }
 
-        .notice-item {
-            margin-bottom: 40px;
-            animation: fadeIn 0.4s ease;
+        .view.hidden-left {
+            transform: translateX(-100%);
+            opacity: 0;
+            pointer-events: none;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .view.hidden-right {
+            transform: translateX(100%);
+            opacity: 0;
+            pointer-events: none;
         }
 
-        /* The Orange Title */
-        .notice-title {
-            font-size: 22px;
+        /* =========================================
+           4. INBOX VIEW (LIST)
+           ========================================= */
+        .inbox-list {
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .inbox-item {
+            display: flex;
+            gap: 15px;
+            padding: 16px;
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .inbox-item:hover {
+            border-color: var(--primary-orange);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .inbox-item:active { transform: scale(0.98); }
+
+        /* ✅ UNREAD INDICATOR */
+        .inbox-item.unread::after {
+            content: '';
+            position: absolute;
+            top: 16px; right: 16px;
+            width: 8px; height: 8px;
+            background: var(--primary-orange);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--primary-orange);
+        }
+
+        .system-avatar {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--admin-blue), var(--admin-blue-dark));
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0,122,255,0.3);
+        }
+        .system-avatar svg {
+            width: 26px; height: 26px;
+            fill: #fff;
+        }
+
+        .inbox-content { flex: 1; min-width: 0; }
+
+        .inbox-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 4px;
+            gap: 8px;
+        }
+
+        .sender-name {
+            font-size: 14px;
             font-weight: 800;
+            color: var(--admin-blue);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .sender-name .badge {
+            font-size: 8px;
+            background: var(--admin-blue);
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .inbox-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .inbox-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .inbox-preview {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* =========================================
+           5. DETAIL VIEW (FULL MESSAGE)
+           ========================================= */
+        .detail-content {
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .detail-header-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px;
+            background: var(--bg-alt);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .detail-header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .detail-sender {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--admin-blue);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .detail-date {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .detail-title {
+            font-size: 22px;
+            font-weight: 900;
             color: var(--primary-orange);
-            margin-bottom: 8px;
             line-height: 1.3;
         }
 
-        /* The Date */
-        .notice-date {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
-        }
-
-        /* The White Body Text */
-        .notice-body {
+        .detail-body {
             font-size: 16px;
-            line-height: 1.6;
+            line-height: 1.7;
             color: var(--text-main);
-            margin-bottom: 15px;
-            white-space: pre-wrap; /* Preserves line breaks */
+            white-space: pre-wrap;
         }
 
-        /* The Blue Link */
-        .notice-link {
-            display: inline-block;
-            font-size: 16px;
-            font-weight: 700;
+        .detail-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 800;
             color: var(--link-blue);
             text-decoration: none;
-            padding: 8px 0;
-            border-bottom: 2px solid var(--link-blue);
-            margin-top: 5px;
-            transition: opacity 0.2s;
+            padding: 14px 20px;
+            border-radius: 12px;
+            background: rgba(0, 123, 255, 0.1);
+            border: 1px solid rgba(0, 123, 255, 0.3);
+            transition: all 0.2s;
+            margin-top: 10px;
         }
-        .notice-link:active { opacity: 0.7; }
+        .detail-link:hover { background: rgba(0, 123, 255, 0.2); }
+        .detail-link svg { width: 18px; height: 18px; fill: currentColor; }
 
-        /* Divider */
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 30px 0;
-            border: none;
-        }
-
-        /* Empty State */
+        /* =========================================
+           6. EMPTY STATES & LOADERS
+           ========================================= */
         .empty-state {
             text-align: center;
-            margin-top: 100px;
+            margin-top: 80px;
+            padding: 0 30px;
             color: var(--text-muted);
         }
-        .empty-state h3 { font-size: 18px; color: var(--primary-orange); margin-bottom: 10px; }
-        .empty-state p { font-size: 14px; }
+        .empty-state svg { width: 60px; height: 60px; fill: var(--text-muted); opacity: 0.5; margin-bottom: 15px; }
+        .empty-state h3 { font-size: 18px; color: var(--text-main); margin-bottom: 8px; }
+        .empty-state p { font-size: 14px; line-height: 1.5; }
 
+        .spinner {
+            width: 40px; height: 40px; border: 3px solid var(--border);
+            border-top-color: var(--primary-orange); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 0 auto 15px auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Scrollbar Styling */
+        .view::-webkit-scrollbar { width: 5px; }
+        .view::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
     </style>
 </head>
 <body>
 
     <!-- HEADER -->
     <header class="header">
-        <button class="back-btn" onclick="history.back()">
+        <button class="back-btn" id="header-back-btn">
             <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         </button>
-        <h1>News & Alerts</h1>
+        <div>
+            <h1 id="header-title">News & Alerts</h1>
+            <div class="subtitle" id="header-subtitle">Updates from Jakipot Team</div>
+        </div>
     </header>
 
-    <!-- MAIN CONTENT -->
-    <main class="content" id="notifications-feed">
-        <!-- Notifications will load here -->
-        <div class="empty-state">
-            <h3>Loading...</h3>
-            <p>Fetching the latest updates from Jakipot.</p>
-        </div>
-    </main>
+    <div class="views-container">
+        <!-- =========================================
+             VIEW 1: INBOX LIST
+             ========================================= -->
+        <main class="view" id="inbox-view">
+            <div class="inbox-list" id="notifications-list">
+                <div class="empty-state">
+                    <div class="spinner"></div>
+                    <h3>Loading...</h3>
+                    <p>Fetching updates from Admin.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- =========================================
+             VIEW 2: FULL MESSAGE DETAIL
+             ========================================= -->
+        <main class="view hidden-right" id="detail-view">
+            <div class="detail-content" id="detail-content">
+                <!-- Content will be injected by JS -->
+            </div>
+        </main>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
@@ -177,67 +365,222 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // UI Elements
+        const inboxView = document.getElementById('inbox-view');
+        const detailView = document.getElementById('detail-view');
+        const listContainer = document.getElementById('notifications-list');
+        const detailContent = document.getElementById('detail-content');
+        const headerTitle = document.getElementById('header-title');
+        const headerSubtitle = document.getElementById('header-subtitle');
+        const backBtn = document.getElementById('header-back-btn');
+
+        // State
+        let allMessages = [];
+        let isDetailOpen = false;
+        let lastViewedTimestamp = parseInt(localStorage.getItem('jakipot_last_notif_view') || '0');
+
         // Apply Theme
         if (localStorage.getItem('mychat_theme') === 'dark') {
             document.body.classList.add('dark-mode');
         }
 
-        // Auth & Load Data
-        onAuthStateChanged(auth, (user) => {
-            if (!user) { window.location.replace('login.html'); return; }
-            loadNotifications();
-        });
+        // SVG Icons
+        const SYSTEM_ICON = `<svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>`;
+        const LINK_ICON = `<svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>`;
+        const EMPTY_ICON = `<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>`;
 
-        function loadNotifications() {
-            const feed = document.getElementById('notifications-feed');
+        // ==========================================
+        // HELPERS: Format Dates
+        // ==========================================
+        function formatInboxTime(timestamp) {
+            if (!timestamp) return 'Just now';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays}d ago`;
             
-            // Listen to 'notifications' collection ordered by newest first
-            const q = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'));
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
 
-            onSnapshot(q, (snapshot) => {
-                feed.innerHTML = '';
-
-                if (snapshot.empty) {
-                    feed.innerHTML = `
-                        <div class="empty-state">
-                            <h3>No News Yet</h3>
-                            <p>When the Admin posts about new games or plans, they will appear here.</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                let isFirst = true;
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    
-                    // Format Date
-                    const dateObj = data.createdAt ? new Date(data.createdAt.toMillis()) : new Date();
-                    const dateStr = dateObj.toLocaleDateString('en-US', { 
-                        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-                    });
-
-                    // Build Link HTML (only shows if admin added a URL)
-                    const linkHtml = data.linkUrl 
-                        ? `<a href="${data.linkUrl}" class="notice-link" target="_blank">${data.linkText || 'Learn More →'}</a>` 
-                        : '';
-
-                    // Add divider between multiple posts
-                    const divider = !isFirst ? '<hr class="divider">' : '';
-                    isFirst = false;
-
-                    feed.innerHTML += `
-                        ${divider}
-                        <div class="notice-item">
-                            <h2 class="notice-title">${data.title || 'Untitled Update'}</h2>
-                            <div class="notice-date">${dateStr}</div>
-                            <div class="notice-body">${data.body || ''}</div>
-                            ${linkHtml}
-                        </div>
-                    `;
-                });
+        function formatDetailDate(timestamp) {
+            if (!timestamp) return 'Unknown time';
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
             });
         }
+
+        // ==========================================
+        // VIEW CONTROL
+        // ==========================================
+        function openDetailView() {
+            inboxView.classList.add('hidden-left');
+            detailView.classList.remove('hidden-right');
+            isDetailOpen = true;
+            headerTitle.innerText = 'Message Details';
+            headerSubtitle.innerText = 'From Jakipot System';
+            window.scrollTo(0, 0);
+        }
+
+        function closeDetailView() {
+            detailView.classList.add('hidden-right');
+            inboxView.classList.remove('hidden-left');
+            isDetailOpen = false;
+            headerTitle.innerText = 'News & Alerts';
+            headerSubtitle.innerText = 'Updates from Jakipot Team';
+            renderInbox(); // Re-render to clear unread state
+        }
+
+        backBtn.addEventListener('click', () => {
+            if (isDetailOpen) {
+                closeDetailView();
+            } else {
+                history.back();
+            }
+        });
+
+        // ==========================================
+        // RENDER INBOX
+        // ==========================================
+        function renderInbox() {
+            listContainer.innerHTML = '';
+
+            if (allMessages.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div style="color: var(--text-muted); margin-bottom: 10px;">${EMPTY_ICON}</div>
+                        <h3>No News Yet</h3>
+                        <p>When the Admin posts announcements or new plans, they will appear here.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            allMessages.forEach(msg => {
+                const data = msg.data;
+                const timeMs = data.createdAt ? data.createdAt.toMillis() : Date.now();
+                const timeStr = formatInboxTime(timeMs);
+                const isUnread = timeMs > lastViewedTimestamp;
+                const title = data.title || 'Untitled Update';
+                const body = data.body || data.message || '';
+                const preview = body.length > 80 ? body.substring(0, 80) + '...' : body;
+
+                const item = document.createElement('div');
+                item.className = `inbox-item ${isUnread ? 'unread' : ''}`;
+                item.innerHTML = `
+                    <div class="system-avatar">${SYSTEM_ICON}</div>
+                    <div class="inbox-content">
+                        <div class="inbox-header">
+                            <span class="sender-name">
+                                System Message
+                                <span class="badge">ADMIN</span>
+                            </span>
+                            <span class="inbox-time">${timeStr}</span>
+                        </div>
+                        <div class="inbox-title">${title}</div>
+                        <div class="inbox-preview">${preview}</div>
+                    </div>
+                `;
+
+                item.addEventListener('click', () => openMessageDetail(msg));
+                listContainer.appendChild(item);
+            });
+        }
+
+        // ==========================================
+        // OPEN MESSAGE DETAIL
+        // ==========================================
+        function openMessageDetail(msg) {
+            const data = msg.data;
+            const timeMs = data.createdAt ? data.createdAt.toMillis() : Date.now();
+            const fullDate = formatDetailDate(timeMs);
+            const title = data.title || 'Untitled Update';
+            const body = data.body || data.message || '';
+
+            let linkHtml = '';
+            if (data.linkUrl) {
+                linkHtml = `
+                    <a href="${data.linkUrl}" target="_blank" class="detail-link">
+                        ${LINK_ICON} ${data.linkText || 'Open Link'}
+                    </a>
+                `;
+            }
+
+            detailContent.innerHTML = `
+                <div class="detail-header-card">
+                    <div class="system-avatar" style="width: 56px; height: 56px;">${SYSTEM_ICON}</div>
+                    <div class="detail-header-info">
+                        <div class="detail-sender">
+                            System Message
+                            <span class="badge">ADMIN</span>
+                        </div>
+                        <div class="detail-date">${fullDate}</div>
+                    </div>
+                </div>
+
+                <div class="detail-title">${title}</div>
+                <div class="detail-body">${body}</div>
+                ${linkHtml}
+            `;
+
+            // Mark this specific message as read in localStorage
+            if (timeMs > lastViewedTimestamp) {
+                lastViewedTimestamp = timeMs;
+                localStorage.setItem('jakipot_last_notif_view', String(lastViewedTimestamp));
+            }
+
+            openDetailView();
+        }
+
+        // ==========================================
+        // FIREBASE LISTENER
+        // ==========================================
+        onAuthStateChanged(auth, (user) => {
+            if (!user) { window.location.replace('login.html'); return; }
+
+            // Listen to system_messages, newest first
+            const q = query(collection(db, 'system_messages'), orderBy('createdAt', 'desc'));
+
+            onSnapshot(q, (snapshot) => {
+                allMessages = [];
+                snapshot.forEach(docSnap => {
+                    allMessages.push({
+                        id: docSnap.id,
+                        data: docSnap.data()
+                    });
+                });
+
+                // Update last viewed time to NOW when user lands on this page
+                // This clears the bell badge on home.html for future visits
+                setTimeout(() => {
+                    localStorage.setItem('jakipot_last_notif_view', String(Date.now()));
+                }, 500);
+
+                // Re-render inbox
+                renderInbox();
+            }, (error) => {
+                console.error("Firestore error:", error);
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Error Loading Messages</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            });
+        });
     </script>
 </body>
 </html>

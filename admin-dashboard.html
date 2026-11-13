@@ -199,6 +199,7 @@
         <div class="nav-tab" onclick="switchTab('deposits', this)">💰 Deposits</div>
         <div class="nav-tab" onclick="switchTab('withdrawals', this)">🏦 Withdrawals</div>
         <div class="nav-tab" onclick="switchTab('plans', this)">📈 Plans</div>
+        <div class="nav-tab" onclick="switchTab('ads', this)">📢 Ads</div>
         <div class="nav-tab" onclick="switchTab('machine', this)">🏭 Trending Machine</div>
         <div class="nav-tab" onclick="switchTab('challenge', this)">⚔️ Challenge</div>
         <div class="nav-tab" onclick="switchTab('live-trending', this)">📉 Live Trending Engine</div>
@@ -257,6 +258,11 @@
                 <div class="input-group" style="text-align: left; margin-bottom: 20px;">
                     <label>Display Name</label>
                     <input type="text" id="admin-display-name" placeholder="Admin Name">
+                </div>
+
+                <div class="input-group" style="text-align: left; margin-bottom: 20px;">
+                    <label>Phone Number</label>
+                    <input type="text" id="admin-phone" placeholder="e.g. +260 97 123 4567">
                 </div>
                 
                 <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px;" onclick="updateAdminProfile()">SAVE PROFILE</button>
@@ -331,6 +337,50 @@
             <div class="list-container" id="plans-list"></div>
         </div>
 
+        <!-- 📢 NEW ADS TAB -->
+        <div class="tab-panel" id="tab-ads">
+            <div class="page-title">Create New Advertisement</div>
+            <p style="font-size: 13px; color: var(--gold); margin-bottom: 20px; line-height: 1.5;">
+                <b>Note:</b> This ad will appear full-screen on the Home page for 10 seconds when users open or tap the Home button.
+            </p>
+            <div class="form-card">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Ad Image (Cloudinary)</label>
+                        <input type="file" id="ad-image-file" accept="image/*" hidden onchange="uploadAdImage(this)">
+                        <input type="hidden" id="ad-img-url">
+                        <button type="button" class="btn btn-neutral" id="upload-ad-btn" onclick="document.getElementById('ad-image-file').click()" style="width: 100%; padding: 14px; font-size: 14px;">📁 Upload Image</button>
+                    </div>
+                    <div class="input-group">
+                        <label>Target Link (optional)</label>
+                        <input type="text" id="ad-link" placeholder="e.g. https://jakipot.com">
+                    </div>
+                </div>
+                
+                <div class="img-preview-box" id="ad-img-preview">
+                    <span class="img-preview-badge">LIVE PREVIEW</span>
+                    <img id="ad-img-preview-tag" src="" alt="Ad preview" onerror="this.parentElement.classList.remove('show')">
+                </div>
+
+                <div class="form-grid" style="margin-top: 15px;">
+                    <div class="input-group">
+                        <label>Status</label>
+                        <select id="ad-status">
+                            <option value="true">Active (Show to Users)</option>
+                            <option value="false">Inactive (Hide)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;" onclick="createAd()">CREATE AD</button>
+            </div>
+
+            <div class="page-title" style="margin-top: 30px;">Existing Ads</div>
+            <div class="list-container" id="ads-list">
+                <div style="color: var(--text-muted); text-align: center; padding: 20px;">Loading ads...</div>
+            </div>
+        </div>
+
         <div class="tab-panel" id="tab-machine">
             <div class="page-title">Create Trending Machine</div>
             <div class="form-card">
@@ -362,11 +412,12 @@
                     <div class="input-group">
                         <label>Game Type</label>
                         <select id="challenge-game">
-                            <option value="draughts">Draughts</option>
-                            <option value="cards">Cards</option>
+                            <option value="pool_8ball">Pro Pool 8-Ball</option>
+                            <option value="poker_4card">4-Card Poker Duel</option>
                         </select>
                     </div>
-                    <div class="input-group"><label>Bet Amount</label><input type="number" id="challenge-amount" placeholder="e.g. 100"></div>
+                    <div class="input-group"><label>Bet Amount (Each Player)</label><input type="number" id="challenge-amount" placeholder="e.g. 100"></div>
+                    <div class="input-group"><label>System Fee (%)</label><input type="number" id="challenge-fee" value="4" placeholder="4"></div>
                 </div>
                 <button class="btn btn-approve" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;" onclick="createChallenge()">CREATE CHALLENGE</button>
             </div>
@@ -621,6 +672,7 @@
         let currentChatAvatar = '';
         let uploadedGroupImageUrl = '';
         let uploadedUpdateImageUrl = '';
+        let uploadedAdImageUrl = '';
         
         const userCache = {};
         let lastChatGroupsSnapshot = null;
@@ -666,6 +718,7 @@
                 loadChallengeSelects();
                 listenToChallenges();
                 loadPlans();
+                loadAds();
                 ensureGlobalChatExists();
                 loadGroups();
                 loadUpdates();
@@ -684,6 +737,7 @@
             if (snap.exists()) {
                 const data = snap.data();
                 document.getElementById('admin-display-name').value = data.fullName || 'Admin';
+                document.getElementById('admin-phone').value = data.phone || '';
                 const container = document.getElementById('admin-avatar-container');
                 if (data.profilePicUrl) {
                     container.innerHTML = `<img src="${data.profilePicUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
@@ -727,16 +781,135 @@
 
         window.updateAdminProfile = async () => {
             const name = document.getElementById('admin-display-name').value.trim();
+            const phone = document.getElementById('admin-phone').value.trim();
             if (!name) { alert("Name cannot be empty."); return; }
 
             try {
-                await updateDoc(doc(db, 'users', currentAdmin.uid), { fullName: name });
+                await updateDoc(doc(db, 'users', currentAdmin.uid), { fullName: name, phone: phone });
                 document.getElementById('admin-name').innerText = name;
-                alert("Name updated successfully!");
+                alert("Profile updated successfully!");
             } catch (err) {
                 console.error(err);
-                alert("Failed to update name.");
+                alert("Failed to update profile.");
             }
+        };
+
+        // ============================================================
+        // ADS TAB
+        // ============================================================
+        window.uploadAdImage = async (input) => {
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > 5 * 1024 * 1024) { alert("Image must be less than 5MB."); return; }
+
+            const btn = document.getElementById('upload-ad-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "Uploading...";
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY.uploadPreset);
+                formData.append('folder', 'jakipot/ads');
+
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, { method: 'POST', body: formData });
+                const data = await res.json();
+
+                if (data.secure_url) {
+                    uploadedAdImageUrl = data.secure_url;
+                    document.getElementById('ad-img-url').value = data.secure_url;
+                    document.getElementById('ad-img-preview-tag').src = data.secure_url;
+                    document.getElementById('ad-img-preview').classList.add('show');
+                    btn.innerText = "Image Uploaded ✓";
+                    setTimeout(() => { btn.innerText = "Change Image"; }, 3000);
+                } else {
+                    throw new Error("Upload failed");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Failed to upload image.");
+                btn.innerText = originalText;
+            } finally {
+                btn.disabled = false;
+                input.value = '';
+            }
+        };
+
+        window.createAd = async () => {
+            const imgUrl = document.getElementById('ad-img-url').value;
+            const linkUrl = document.getElementById('ad-link').value.trim();
+            const isActive = document.getElementById('ad-status').value === 'true';
+
+            if (!imgUrl) { alert("Please upload an ad image."); return; }
+
+            try {
+                await addDoc(collection(db, 'ads'), {
+                    imageUrl: imgUrl,
+                    linkUrl: linkUrl || null,
+                    isActive: isActive,
+                    createdAt: serverTimestamp()
+                });
+                alert("✅ Ad created successfully!");
+                document.getElementById('ad-img-url').value = '';
+                document.getElementById('ad-img-preview').classList.remove('show');
+                document.getElementById('ad-img-preview-tag').src = '';
+                document.getElementById('upload-ad-btn').innerText = '📁 Upload Image';
+                document.getElementById('ad-link').value = '';
+                uploadedAdImageUrl = '';
+            } catch (e) {
+                console.error(e);
+                alert("Failed to create ad: " + e.message);
+            }
+        };
+
+        function loadAds() {
+            onSnapshot(query(collection(db, 'ads'), orderBy('createdAt', 'desc')), (snap) => {
+                const list = document.getElementById('ads-list');
+                list.innerHTML = '';
+
+                if (snap.empty) {
+                    list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No ads created yet.</div>';
+                    return;
+                }
+
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const dateStr = d.createdAt ? new Date(d.createdAt.toMillis()).toLocaleString() : 'Just now';
+                    list.innerHTML += `
+                        <div class="row-card">
+                            <div style="display: flex; align-items: center; gap: 15px; flex: 1; min-width: 0;">
+                                <img src="${d.imageUrl}" style="height: 60px; width: 60px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-light);">
+                                <div class="row-info">
+                                    <div class="row-title">Ad #${doc.id.slice(-6)}</div>
+                                    <div class="row-sub">Status: <span style="color: ${d.isActive ? 'var(--emerald)' : 'var(--danger)'}; font-weight: 900;">${d.isActive ? 'ACTIVE' : 'INACTIVE'}</span></div>
+                                    ${d.linkUrl ? `<div class="row-sub">Link: <a href="${d.linkUrl}" target="_blank" style="color: var(--cyan);">${d.linkUrl}</a></div>` : ''}
+                                    <div class="row-sub">Created: <span>${dateStr}</span></div>
+                                </div>
+                            </div>
+                            <div class="row-actions">
+                                <button class="btn btn-neutral" onclick="toggleAdStatus('${doc.id}', ${d.isActive})">${d.isActive ? '⏸️ Hide' : '▶️ Show'}</button>
+                                <button class="btn btn-reject" onclick="deleteAd('${doc.id}')">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        window.toggleAdStatus = async (id, currentStatus) => {
+            try {
+                await updateDoc(doc(db, 'ads', id), { isActive: !currentStatus });
+                alert(currentStatus ? "Ad hidden from users." : "Ad is now active!");
+            } catch (e) { alert("Failed: " + e.message); }
+        };
+
+        window.deleteAd = async (id) => {
+            if (!confirm("Delete this ad? Users will no longer see it.")) return;
+            try {
+                await deleteDoc(doc(db, 'ads', id));
+                alert("Ad deleted.");
+            } catch (e) { alert("Failed: " + e.message); }
         };
 
         // ============================================================
@@ -842,7 +1015,7 @@
         };
 
         // ============================================================
-        // NOTIFICATIONS TAB
+        // NOTIFICATIONS TAB (Uses `system_messages` collection)
         // ============================================================
         window.createNotification = async () => {
             const title = document.getElementById('notif-title').value.trim();
@@ -853,7 +1026,7 @@
             if (!title || !body) { alert("Please fill in both Title and Body."); return; }
 
             try {
-                await addDoc(collection(db, 'notifications'), {
+                await addDoc(collection(db, 'system_messages'), {
                     title: title,
                     body: body,
                     linkUrl: linkUrl || null,
@@ -872,7 +1045,7 @@
         };
 
         function loadNotifications() {
-            onSnapshot(query(collection(db, 'notifications'), orderBy('createdAt', 'desc')), (snap) => {
+            onSnapshot(query(collection(db, 'system_messages'), orderBy('createdAt', 'desc')), (snap) => {
                 const list = document.getElementById('notifications-list');
                 list.innerHTML = '';
 
@@ -904,7 +1077,7 @@
         window.deleteNotification = async (id) => {
             if (!confirm("Delete this notification?")) return;
             try {
-                await deleteDoc(doc(db, 'notifications', id));
+                await deleteDoc(doc(db, 'system_messages', id));
                 alert("Notification deleted.");
             } catch (e) { alert("Failed: " + e.message); }
         };
@@ -1003,7 +1176,7 @@
         }
 
         // ============================================================
-        // CHALLENGE
+        // CHALLENGE (WITH PROPER GAME TYPES AND FEE)
         // ============================================================
         function loadChallengeSelects() {
             const cSelect = document.getElementById('challenger-select');
@@ -1026,15 +1199,23 @@
             const oUid = document.getElementById('opponent-select').value;
             const game = document.getElementById('challenge-game').value;
             const amount = parseFloat(document.getElementById('challenge-amount').value);
+            const fee = parseFloat(document.getElementById('challenge-fee').value) || 4;
             
             if (!cUid || !oUid || !amount || cUid === oUid) { alert("Please select two different players and a valid amount."); return; }
             
+            // Fetch names from cache
+            const cName = userCache[cUid]?.fullName || "Player 1";
+            const oName = userCache[oUid]?.fullName || "Player 2";
+
             try {
                 await addDoc(collection(db, 'game_challenges'), {
                     challengerUid: cUid,
+                    challengerName: cName,
                     opponentUid: oUid,
-                    gameName: game,
-                    amount: amount,
+                    opponentName: oName,
+                    gameType: game,
+                    betAmount: amount,
+                    systemFee: fee,
                     status: 'pending',
                     challengerAccepted: false,
                     opponentAccepted: false,
@@ -1055,17 +1236,20 @@
                 
                 snap.forEach(doc => {
                     const d = doc.data();
-                    const cName = userCache[d.challengerUid]?.fullName || 'Player A';
-                    const oName = userCache[d.opponentUid]?.fullName || 'Player B';
+                    const cName = d.challengerName || userCache[d.challengerUid]?.fullName || 'Player A';
+                    const oName = d.opponentName || userCache[d.opponentUid]?.fullName || 'Player B';
                     
                     let statusBadge = `<span class="badge badge-pending">Pending</span>`;
                     if (d.status === 'completed') statusBadge = `<span class="badge badge-active">Completed</span>`;
+                    if (d.status === 'refunded') statusBadge = `<span class="badge badge-blocked">Refunded</span>`;
+                    
+                    const gameName = d.gameType === 'pool_8ball' ? '🎱 Pro Pool' : d.gameType === 'poker_4card' ? '🃏 4-Card Poker' : (d.gameName || 'Game');
                     
                     list.innerHTML += `
                         <div class="row-card">
                             <div class="row-info">
                                 <div class="row-title">${cName} vs ${oName}</div>
-                                <div class="row-sub">Game: ${d.gameName} | Amount: <span style="color:var(--emerald)">K${d.amount}</span></div>
+                                <div class="row-sub">Game: ${gameName} | Bet: <span style="color:var(--emerald)">K${d.betAmount}</span> | Fee: <span>${d.systemFee || 4}%</span></div>
                                 <div class="row-sub">A: ${d.challengerAccepted ? '✅' : '❌'} | B: ${d.opponentAccepted ? '✅' : '❌'}</div>
                             </div>
                             <div class="row-actions">

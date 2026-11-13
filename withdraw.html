@@ -20,7 +20,7 @@
         .header-title { font-size: 16px; font-weight: 900; text-transform: uppercase; }
         .wallet-balance { font-size: 14px; font-weight: 800; color: var(--gold); background: rgba(251, 191, 36, 0.1); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(251,191,36,0.3); }
 
-        .content-area { flex: 1; padding: 30px 20px; display: flex; flex-direction: column; }
+        .content-area { flex: 1; padding: 30px 20px; display: flex; flex-direction: column; overflow-y: auto; }
         .section-label { font-size: 13px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; margin-top: 20px; letter-spacing: 1px; }
         
         .input-box { background: var(--bg-card); border: 2px solid var(--border-light); border-radius: 16px; padding: 20px; transition: border-color 0.3s; }
@@ -33,7 +33,42 @@
         .phone-input { background: transparent; border: none; color: var(--white); font-size: 20px; font-weight: 800; width: 100%; text-align: center; outline: none; }
         .phone-label { font-size: 12px; color: var(--emerald); text-align: center; margin-top: 5px; font-weight: 700; }
 
-        .btn-next { width: 100%; padding: 18px; border-radius: 14px; border: none; background: var(--cyan); color: #000; font-size: 16px; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 20px rgba(0, 217, 255, 0.3); margin-top: auto; }
+        /* ✅ NEW FEE BREAKDOWN */
+        .fee-breakdown {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 14px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .fee-breakdown.show { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .fee-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        .fee-row span:last-child { font-weight: 800; color: var(--text-white); }
+        .fee-row.total {
+            border-top: 1px dashed var(--border-light);
+            margin-top: 8px;
+            padding-top: 12px;
+            font-size: 16px;
+        }
+        .fee-row.total span:last-child {
+            color: var(--emerald);
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .btn-next { width: 100%; padding: 18px; border-radius: 14px; border: none; background: var(--cyan); color: #000; font-size: 16px; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 20px rgba(0, 217, 255, 0.3); margin-top: 25px; }
         .btn-next:active { transform: scale(0.98); }
         .btn-next:disabled { background: var(--danger); color: #fff; cursor: not-allowed; box-shadow: none; }
 
@@ -75,11 +110,27 @@
     </header>
 
     <main class="content-area">
-        <div class="section-label">Enter Amount to Withdraw</div>
+        <div class="section-label">Enter Amount to Withdraw (Min: 15)</div>
         <div class="input-box">
             <div class="amount-input-wrap">
                 <span class="currency-symbol" id="currency-symbol">K</span>
-                <input type="number" id="withdraw-amount" class="main-input" placeholder="0.00" min="50">
+                <input type="number" id="withdraw-amount" class="main-input" placeholder="0.00" min="15">
+            </div>
+        </div>
+
+        <!-- ✅ FEE BREAKDOWN CALCULATOR -->
+        <div class="fee-breakdown" id="fee-breakdown">
+            <div class="fee-row">
+                <span>Withdrawal Amount</span>
+                <span id="calc-amount">K0.00</span>
+            </div>
+            <div class="fee-row">
+                <span>Processing Fee (5%)</span>
+                <span id="calc-fee" style="color: var(--danger);">-K0.00</span>
+            </div>
+            <div class="fee-row total">
+                <span>You Will Receive</span>
+                <span id="calc-net">K0.00</span>
             </div>
         </div>
 
@@ -120,7 +171,6 @@
     </div>
 
     <script type="module">
-        // LOCKED TO 13.1.0
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
         import { getFirestore, doc, collection, writeBatch, serverTimestamp, increment, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
@@ -144,6 +194,10 @@
         let currentCurrencyCode = 'ZMW';
         let isProcessing = false;
 
+        // ✅ WITHDRAWAL SETTINGS
+        const MIN_WITHDRAWAL = 15;
+        const FEE_PERCENTAGE = 0.05; // 5% fee
+
         // WATCHDOG STATE
         const WATCHDOG_KEY = 'jakipot_withdraw_fails';
         let failedAttempts = parseInt(localStorage.getItem(WATCHDOG_KEY) || '0');
@@ -165,7 +219,6 @@
             }
             currentUser = user;
 
-            // Check Watchdog Status Immediately
             checkWatchdog();
 
             // Fetch Currency & Phone
@@ -179,6 +232,8 @@
                     if (data.phone) {
                         document.getElementById('withdraw-phone').value = data.phone;
                     }
+                    // Recalculate fee breakdown with correct currency
+                    updateFeeBreakdown();
                 }
             });
 
@@ -190,6 +245,31 @@
                 }
             });
         });
+
+        // ==========================================
+        // ✅ REAL-TIME FEE CALCULATOR
+        // ==========================================
+        const amountInput = document.getElementById('withdraw-amount');
+        const feeBreakdown = document.getElementById('fee-breakdown');
+
+        function updateFeeBreakdown() {
+            const amount = parseFloat(amountInput.value);
+
+            if (isNaN(amount) || amount <= 0) {
+                feeBreakdown.classList.remove('show');
+                return;
+            }
+
+            const fee = amount * FEE_PERCENTAGE;
+            const net = amount - fee;
+
+            feeBreakdown.classList.add('show');
+            document.getElementById('calc-amount').innerText = `${currencySymbol}${amount.toFixed(2)}`;
+            document.getElementById('calc-fee').innerText = `-${currencySymbol}${fee.toFixed(2)}`;
+            document.getElementById('calc-net').innerText = `${currencySymbol}${net.toFixed(2)}`;
+        }
+
+        amountInput.addEventListener('input', updateFeeBreakdown);
 
         // 🐕 WATCHDOG LOGIC
         function checkWatchdog() {
@@ -232,14 +312,24 @@
         const btnConfirmPin = document.getElementById('btn-confirm-pin');
 
         window.openPinModal = () => {
-            if (failedAttempts >= 5) return; // Safety check
+            if (failedAttempts >= 5) return; 
 
             const amount = parseFloat(document.getElementById('withdraw-amount').value);
             const phone = document.getElementById('withdraw-phone').value;
 
-            if (!amount || amount < 50) { alert("Minimum withdrawal is 50."); return; }
-            if (amount > userBalance) { alert("Insufficient wallet balance."); return; }
-            if (!phone) { alert("Please enter a destination phone number."); return; }
+            // ✅ UPDATED VALIDATION: Minimum 15
+            if (!amount || amount < MIN_WITHDRAWAL) { 
+                alert(`Minimum withdrawal is ${currencySymbol}${MIN_WITHDRAWAL}.`); 
+                return; 
+            }
+            if (amount > userBalance) { 
+                alert("Insufficient wallet balance."); 
+                return; 
+            }
+            if (!phone) { 
+                alert("Please enter a destination phone number."); 
+                return; 
+            }
 
             pinBoxes.forEach(box => { box.value = ''; box.classList.remove('filled'); });
             pinError.innerText = '';
@@ -307,11 +397,15 @@
                 const amount = parseFloat(document.getElementById('withdraw-amount').value);
                 const phone = document.getElementById('withdraw-phone').value;
                 
+                // ✅ Calculate fee and net amount
+                const fee = amount * FEE_PERCENTAGE;
+                const netAmount = amount - fee;
+                
                 const pinHash = await hashPin(pin, currentUser.uid);
 
                 const batch = writeBatch(db);
                 
-                // A. Deduct Wallet (Lock funds)
+                // A. Deduct FULL amount from wallet (user pays fee from their balance)
                 const walletRef = doc(db, 'wallets', currentUser.uid);
                 const txRef = doc(collection(db, 'transactions'));
                 
@@ -320,7 +414,7 @@
                     lastTxId: txRef.id 
                 });
 
-                // B. Create Ledger Receipt
+                // B. Create Ledger Receipt (deducts full amount)
                 batch.set(txRef, {
                     uid: currentUser.uid, 
                     type: 'withdrawal', 
@@ -329,16 +423,18 @@
                     createdAt: serverTimestamp()
                 });
 
-                // C. Create Withdrawal Request Document
+                // C. Create Withdrawal Request Document (with fee breakdown)
                 const withdrawRef = doc(collection(db, 'withdrawals'));
                 batch.set(withdrawRef, {
                     uid: currentUser.uid,
-                    amount: amount,
+                    amount: amount,             // Total requested (e.g. 15)
+                    fee: fee,                   // 5% fee (e.g. 0.75)
+                    netAmount: netAmount,       // What user receives (e.g. 14.25)
                     currency: currentCurrencyCode,
                     destinationPhone: phone,
                     status: 'pending',
                     ledgerTxId: txRef.id,
-                    pinHash: pinHash, // Database rules will verify this against user_secrets
+                    pinHash: pinHash,
                     requestedAt: serverTimestamp()
                 });
 
@@ -360,7 +456,6 @@
                 btnConfirmPin.innerText = "Confirm";
                 
                 if (error.code === 'permission-denied') {
-                    // 🐕 TRIGGER WATCHDOG
                     registerFailedAttempt();
                     logSecurityEvent('failed_withdraw_pin', { attempts: failedAttempts, amount: amount });
 
@@ -371,7 +466,6 @@
                         btnConfirmPin.disabled = true;
                     }, 1000);
 
-                    // If they hit 3 or 4 attempts, give a 30-second cooldown
                     if (failedAttempts >= 3 && failedAttempts < 5) {
                         let timeLeft = 30;
                         btnConfirmPin.disabled = true;
@@ -384,7 +478,7 @@
                             if (timeLeft <= 0) {
                                 clearInterval(lockoutInterval);
                                 btnConfirmPin.innerText = "Confirm";
-                                btnConfirmPin.disabled = true; // Stays disabled until they type again
+                                btnConfirmPin.disabled = true;
                             }
                         }, 1000);
                     }

@@ -14,6 +14,7 @@
             --cyan-glow: rgba(0, 217, 255, 0.3);
             --emerald: #10b981; 
             --gold: #fbbf24; 
+            --danger: #ef4444;
             --text-white: #ffffff; 
             --text-muted: #8b9bb4; 
             --border-light: rgba(255, 255, 255, 0.08);
@@ -124,26 +125,35 @@
         .code-box {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--bg-elevated); border: 1px dashed var(--cyan);
-            border-radius: 12px; padding: 15px 20px;
+            border-radius: 12px; padding: 15px 20px; gap: 10px;
         }
-        .ref-code { font-size: 24px; font-weight: 900; color: var(--cyan); letter-spacing: 2px; }
+        .ref-code { 
+            font-size: 22px; font-weight: 900; color: var(--cyan); 
+            letter-spacing: 2px; user-select: all; cursor: text;
+            flex: 1; text-align: left; word-break: break-all;
+        }
         
         .link-box {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--bg-elevated); border: 1px solid var(--border-light);
-            border-radius: 12px; padding: 15px;
+            border-radius: 12px; padding: 15px; gap: 10px;
         }
-        .ref-link { font-size: 13px; font-weight: 600; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+        .ref-link { 
+            font-size: 12px; font-weight: 600; color: var(--text-muted); 
+            word-break: break-all; line-height: 1.4; flex: 1; text-align: left;
+            user-select: all; cursor: text;
+        }
 
         .copy-btn {
-            background: var(--cyan); color: #000; border: none; padding: 8px 16px;
+            background: var(--cyan); color: #000; border: none; padding: 10px 16px;
             border-radius: 8px; font-size: 12px; font-weight: 900; cursor: pointer;
-            transition: 0.2s;
+            transition: 0.2s; flex-shrink: 0; min-width: 80px;
         }
         .copy-btn:active { transform: scale(0.95); }
         .copy-btn.copied { background: var(--emerald); color: var(--white); }
+        .copy-btn.error { background: var(--danger); color: var(--white); }
 
-        /* HOW IT WORKS - REDESIGNED */
+        /* HOW IT WORKS */
         .how-it-works {
             background: rgba(0, 217, 255, 0.05); border: 1px solid rgba(0, 217, 255, 0.2);
             border-radius: 16px; padding: 20px;
@@ -218,9 +228,10 @@
             border-radius: 30px; font-size: 14px; font-weight: 800;
             box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); z-index: 1000;
             opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none;
+            max-width: 90vw; text-align: center;
         }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(-10px); }
-        .toast.error { background: var(--danger, #ef4444); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+        .toast.error { background: var(--danger); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
     </style>
 </head>
 <body>
@@ -277,7 +288,7 @@
             <div class="card-label">Your Referral Code</div>
             <div class="code-box">
                 <div class="ref-code" id="ref-code-display">Loading...</div>
-                <button class="copy-btn" id="copy-code-btn" onclick="copyText('ref-code-display', 'copy-code-btn')">COPY</button>
+                <button class="copy-btn" id="copy-code-btn" onclick="copyReferral('code')">COPY</button>
             </div>
         </div>
 
@@ -285,11 +296,10 @@
             <div class="card-label">Your Invite Link</div>
             <div class="link-box">
                 <div class="ref-link" id="ref-link-display">https://...</div>
-                <button class="copy-btn" id="copy-link-btn" onclick="copyText('ref-link-display', 'copy-link-btn')">COPY</button>
+                <button class="copy-btn" id="copy-link-btn" onclick="copyReferral('link')">COPY</button>
             </div>
         </div>
 
-        <!-- HOW IT WORKS WITH CLEAR 2-STEP PROCESS -->
         <div class="how-it-works">
             <div class="how-title">
                 <svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
@@ -366,7 +376,6 @@
     <div id="toast" class="toast">Link Copied!</div>
 
     <script type="module">
-        // LOCKED TO 13.1.0
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app-check.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
@@ -386,7 +395,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // ✅ CHANGED: K600 → K20
         const BONUS_PER_REFERRAL = 20;
         
         const CURRENCY_MAP = { 
@@ -405,11 +413,26 @@
         let allReferrals = [];
         let unsubscribeReferrals = null;
         let isClaiming = false;
-        const baseUrl = window.location.origin + window.location.pathname.replace('referral.html', 'register.html');
 
-        let lastCopyTime = 0;
-        let lastShareTime = 0;
-        let spamCount = 0;
+        // ✅ FIXED: Better URL generation
+        function buildReferralBaseUrl() {
+            // Get the current URL, strip any query or hash, then swap referral.html for register.html
+            let url = window.location.href.split('?')[0].split('#')[0];
+            
+            // Handle both /referral.html and /referral
+            if (url.endsWith('/referral.html')) {
+                url = url.replace('/referral.html', '/register.html');
+            } else if (url.endsWith('/referral')) {
+                url = url.replace('/referral', '/register.html');
+            } else {
+                // Fallback - assume it's at root with .html
+                url = url.substring(0, url.lastIndexOf('/') + 1) + 'register.html';
+            }
+            
+            return url;
+        }
+
+        const baseUrl = buildReferralBaseUrl();
 
         async function logSecurityEvent(event, details = {}) {
             try {
@@ -420,7 +443,7 @@
                     timestamp: serverTimestamp(),
                     ...details
                 });
-            } catch (e) { console.warn('Guardian log failed', e); }
+            } catch (e) { console.warn('Log failed', e); }
         }
 
         function formatMoney(amount) {
@@ -456,7 +479,6 @@
             }
             
             isGeneratingCode = false;
-            await logSecurityEvent('referral_code_generation_failed', { reason: 'collision_limit_reached' });
             return null;
         }
 
@@ -484,7 +506,6 @@
                             return;
                         }
                         await updateDoc(userRef, { myReferralCode: referralCode });
-                        await logSecurityEvent('referral_code_generated', { code: referralCode });
                     }
 
                     referralLink = `${baseUrl}?ref=${referralCode}`;
@@ -603,77 +624,148 @@
 
                 await batch.commit();
 
-                await logSecurityEvent('referral_bonus_claimed', { 
-                    amount: totalBonus, 
-                    count: claimable.length 
-                });
-
                 showToast(`${formatMoney(totalBonus)} added to your wallet!`);
 
             } catch (err) {
                 console.error("Claim error:", err);
-                await logSecurityEvent('referral_claim_failed', { reason: err.message });
-                
-                if (err.code === 'permission-denied') {
-                    showToast("Referral rules need updating. Please contact support.", true);
-                } else {
-                    showToast("Failed to claim. Please try again.", true);
-                }
+                showToast("Failed to claim. Please try again.", true);
             } finally {
                 isClaiming = false;
                 claimBtn.disabled = false;
             }
         };
 
-        window.copyText = (elementId, btnId) => {
-            const now = Date.now();
-            if (now - lastCopyTime < 300) {
-                spamCount++;
-                if (spamCount >= 5) {
-                    logSecurityEvent('referral_spam_copy', { count: spamCount });
-                    showToast("Slow down!");
-                    return;
+        // ==========================================
+        // ✅ ROBUST CLIPBOARD FUNCTION (THE FIX)
+        // ==========================================
+        async function copyToClipboard(text) {
+            // Method 1: Modern Clipboard API (requires HTTPS)
+            if (navigator.clipboard && window.isSecureContext) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    return { success: true, method: 'clipboard-api' };
+                } catch (err) {
+                    console.warn('Clipboard API failed:', err);
                 }
-            } else {
-                spamCount = 0;
             }
-            lastCopyTime = now;
+            
+            // Method 2: execCommand fallback (works on HTTP)
+            try {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.top = '0';
+                textArea.style.left = '-9999px';
+                textArea.style.opacity = '0';
+                textArea.setAttribute('readonly', '');
+                document.body.appendChild(textArea);
+                
+                // Select for iOS
+                textArea.focus();
+                textArea.select();
+                textArea.setSelectionRange(0, text.length);
+                
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                if (successful) {
+                    return { success: true, method: 'execCommand' };
+                }
+            } catch (err) {
+                console.warn('execCommand failed:', err);
+            }
+            
+            // Method 3: Show the text so user can manually copy
+            return { success: false, method: 'manual', text };
+        }
 
-            const textToCopy = document.getElementById(elementId).innerText;
-            const btn = document.getElementById(btnId);
+        // ✅ NEW: Main copy handler with feedback
+        window.copyReferral = async (type) => {
+            const codeEl = document.getElementById('ref-code-display');
+            const linkEl = document.getElementById('ref-link-display');
+            const btn = document.getElementById(type === 'code' ? 'copy-code-btn' : 'copy-link-btn');
 
-            if (!textToCopy || textToCopy.includes('Loading') || textToCopy === 'https://...') return;
+            // Validate that data is loaded
+            if (!referralCode || !referralLink) {
+                showToast("Please wait for your referral info to load", true);
+                return;
+            }
 
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                const originalText = btn.innerText;
+            if (codeEl.innerText.includes('Loading') || linkEl.innerText.includes('Loading')) {
+                showToast("Please wait a moment...", true);
+                return;
+            }
+
+            const textToCopy = type === 'code' ? referralCode : referralLink;
+            
+            // Save original button state
+            const originalText = btn.innerText;
+            const originalClass = btn.className;
+
+            // Show loading state
+            btn.innerText = "COPYING...";
+            btn.disabled = true;
+
+            // Attempt to copy
+            const result = await copyToClipboard(textToCopy);
+
+            if (result.success) {
+                // Success!
                 btn.innerText = "COPIED ✓";
                 btn.classList.add('copied');
-                showToast("Copied to clipboard!");
+                showToast(type === 'code' ? "Referral code copied!" : "Referral link copied!");
 
                 setTimeout(() => {
                     btn.innerText = originalText;
-                    btn.classList.remove('copied');
+                    btn.className = originalClass;
+                    btn.disabled = false;
                 }, 2000);
-            });
+            } else {
+                // Failed - show manual copy fallback
+                btn.innerText = "TAP & HOLD";
+                btn.classList.add('error');
+                btn.disabled = false;
+                showToast("Copy failed. Please tap & hold the text to copy manually.", true);
+
+                // Auto-select the text so user can copy
+                try {
+                    const range = document.createRange();
+                    range.selectNodeContents(type === 'code' ? codeEl : linkEl);
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                } catch (e) {
+                    console.warn('Select fallback failed:', e);
+                }
+
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.className = originalClass;
+                }, 4000);
+            }
         };
 
+        // ==========================================
+        // SOCIAL SHARING
+        // ==========================================
+        let lastShareTime = 0;
+
         window.shareSocial = (platform) => {
-            if (!referralLink) return;
+            if (!referralLink) {
+                showToast("Please wait for your link to load", true);
+                return;
+            }
 
             const now = Date.now();
             if (now - lastShareTime < 2000) {
-                logSecurityEvent('referral_spam_share', { platform: platform });
                 showToast("Please wait a moment before sharing again.");
                 return;
             }
             lastShareTime = now;
 
-            // ✅ CHANGED: mentions K20 per friend
             const message = `🚀 Join me on JAKIPOT! Use my code ${referralCode} to register. Deposit K30+ after activation — I earn K20 per friend! Link: ${referralLink}`;
             const encodedMsg = encodeURIComponent(message);
             const encodedLink = encodeURIComponent(referralLink);
-
-            logSecurityEvent('referral_share_initiated', { platform: platform });
 
             if (platform === 'whatsapp') {
                 window.open(`https://wa.me/?text=${encodedMsg}`, '_blank');
@@ -685,12 +777,19 @@
                 window.open(`https://t.me/share/url?url=${encodedLink}&text=${encodeURIComponent("Join me on JAKIPOT!")}`, '_blank');
             } 
             else if (platform === 'instagram' || platform === 'tiktok' || platform === 'youtube') {
-                navigator.clipboard.writeText(`${message}`).then(() => {
-                    showToast(`Message copied! Paste it in your ${platform} bio/story.`);
+                copyToClipboard(message).then((result) => {
+                    if (result.success) {
+                        showToast(`Message copied! Paste it in your ${platform} bio/story.`);
+                    } else {
+                        showToast(`Please copy this message manually: ${referralCode}`, true);
+                    }
                 });
             }
         };
 
+        // ==========================================
+        // TOAST
+        // ==========================================
         let toastTimeout;
         function showToast(msg, isError = false) {
             const toast = document.getElementById('toast');

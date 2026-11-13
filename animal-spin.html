@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>JAKIPOT - Animal Spin</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', Roboto, sans-serif; }
+
+  :root {
+    --gold-1: #fef9c3; --gold-2: #fde047; --gold-3: #facc15;
+    --gold-4: #eab308; --gold-5: #a16207; --gold-6: #78350f;
+    --dark-0: #020604; --dark-1: #05100a; --dark-2: #0a1a15;
+    --red: #dc2626; --green: #10b981; --jungle: #064e3b;
+  }
+
+  html, body {
+    background: var(--dark-0);
+    background-image: radial-gradient(circle at 50% 40%, #0a1f14 0%, #020604 100%);
+    height: 100vh; width: 100vw; overflow: hidden; color: #f5f5f5;
+    font-size: 14px; display: flex; justify-content: center;
+    position: relative;
+  }
+
+  /* =========================================
+     FOREST BACKGROUND LAYERS
+     ========================================= */
+  .forest-bg {
+    position: absolute; inset: 0; z-index: 0; overflow: hidden;
+    pointer-events: none;
+  }
+  
+  .forest-bg::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 60%, rgba(16, 185, 129, 0.15) 0%, transparent 60%);
+    mix-blend-mode: screen;
+  }
+
+  .trees-layer { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; opacity: 0.6; }
+  
+  .forest-bg::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 50%, transparent 30%, rgba(0,0,0,0.8) 100%);
+  }
+
+  .app { 
+    position: relative; z-index: 1; width: 100%; max-width: 480px; 
+    padding: 8px 12px; height: 100%; display: flex; flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* HEADER */
+  .header { text-align: center; margin-bottom: 4px; position: relative; z-index: 2; }
+  .brand { font-size: 10px; font-weight: 900; color: var(--gold-4); letter-spacing: 4px; text-shadow: 0 0 10px rgba(250,204,21,0.4); }
+  .title {
+    font-size: 20px; font-weight: 900;
+    background: linear-gradient(180deg, var(--gold-1) 0%, var(--gold-3) 40%, var(--gold-5) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: 1px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+  }
+
+  /* TOP ROW */
+  .top-row { display: flex; gap: 8px; margin-bottom: 8px; z-index: 2; }
+  .jackpot-hero {
+    flex: 1; position: relative; padding: 6px; border-radius: 10px;
+    background: linear-gradient(135deg, rgba(20, 40, 25, 0.8) 0%, rgba(10, 20, 15, 0.9) 100%);
+    border: 1.5px solid rgba(250, 204, 21, 0.4); text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  }
+  .jackpot-label { font-size: 8px; font-weight: 800; color: var(--gold-4); letter-spacing: 1.5px; margin-bottom: 2px; }
+  .jackpot-amount {
+    font-size: 22px; font-weight: 900;
+    background: linear-gradient(180deg, #fff 0%, var(--gold-2) 40%, var(--gold-4) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1; filter: drop-shadow(0 0 10px rgba(250,204,21,0.6));
+  }
+
+  .stats-col { display: flex; flex-direction: column; gap: 4px; width: 100px; }
+  .stat-box { background: rgba(10, 20, 15, 0.9); border: 1px solid rgba(250, 204, 21, 0.2); border-radius: 6px; padding: 2px 4px; text-align: center; display: flex; justify-content: space-between; align-items: center; }
+  .stat-label { font-size: 8px; font-weight: 800; color: #888; margin-left: 4px; }
+  .stat-value { font-size: 11px; font-weight: 900; color: var(--gold-2); }
+  .stat-value.pulse { animation: statPulse 0.6s ease-out; }
+  @keyframes statPulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); color: #fff; } 100% { transform: scale(1); } }
+
+  /* WHEEL AREA */
+  .wheel-container {
+    position: relative; flex: 1; display: flex; justify-content: center; align-items: center;
+    min-height: 0; margin-bottom: 8px; z-index: 2;
+  }
+  .wheel-wrapper {
+    position: relative; width: 100%; max-width: 290px; aspect-ratio: 1 / 1;
+  }
+  .wheel-svg { 
+    width: 100%; height: 100%; 
+    filter: drop-shadow(0 15px 30px rgba(0,0,0,0.9));
+    overflow: visible;
+  }
+  
+  /* Pointer */
+  .pointer {
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    width: 30px; height: 38px; z-index: 10;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.9));
+  }
+
+  /* Spin Button Overlay */
+  .spin-btn-overlay {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 64px; height: 64px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fef9c3, #facc15 40%, #a16207 100%);
+    border: 3px solid #fff; box-shadow: 0 0 25px #facc15, inset 0 -5px 10px rgba(0,0,0,0.5);
+    display: flex; justify-content: center; align-items: center;
+    font-size: 14px; font-weight: 900; color: #451a03; cursor: pointer;
+    z-index: 15; transition: transform 0.1s;
+    user-select: none; text-shadow: 0 1px 1px rgba(255,255,255,0.5);
+  }
+  .spin-btn-overlay:active:not(:disabled) { transform: translate(-50%, -50%) scale(0.88); }
+  .spin-btn-overlay:disabled { filter: grayscale(0.8); cursor: not-allowed; }
+
+  /* CONTROLS */
+  .controls { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; z-index: 2; }
+  
+  .instruction { text-align: center; font-size: 11px; color: #a3a3a3; font-weight: 600; height: 14px; transition: all 0.3s; }
+  .instruction.win { color: var(--gold-2); font-weight: 800; font-size: 13px; text-shadow: 0 0 8px rgba(250,204,21,0.5); }
+
+  .bet-panel {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(10, 20, 15, 0.9); border: 1px solid rgba(250, 204, 21, 0.3);
+    border-radius: 8px; padding: 4px 8px;
+  }
+  .bet-btn {
+    width: 32px; height: 32px; border-radius: 6px; border: 1.5px solid var(--gold-4);
+    background: rgba(250, 204, 21, 0.1); color: var(--gold-2);
+    font-size: 18px; font-weight: 900; cursor: pointer;
+    display: flex; justify-content: center; align-items: center;
+  }
+  .bet-btn:active { transform: scale(0.88); }
+  .bet-center { display: flex; flex-direction: column; align-items: center; flex: 1; }
+  .bet-amount { font-size: 16px; font-weight: 900; color: #fff; }
+  .bet-label { font-size: 7px; color: #888; font-weight: 700; }
+  .max-bet-btn {
+    background: var(--gold-3); border: none; border-radius: 4px; color: #000;
+    font-size: 8px; font-weight: 900; padding: 2px 8px; margin-top: 2px; cursor: pointer;
+  }
+
+  .btn-primary { width: 100%; height: 44px; border-radius: 10px; border: none; cursor: pointer; font-size: 15px; font-weight: 900; letter-spacing: 1px; background: linear-gradient(180deg, var(--green) 0%, #047857 100%); color: #fff; box-shadow: 0 3px 0 #064e3b; transition: all 0.1s; display: none; justify-content: center; align-items: center; }
+  .btn-primary:active { transform: translateY(2px); box-shadow: 0 1px 0 #064e3b; }
+
+  /* HISTORY */
+  .history-list { 
+    display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px;
+    -ms-overflow-style: none; scrollbar-width: none; height: 24px;
+  }
+  .history-list::-webkit-scrollbar { display: none; }
+  .history-empty { color: #555; font-size: 9px; font-style: italic; padding: 4px 0; }
+  .history-item { 
+    display: flex; gap: 4px; align-items: center; background: rgba(10,20,15,0.9); 
+    border: 1px solid rgba(250,204,21,0.2); border-radius: 4px; padding: 2px 6px; font-size: 9px; white-space: nowrap;
+  }
+  .h-round { color: #666; font-weight: 700; }
+  .h-animal { color: var(--gold-4); font-weight: 700; }
+  .h-points { font-weight: 900; }
+  .h-points.win { color: var(--green); }
+  .h-points.loss { color: #ef4444; }
+
+  /* MUTE */
+  .mute-btn { position: fixed; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 1px solid rgba(250, 204, 21, 0.3); color: var(--gold-4); display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 100; }
+  .mute-btn svg { width: 14px; height: 14px; }
+
+  /* WIN OVERLAY */
+  .win-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; flex-direction: column; z-index: 1000; backdrop-filter: blur(4px); }
+  .win-overlay.active { display: flex; }
+  .win-box { background: linear-gradient(180deg, #1a2a1e, #0a120c); border: 2px solid var(--gold-4); border-radius: 16px; padding: 20px 30px; text-align: center; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 0 40px rgba(250,204,21,0.3); max-width: 280px; }
+  @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  .win-icon { width: 90px; height: 90px; margin: 0 auto 10px; }
+  .win-title { font-size: 24px; font-weight: 900; color: var(--gold-2); margin-bottom: 4px; }
+  .win-amount { font-size: 36px; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(250,204,21,0.8); margin-bottom: 15px; }
+  .win-btn { background: var(--gold-3); border: none; border-radius: 8px; padding: 10px 30px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 var(--gold-6); }
+  .win-btn:active { transform: translateY(3px); box-shadow: none; }
+
+  /* --- JUNGLE THEMED LOADER --- */
+  #loaderOverlay { 
+    position: fixed; inset: 0; z-index: 99999; 
+    background: radial-gradient(circle at center, #05100a 0%, #000 100%); 
+    display: flex; flex-direction: column; justify-content: center; align-items: center; 
+    transition: opacity 0.5s ease; 
+  }
+  .loader-content { position: relative; z-index: 2; text-align: center; width: 100%; max-width: 300px; }
+  
+  .loader-animal-icon {
+    width: 100px; height: 100px; margin: 0 auto 20px;
+    filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.6));
+    animation: pulseAnimal 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes pulseAnimal {
+    0% { transform: scale(0.95); filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.4)); }
+    100% { transform: scale(1.05); filter: drop-shadow(0 0 30px rgba(16, 185, 129, 0.9)); }
+  }
+
+  .loader-title { font-size: 24px; font-weight: 900; color: var(--gold-3); letter-spacing: 2px; margin-bottom: 5px; text-shadow: 0 0 10px rgba(250, 204, 21, 0.5); }
+  .loader-sub { font-size: 12px; color: #aaa; font-weight: 700; margin-bottom: 25px; letter-spacing: 1px; }
+  
+  .loader-track { 
+    width: 100%; height: 12px; background: rgba(0,0,0,0.8); 
+    border-radius: 10px; overflow: hidden; border: 1px solid rgba(16, 185, 129, 0.3); 
+    box-shadow: inset 0 0 10px rgba(0,0,0,1); 
+  }
+  .loader-fill { 
+    height: 100%; width: 0%; 
+    background: linear-gradient(90deg, #064e3b, #10b981, #facc15); 
+    border-radius: 10px; 
+    transition: width 0.3s ease; 
+    box-shadow: 0 0 10px #10b981; 
+  }
+  .loader-percent { margin-top: 10px; font-size: 13px; font-weight: 900; color: var(--gold-3); letter-spacing: 1px; }
+
+  @media (max-width: 380px) {
+    .title { font-size: 18px; }
+    .wheel-wrapper { max-width: 250px; }
+    .stat-value { font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loaderOverlay">
+  <div class="loader-content">
+    <!-- Jungle themed Animal Mask SVG -->
+    <svg class="loader-animal-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="lg-jungle" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#10b981"/>
+          <stop offset="100%" stop-color="#064e3b"/>
+        </linearGradient>
+      </defs>
+      <path d="M50 15 L75 25 L85 55 L70 85 L30 85 L15 55 L25 25 Z" fill="url(#lg-jungle)" stroke="#facc15" stroke-width="2"/>
+      <circle cx="35" cy="45" r="8" fill="#facc15"/>
+      <circle cx="65" cy="45" r="8" fill="#facc15"/>
+      <path d="M40 70 Q50 80 60 70" fill="none" stroke="#facc15" stroke-width="3" stroke-linecap="round"/>
+      <path d="M15 55 L5 45 M85 55 L95 45" stroke="#10b981" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+
+    <div class="loader-title">JAKIPOT</div>
+    <div class="loader-sub">Entering the Jungle...</div>
+    <div class="loader-track"><div class="loader-fill" id="loaderFill"></div></div>
+    <div class="loader-percent" id="loaderPercent">0%</div>
+  </div>
+</div>
+
+<!-- FOREST BACKGROUND -->
+<div class="forest-bg">
+  <svg class="trees-layer" viewBox="0 0 400 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="tree-grad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#020604" stop-opacity="0"/>
+        <stop offset="100%" stop-color="#020604" stop-opacity="1"/>
+      </linearGradient>
+    </defs>
+    <path d="M 0 800 L 0 500 L 20 450 L 40 520 L 60 420 L 80 480 L 110 380 L 140 470 L 170 400 L 200 460 L 230 350 L 260 440 L 290 390 L 320 460 L 350 400 L 380 480 L 400 450 L 400 800 Z" fill="#05100a" opacity="0.6"/>
+    <path d="M 0 800 L 0 600 L 15 550 L 30 620 L 50 540 L 70 610 L 90 530 L 120 630 L 150 560 L 180 640 L 210 550 L 240 630 L 270 540 L 300 620 L 330 550 L 360 630 L 390 570 L 400 600 L 400 800 Z" fill="#020604" opacity="0.9"/>
+  </svg>
+</div>
+
+<button class="mute-btn" id="muteBtn">
+  <svg id="muteIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+</button>
+
+<div class="app">
+  <div class="header">
+    <div class="brand">JAKIPOT</div>
+    <div class="title">ANIMAL SPIN</div>
+  </div>
+
+  <div class="top-row">
+    <div class="jackpot-hero">
+      <div class="jackpot-label">LION JACKPOT</div>
+      <div class="jackpot-amount">100x</div>
+    </div>
+    <div class="stats-col">
+      <div class="stat-box">
+        <div class="stat-label">BAL</div>
+        <div class="stat-value" id="balance">Loading...</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">RND</div>
+        <div class="stat-value" id="roundNum">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">BEST</div>
+        <div class="stat-value" id="personalBest">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHEEL -->
+  <div class="wheel-container">
+    <div class="wheel-wrapper">
+      <svg class="pointer" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="p-gold" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#fef9c3"/><stop offset="50%" stop-color="#facc15"/><stop offset="100%" stop-color="#a16207"/>
+          </linearGradient>
+        </defs>
+        <path d="M12 34 L2 10 Q12 -2 22 10 Z" fill="url(#p-gold)" stroke="#fff" stroke-width="1.5"/>
+        <circle cx="12" cy="10" r="3" fill="#fff"/>
+      </svg>
+
+      <svg id="wheelSvg" class="wheel-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="hub-g" cx="30%" cy="30%">
+            <stop offset="0%" stop-color="#fef9c3"/><stop offset="50%" stop-color="#facc15"/><stop offset="100%" stop-color="#78350f"/>
+          </radialGradient>
+          <radialGradient id="hub-inner" cx="50%" cy="50%">
+            <stop offset="0%" stop-color="#3a2a10"/><stop offset="100%" stop-color="#0a0500"/>
+          </radialGradient>
+        </defs>
+        
+        <circle cx="200" cy="200" r="195" fill="#0a0a0a" stroke="#78350f" stroke-width="2"/>
+        <circle cx="200" cy="200" r="190" fill="none" stroke="#facc15" stroke-width="3"/>
+        
+        <g id="wheelGroup"></g>
+        
+        <circle cx="200" cy="200" r="42" fill="url(#hub-g)" stroke="#451a03" stroke-width="3"/>
+        <circle cx="200" cy="200" r="32" fill="url(#hub-inner)" stroke="#facc15" stroke-width="2"/>
+      </svg>
+
+      <div class="spin-btn-overlay" id="spinBtn">SPIN</div>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="instruction" id="instruction">Set your bet and spin!</div>
+    
+    <div class="bet-panel">
+      <button class="bet-btn" id="betMinusBtn">−</button>
+      <div class="bet-center">
+        <div class="bet-amount" id="betAmount">10</div>
+        <div class="bet-label">BET</div>
+        <button class="max-bet-btn" id="maxBetBtn">MAX</button>
+      </div>
+      <button class="bet-btn" id="betPlusBtn">+</button>
+    </div>
+
+    <button class="btn-primary" id="playAgainBtn">PLAY AGAIN</button>
+
+    <div class="history-list" id="historyList">
+      <div class="history-empty">No history</div>
+    </div>
+  </div>
+</div>
+
+<!-- WIN OVERLAY -->
+<div class="win-overlay" id="winOverlay">
+  <div class="win-box">
+    <div class="win-icon" id="winIcon"></div>
+    <div class="win-title" id="winTitle">YOU WIN!</div>
+    <div class="win-amount" id="winAmount">+0 PTS</div>
+    <button class="win-btn" id="winCloseBtn">COLLECT</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+  import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+    authDomain: "jakipot.firebaseapp.com",
+    projectId: "jakipot",
+    storageBucket: "jakipot.firebasestorage.app",
+    messagingSenderId: "396191754293",
+    appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
+    measurementId: "G-L1CLB5TDHV"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const ANIMALS = [
+    { name: 'Wolf',     multiplier: 0.1,   probability: 45.0, color: '#1a202c', icon: 'wolf' },
+    { name: 'Zebra',    multiplier: 0.3,   probability: 25.0, color: '#2d3748', icon: 'zebra' },
+    { name: 'Giraffe',  multiplier: 1.0,   probability: 15.0, color: '#744210', icon: 'giraffe' },
+    { name: 'Gorilla',  multiplier: 2.0,   probability: 8.0,  color: '#111827', icon: 'gorilla' },
+    { name: 'Elephant', multiplier: 3.0,   probability: 4.0,  color: '#1e3a8a', icon: 'elephant' },
+    { name: 'Cheetah',  multiplier: 5.0,   probability: 2.0,  color: '#9c4221', icon: 'cheetah' },
+    { name: 'Tiger',    multiplier: 15.0,  probability: 0.8,  color: '#9b2c2c', icon: 'tiger' },
+    { name: 'Lion',     multiplier: 100.0, probability: 0.2,  color: '#975a16', icon: 'lion' }
+  ];
+
+  const SLICE_ANGLE = 360 / 8;
+  const CURRENCY_MAP = { 'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'TZS': 'TSh', 'UGX': 'USh', 'BWP': 'P', 'MWK': 'MK', 'MZN': 'MT', 'NAD': 'N$', 'AOA': 'Kz', 'PHP': '₱', 'IDR': 'Rp', 'PKR': '₨', 'BDT': '৳' };
+
+  let currentUser = null;
+  let balance = 0;
+  let currencySymbol = 'K';
+  let currentBet = 10;
+  let personalBest = 0;
+  let roundNumber = 0;
+  let isMuted = localStorage.getItem('jakipotAnimalMuted') === 'true';
+  let history = [];
+  let isSpinning = false;
+  let currentRotation = 0;
+
+  const balanceEl = document.getElementById('balance');
+  const roundNumEl = document.getElementById('roundNum');
+  const personalBestEl = document.getElementById('personalBest');
+  const betAmountEl = document.getElementById('betAmount');
+  const instruction = document.getElementById('instruction');
+  const spinBtn = document.getElementById('spinBtn');
+  const playAgainBtn = document.getElementById('playAgainBtn');
+  const historyList = document.getElementById('historyList');
+  const betMinusBtn = document.getElementById('betMinusBtn');
+  const betPlusBtn = document.getElementById('betPlusBtn');
+  const maxBetBtn = document.getElementById('maxBetBtn');
+  const wheelGroup = document.getElementById('wheelGroup');
+  const muteBtn = document.getElementById('muteBtn');
+  const muteIcon = document.getElementById('muteIcon');
+  const winOverlay = document.getElementById('winOverlay');
+  const winIcon = document.getElementById('winIcon');
+  const winTitle = document.getElementById('winTitle');
+  const winAmount = document.getElementById('winAmount');
+  const winCloseBtn = document.getElementById('winCloseBtn');
+  const loaderOverlay = document.getElementById('loaderOverlay');
+  const loaderFill = document.getElementById('loaderFill');
+  const loaderPercent = document.getElementById('loaderPercent');
+
+  const SVG_UNMUTED = `<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>`;
+  const SVG_MUTED = `<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>`;
+
+  function updateMuteIcon() { muteIcon.innerHTML = isMuted ? SVG_MUTED : SVG_UNMUTED; }
+  updateMuteIcon();
+
+  muteBtn.addEventListener('click', () => {
+    isMuted = !isMuted;
+    localStorage.setItem('jakipotAnimalMuted', isMuted);
+    updateMuteIcon();
+    if (!isMuted) initAudio();
+  });
+
+  // Loader Progress
+  let loadProgress = 0;
+  const loaderInterval = setInterval(() => {
+    if (loadProgress < 90) { loadProgress += Math.random() * 15; updateLoader(loadProgress); }
+  }, 100);
+  function updateLoader(val) { loaderFill.style.width = val + '%'; loaderPercent.textContent = Math.floor(val) + '%'; }
+  function finishLoading() {
+    clearInterval(loaderInterval); updateLoader(100);
+    setTimeout(() => { loaderOverlay.style.opacity = '0'; setTimeout(() => loaderOverlay.style.display = 'none', 500); }, 400);
+  }
+
+  let audioCtx = null;
+  function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
+  function playTone(freq, duration, type, volume) {
+    if (isMuted || !audioCtx) return;
+    const t = audioCtx.currentTime; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+    osc.type = type || 'sine'; osc.frequency.setValueAtTime(freq, t);
+    gain.gain.setValueAtTime(volume || 0.1, t); gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+    osc.connect(gain).connect(audioCtx.destination); osc.start(t); osc.stop(t + duration);
+  }
+  function playTick() { playTone(900, 0.03, 'square', 0.03); }
+  function playWin() { [523, 659, 783].forEach((f, i) => setTimeout(() => playTone(f, 0.25, 'sine', 0.1), i * 100)); }
+  function playLose() { playTone(150, 0.4, 'sawtooth', 0.1); }
+  function playJackpot() { [523, 659, 783, 1046, 1318, 1568].forEach((f, i) => setTimeout(() => playTone(f, 0.4, 'triangle', 0.12), i * 100)); }
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) { window.location.replace('login.html'); return; }
+    currentUser = user;
+
+    onSnapshot(doc(db, 'users', user.uid), (snap) => {
+      if (snap.exists()) {
+        const userCurrency = snap.data().currency || 'ZMW';
+        currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
+        updateBetUI();
+      }
+    });
+
+    onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
+      if (snap.exists()) {
+        balance = snap.data().balance || 0;
+        balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        finishLoading();
+      }
+    });
+  });
+
+  function getAnimalSVG(icon, x, y) {
+    const scale = 0.65;
+    const g = `<g transform="translate(${x}, ${y}) scale(${scale})">`;
+    switch(icon) {
+      case 'wolf': return g + `<path d="M-18 -15 L-25 -35 L-10 -22 Z" fill="#4a5568"/><path d="M18 -15 L25 -35 L10 -22 Z" fill="#4a5568"/><path d="M-16 -18 L-22 -30 L-12 -22 Z" fill="#e2e8f0"/><path d="M16 -18 L22 -30 L12 -22 Z" fill="#e2e8f0"/><path d="M-20 -10 Q-25 10 -15 20 Q0 30 15 20 Q25 10 20 -10 Q15 -25 0 -25 Q-15 -25 -20 -10 Z" fill="#718096"/><path d="M-10 5 Q-15 20 0 25 Q15 20 10 5 Z" fill="#cbd5e0"/><ellipse cx="-8" cy="-5" rx="3" ry="4" fill="#f6ad55"/><ellipse cx="8" cy="-5" rx="3" ry="4" fill="#f6ad55"/><circle cx="-8" cy="-5" r="1.5" fill="#000"/><circle cx="8" cy="-5" r="1.5" fill="#000"/><ellipse cx="0" cy="12" rx="5" ry="3" fill="#1a202c"/><path d="M-4 16 Q0 20 4 16" stroke="#1a202c" stroke-width="1.5" fill="none"/></g>`;
+      case 'zebra': return g + `<path d="M-15 -20 L-20 -35 L-8 -25 Z" fill="#fff"/><path d="M15 -20 L20 -35 L8 -25 Z" fill="#fff"/><path d="M-18 -15 Q-22 5 -12 15 Q0 22 12 15 Q22 5 18 -15 Q12 -25 0 -25 Q-12 -25 -18 -15 Z" fill="#fff"/><path d="M-18 -10 Q-5 -15 0 -5 Q-5 -12 -18 -10" fill="#1a202c"/><path d="M18 -10 Q5 -15 0 -5 Q5 -12 18 -10" fill="#1a202c"/><path d="M-20 0 Q-10 2 -8 8 Q-12 5 -20 0" fill="#1a202c"/><path d="M20 0 Q10 2 8 8 Q12 5 20 0" fill="#1a202c"/><path d="M-15 10 L-8 15 L-15 12 Z" fill="#1a202c"/><path d="M15 10 L8 15 L15 12 Z" fill="#1a202c"/><path d="M-10 5 Q-12 18 0 22 Q12 18 10 5 Z" fill="#a0aec0"/><circle cx="-8" cy="-5" r="3" fill="#000"/><circle cx="8" cy="-5" r="3" fill="#000"/><circle cx="-7" cy="-6" r="1" fill="#fff"/><circle cx="9" cy="-6" r="1" fill="#fff"/><ellipse cx="-4" cy="12" rx="1.5" ry="2" fill="#000"/><ellipse cx="4" cy="12" rx="1.5" ry="2" fill="#000"/></g>`;
+      case 'giraffe': return g + `<path d="M-10 -20 L-12 -40 L-6 -25 Z" fill="#b7791f"/><circle cx="-12" cy="-42" r="3" fill="#d69e2e"/><path d="M10 -20 L12 -40 L6 -25 Z" fill="#b7791f"/><circle cx="12" cy="-42" r="3" fill="#d69e2e"/><path d="M-15 -15 Q-20 5 -10 15 Q0 25 10 15 Q20 5 15 -15 Q10 -25 0 -25 Q-10 -25 -15 -15 Z" fill="#ecc94b"/><circle cx="-10" cy="-10" r="3" fill="#b7791f"/><circle cx="10" cy="-10" r="3" fill="#b7791f"/><circle cx="-12" cy="5" r="2.5" fill="#b7791f"/><circle cx="12" cy="5" r="2.5" fill="#b7791f"/><path d="M-8 10 Q-10 20 0 22 Q10 20 8 10 Z" fill="#f6e05e"/><ellipse cx="-7" cy="-5" rx="3" ry="4" fill="#fff"/><ellipse cx="7" cy="-5" rx="3" ry="4" fill="#fff"/><circle cx="-7" cy="-5" r="1.5" fill="#000"/><circle cx="7" cy="-5" r="1.5" fill="#000"/><ellipse cx="-3" cy="14" rx="1" ry="1.5" fill="#000"/><ellipse cx="3" cy="14" rx="1" ry="1.5" fill="#000"/></g>`;
+      case 'gorilla': return g + `<path d="M-25 -15 Q-30 15 -15 25 Q0 35 15 25 Q30 15 25 -15 Q20 -30 0 -30 Q-20 -30 -25 -15 Z" fill="#1a202c"/><path d="M-20 -18 Q0 -30 20 -18 Q10 -22 0 -22 Q-10 -22 -20 -18" fill="#718096"/><path d="M-20 -8 Q0 -15 20 -8 L15 -2 Q0 -8 -15 -2 Z" fill="#2d3748"/><path d="M-15 0 Q-20 15 -5 20 Q0 22 5 20 Q20 15 15 0 Z" fill="#4a5568"/><circle cx="-8" cy="-2" r="3" fill="#000"/><circle cx="8" cy="-2" r="3" fill="#000"/><circle cx="-7" cy="-3" r="1" fill="#fff"/><circle cx="9" cy="-3" r="1" fill="#fff"/><path d="M-6 8 Q0 4 6 8 Q4 12 -4 12 Z" fill="#1a202c"/><path d="M-6 16 Q0 20 6 16" stroke="#1a202c" stroke-width="2" fill="none"/></g>`;
+      case 'elephant': return g + `<path d="M-15 -10 Q-40 -20 -35 10 Q-30 30 -15 20 Z" fill="#a0aec0"/><path d="M15 -10 Q40 -20 35 10 Q30 30 15 20 Z" fill="#a0aec0"/><path d="M-15 -5 Q-30 -10 -28 10 Q-25 22 -15 15 Z" fill="#cbd5e0"/><path d="M15 -5 Q30 -10 28 10 Q25 22 15 15 Z" fill="#cbd5e0"/><path d="M-15 -15 Q-20 5 -10 15 Q0 20 10 15 Q20 5 15 -15 Q10 -25 0 -25 Q-10 -25 -15 -15 Z" fill="#718096"/><path d="M-8 15 Q-10 30 -5 40 Q0 45 5 40 Q10 30 8 15 Z" fill="#718096"/><path d="M-5 20 Q-6 30 -3 38 M5 20 Q6 30 3 38" stroke="#4a5568" stroke-width="1.5" fill="none"/><circle cx="-7" cy="-8" r="3" fill="#fff"/><circle cx="7" cy="-8" r="3" fill="#fff"/><circle cx="-6" cy="-8" r="1.5" fill="#000"/><circle cx="8" cy="-8" r="1.5" fill="#000"/><path d="M-8 12 Q-12 20 -15 18" stroke="#fff" stroke-width="2" fill="none"/><path d="M8 12 Q12 20 15 18" stroke="#fff" stroke-width="2" fill="none"/></g>`;
+      case 'cheetah': return g + `<path d="M-15 -15 L-20 -30 L-8 -20 Z" fill="#d69e2e"/><path d="M15 -15 L20 -30 L8 -20 Z" fill="#d69e2e"/><path d="M-18 -10 Q-20 10 -10 18 Q0 22 10 18 Q20 10 18 -10 Q12 -22 0 -22 Q-12 -22 -18 -10 Z" fill="#ecc94b"/><circle cx="-12" cy="-10" r="1.5" fill="#000"/><circle cx="12" cy="-10" r="1.5" fill="#000"/><circle cx="-15" cy="0" r="1.5" fill="#000"/><circle cx="15" cy="0" r="1.5" fill="#000"/><circle cx="-10" cy="8" r="1.5" fill="#000"/><circle cx="10" cy="8" r="1.5" fill="#000"/><path d="M-8 5 Q-10 18 0 20 Q10 18 8 5 Z" fill="#fefcbf"/><path d="M-7 -3 Q-6 5 -8 10" stroke="#000" stroke-width="2" fill="none"/><path d="M7 -3 Q6 5 8 10" stroke="#000" stroke-width="2" fill="none"/><ellipse cx="-7" cy="-5" rx="2.5" ry="3" fill="#fff"/><ellipse cx="7" cy="-5" rx="2.5" ry="3" fill="#fff"/><circle cx="-7" cy="-5" r="1.5" fill="#000"/><circle cx="7" cy="-5" r="1.5" fill="#000"/><path d="M-3 12 Q0 10 3 12 Q0 15 -3 12" fill="#000"/></g>`;
+      case 'tiger': return g + `<path d="M-15 -15 L-22 -32 L-8 -20 Z" fill="#ed8936"/><path d="M15 -15 L22 -32 L8 -20 Z" fill="#ed8936"/><path d="M-14 -17 L-18 -27 L-10 -20 Z" fill="#fff"/><path d="M14 -17 L18 -27 L10 -20 Z" fill="#fff"/><path d="M-18 -10 Q-20 10 -10 18 Q0 22 10 18 Q20 10 18 -10 Q12 -22 0 -22 Q-12 -22 -18 -10 Z" fill="#ed8936"/><path d="M-15 0 Q-15 15 -5 18 L-5 5 Z" fill="#fff"/><path d="M15 0 Q15 15 5 18 L5 5 Z" fill="#fff"/><path d="M-5 -20 L-3 -10 L-6 -5 Z M5 -20 L3 -10 L6 -5 Z" fill="#000"/><path d="M-18 -5 L-12 -5 L-14 2 Z M18 -5 L12 -5 L14 2 Z" fill="#000"/><path d="M-16 5 L-10 6 L-12 10 Z M16 5 L10 6 L12 10 Z" fill="#000"/><path d="M-8 8 Q-10 18 0 20 Q10 18 8 8 Z" fill="#fff"/><ellipse cx="-7" cy="-5" rx="3" ry="3.5" fill="#fff"/><ellipse cx="7" cy="-5" rx="3" ry="3.5" fill="#fff"/><circle cx="-7" cy="-5" r="1.5" fill="#000"/><circle cx="7" cy="-5" r="1.5" fill="#000"/><path d="M-4 12 Q0 9 4 12 Q2 15 -2 15 Z" fill="#000"/></g>`;
+      case 'lion': return g + `<path d="M-20 -25 L-30 -35 L-15 -35 L-20 -45 L-5 -40 L0 -50 L5 -40 L20 -45 L15 -35 L30 -35 L20 -25 L35 -20 L25 -10 L35 0 L25 10 L30 25 L15 20 L20 35 L5 25 L0 40 L-5 25 L-20 35 L-15 20 L-30 25 L-25 10 L-35 0 L-25 -10 L-35 -20 Z" fill="#975a16"/><path d="M-15 -20 L-22 -28 L-10 -28 L-15 -35 L-3 -32 L0 -40 L3 -32 L15 -35 L10 -28 L22 -28 L15 -20 L25 -15 L18 -8 L25 0 L18 8 L22 18 L10 15 L12 25 L3 18 L0 28 L-3 18 L-12 25 L-10 15 L-22 18 L-18 8 L-25 0 L-18 -8 L-25 -15 Z" fill="#d69e2e"/><path d="M-15 -10 Q-18 10 -8 18 Q0 22 8 18 Q18 10 15 -10 Q10 -22 0 -22 Q-10 -22 -15 -10 Z" fill="#ed8936"/><path d="M-8 5 Q-12 15 0 20 Q12 15 8 5 Z" fill="#fefcbf"/><ellipse cx="-7" cy="-5" rx="3" ry="3" fill="#fff"/><ellipse cx="7" cy="-5" rx="3" ry="3" fill="#fff"/><circle cx="-7" cy="-5" r="1.5" fill="#000"/><circle cx="7" cy="-5" r="1.5" fill="#000"/><path d="M-5 10 L0 8 L5 10 L3 14 L0 12 L-3 14 Z" fill="#000"/><path d="M-4 16 Q0 19 4 16" stroke="#000" stroke-width="1.5" fill="none"/></g>`;
+      default: return g + `<circle r="20" fill="#333"/></g>`;
+    }
+  }
+
+  function buildWheel() {
+    wheelGroup.innerHTML = '';
+    ANIMALS.forEach((animal, i) => {
+      const startAngle = i * SLICE_ANGLE - SLICE_ANGLE / 2;
+      const endAngle = startAngle + SLICE_ANGLE;
+      const midAngle = startAngle + SLICE_ANGLE / 2;
+      
+      const startRad = (startAngle - 90) * Math.PI / 180;
+      const endRad = (endAngle - 90) * Math.PI / 180;
+      const midRad = (midAngle - 90) * Math.PI / 180;
+      
+      const x1 = 200 + 180 * Math.cos(startRad);
+      const y1 = 200 + 180 * Math.sin(startRad);
+      const x2 = 200 + 180 * Math.cos(endRad);
+      const y2 = 200 + 180 * Math.sin(endRad);
+      
+      const iconX = 200 + 120 * Math.cos(midRad);
+      const iconY = 200 + 120 * Math.sin(midRad);
+      
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', `M 200 200 L ${x1} ${y1} A 180 180 0 0 1 ${x2} ${y2} Z`);
+      path.setAttribute('fill', animal.color);
+      path.setAttribute('stroke', '#facc15');
+      path.setAttribute('stroke-width', '2');
+      wheelGroup.appendChild(path);
+      
+      const iconGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      iconGroup.innerHTML = getAnimalSVG(animal.icon, iconX, iconY);
+      wheelGroup.appendChild(iconGroup);
+      
+      const textX = 200 + 70 * Math.cos(midRad);
+      const textY = 200 + 70 * Math.sin(midRad);
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', textX);
+      text.setAttribute('y', textY);
+      text.setAttribute('fill', '#fff');
+      text.setAttribute('font-size', '14');
+      text.setAttribute('font-weight', '900');
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', 'middle');
+      text.textContent = animal.multiplier + 'x';
+      text.setAttribute('style', 'text-shadow: 1px 1px 2px #000;');
+      
+      let rotation = midAngle;
+      if (midAngle > 90 && midAngle < 270) rotation += 180;
+      text.setAttribute('transform', `rotate(${rotation}, ${textX}, ${textY})`);
+      wheelGroup.appendChild(text);
+    });
+  }
+
+  function updateBetUI() {
+    betAmountEl.textContent = currentBet.toLocaleString();
+    betAmountEl.classList.remove('flash');
+    void betAmountEl.offsetWidth;
+    betAmountEl.classList.add('flash');
+    setTimeout(() => betAmountEl.classList.remove('flash'), 200);
+  }
+
+  function changeBet(amount) {
+    if (isSpinning) return;
+    let newBet = currentBet + amount;
+    if (newBet < 10) newBet = 10;
+    const maxAllowed = Math.min(balance, 1000);
+    if (newBet > maxAllowed) newBet = Math.max(10, maxAllowed);
+    if (newBet !== currentBet) {
+      currentBet = newBet;
+      updateBetUI();
+      playTick();
+    }
+  }
+
+  betMinusBtn.addEventListener('click', (e) => { e.preventDefault(); changeBet(-10); });
+  betPlusBtn.addEventListener('click', (e) => { e.preventDefault(); changeBet(10); });
+  maxBetBtn.addEventListener('click', (e) => { e.preventDefault(); if (!isSpinning) changeBet(Math.min(balance, 1000) - currentBet); });
+
+  spinBtn.addEventListener('click', async () => {
+    initAudio();
+    if (isSpinning || !currentUser) return;
+    if (balance < currentBet) { instruction.textContent = 'Not enough balance!'; instruction.style.color = '#ef4444'; return; }
+
+    isSpinning = true;
+    spinBtn.disabled = true;
+    playAgainBtn.style.display = 'none';
+    instruction.textContent = 'Spinning...';
+    instruction.className = 'instruction';
+
+    // 1. START FAKE SPIN (Instant feedback)
+    let fakeSpeed = 0;
+    let fakeInterval = setInterval(() => {
+      fakeSpeed += 20;
+      wheelGroup.setAttribute('transform', `rotate(${fakeSpeed} 200 200)`);
+    }, 16);
+
+    try {
+      // 2. CALL SECURE VERCEL BACKEND
+      const idToken = await currentUser.getIdToken();
+      const response = await fetch('https://jakipot.vercel.app/api/play', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+        body: JSON.stringify({ gameType: 'animal_spin', betAmount: currentBet })
+      });
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      // 3. STOP FAKE SPIN & UPDATE BALANCES
+      clearInterval(fakeInterval);
+      balance = data.newBalance;
+      balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+      if (data.payoutAmount > personalBest) {
+        personalBest = data.payoutAmount;
+        personalBestEl.textContent = personalBest.toLocaleString();
+      }
+
+      // 4. CALCULATE REAL ROTATION
+      const winIndex = data.winData.winIndex;
+      const winner = ANIMALS[winIndex];
+      const winAmount = data.payoutAmount;
+
+      const targetModulo = 360 - (winIndex * SLICE_ANGLE);
+      let currentModulo = fakeSpeed % 360;
+      let diff = targetModulo - currentModulo;
+      if (diff <= 0) diff += 360;
+      
+      const totalSpins = 360 * 8;
+      const targetRotation = fakeSpeed + totalSpins + diff;
+
+      // Apply the real CSS transition for the final spin
+      wheelGroup.style.transition = 'transform 6s cubic-bezier(0.15, 0.9, 0.15, 1)';
+      wheelGroup.style.transform = `rotate(${targetRotation}deg)`;
+      currentRotation = targetRotation;
+
+      // 5. TICKING SOUND
+      let tickCount = 0;
+      const tickInterval = setInterval(() => {
+        if (tickCount > 50) { clearInterval(tickInterval); return; }
+        playTick(); tickCount++;
+      }, 100);
+
+      // 6. FINISH SPIN
+      setTimeout(() => {
+        clearInterval(tickInterval);
+        isSpinning = false;
+        spinBtn.disabled = false;
+
+        if (winAmount > 0) {
+          instruction.textContent = `${winner.name} hit ${winner.multiplier}x! +${currencySymbol}${winAmount.toLocaleString()}!`;
+          instruction.className = 'instruction win';
+          
+          if (winner.name === 'Lion') playJackpot();
+          else playWin();
+          
+          showWinPopup(winner, winAmount);
+        } else {
+          instruction.textContent = `${winner.name} landed. No win.`;
+          instruction.className = 'instruction';
+          playLose();
+        }
+
+        roundNumber++;
+        roundNumEl.textContent = roundNumber;
+        addHistory(winner.name, winAmount);
+        playAgainBtn.style.display = 'flex';
+        
+        if (balance < currentBet) {
+          currentBet = Math.max(10, Math.min(balance, 1000));
+          updateBetUI();
+        }
+      }, 6100);
+
+    } catch (error) {
+      clearInterval(fakeInterval);
+      console.error("Server Error:", error);
+      alert(error.message || "Failed to spin.");
+      // Refund UI
+      isSpinning = false;
+      spinBtn.disabled = false;
+      instruction.textContent = 'Error occurred. Try again.';
+    }
+  });
+
+  function showWinPopup(winner, winAmount) {
+    winIcon.innerHTML = `<svg viewBox="0 0 100 100" width="100%" height="100%">${getAnimalSVG(winner.icon, 50, 50)}</svg>`;
+    winTitle.textContent = winner.name.toUpperCase() + ' WIN!';
+    winAmount.textContent = '+' + winAmount.toLocaleString();
+    winOverlay.classList.add('active');
+  }
+
+  winCloseBtn.addEventListener('click', () => { winOverlay.classList.remove('active'); });
+
+  function addHistory(animal, pts) {
+    history.unshift({ round: roundNumber, animal, pts });
+    if (history.length > 10) history.pop();
+    
+    historyList.innerHTML = '';
+    if (history.length === 0) {
+      historyList.innerHTML = '<div class="history-empty">No history</div>';
+      return;
+    }
+    
+    history.forEach(h => {
+      const div = document.createElement('div');
+      div.className = 'history-item';
+      const ptsClass = h.pts > 0 ? 'win' : 'loss';
+      div.innerHTML = `<span class="h-round">#${h.round}</span> <span class="h-animal">${h.animal}</span> <span class="h-points ${ptsClass}">${h.pts > 0 ? '+' + h.pts : '0'}</span>`;
+      historyList.appendChild(div);
+    });
+  }
+
+  playAgainBtn.addEventListener('click', () => {
+    playAgainBtn.style.display = 'none';
+    instruction.textContent = 'Set your bet and spin!';
+    instruction.className = 'instruction';
+    spinBtn.disabled = false;
+  });
+
+  buildWheel();
+  betAmountEl.textContent = currentBet.toLocaleString();
+  document.body.addEventListener('pointerdown', initAudio, { once: true });
+
+</script>
+</body>
+</html>

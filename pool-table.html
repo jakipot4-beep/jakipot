@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Pro Pool 8-Ball - Challenge Match</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: #0f1115; overflow: hidden;
+    font-family: system-ui, -apple-system, sans-serif; color: #fff; display: flex;
+    flex-direction: column; user-select: none; }
+  
+  /* --- LOADING SCREEN --- */
+  #loading-screen {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: #0f1115; z-index: 9999;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+  }
+  .loader-spinner {
+    width: 50px; height: 50px;
+    border: 4px solid rgba(74, 222, 128, 0.2);
+    border-top: 4px solid #4ade80;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  .loader-text { font-size: 16px; font-weight: 800; color: #4ade80; letter-spacing: 1px; }
+  .loader-sub { font-size: 12px; color: #aaa; margin-top: 5px; }
+
+  /* --- TOP SECTION: PLAYER CARDS & TIMER --- */
+  #top-section { 
+    background: #181a1f; padding: 8px 10px; display: flex; justify-content: space-between; 
+    align-items: stretch; gap: 8px; z-index: 10; box-shadow: 0 5px 20px rgba(0,0,0,0.5); 
+  }
+  
+  .player-card { 
+    flex: 1; background: #21242b; border-radius: 10px; padding: 8px;
+    display: flex; flex-direction: column; gap: 6px; border: 2px solid #333;
+    transition: all 0.3s ease; 
+  }
+  
+  .player-card.active-p1 { border-color: #4ade80; box-shadow: 0 0 12px rgba(74,222,128,0.2); background: #1a241e; }
+  .player-card.active-p2 { border-color: #f87171; box-shadow: 0 0 12px rgba(248,113,113,0.2); background: #241a1a; }
+  
+  .card-header { display: flex; justify-content: space-between; align-items: center; }
+  .p-name { font-size: 12px; font-weight: 800; letter-spacing: 0.5px; }
+  .p-type { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; }
+  
+  .scored-tray { display: flex; gap: 4px; flex-wrap: wrap; min-height: 22px; align-content: flex-start; }
+  .svg-ball { width: 20px; height: 20px; transition: all 0.3s ease; }
+  .svg-ball.empty { opacity: 0.15; filter: grayscale(1); }
+  
+  /* Center Info & Timer */
+  #center-info { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 80px; flex-shrink: 0; }
+  #timer-display { font-size: 20px; font-weight: 900; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.3); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+  #timer-display.warning { color: #ef4444; animation: pulse-red 1s infinite; }
+  @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+  .turn-indicator { font-size: 9px; font-weight: 800; text-align: center; padding: 3px 4px; 
+    border-radius: 6px; background: #2a2d35; color: #ccc; width: 100%; }
+  .turn-p1 { background: #1f3d2b; color: #4ade80; }
+  .turn-p2 { background: #3d1f1f; color: #f87171; }
+
+  /* --- GAME TABLE --- */
+  #game-container { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; padding: 10px; overflow: hidden; }
+  #canvas-wrap { position: relative; width: 100%; max-width: 420px; aspect-ratio: 10/15; box-shadow: 0 15px 40px rgba(0,0,0,0.8); border-radius: 16px; overflow: hidden; }
+  canvas { display: block; width: 100%; height: 100%; touch-action: none; background: #3b1d0b; }
+
+  /* --- SLIDERS (POWER & AIM) --- */
+  .slider-wrapper { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; display: flex; flex-direction: column; align-items: center; z-index: 20; }
+  #power-slider-wrapper { left: 10px; height: 55%; }
+  #aim-slider-wrapper { right: 10px; height: 65%; }
+  
+  .slider-track { width: 14px; flex: 1; background: rgba(0,0,0,0.8); border-radius: 10px; border: 2px solid #444; position: relative; display: flex; flex-direction: column; justify-content: flex-end; box-shadow: inset 0 0 10px rgba(0,0,0,0.9); overflow: hidden; margin: 6px 0; }
+  
+  #power-fill { width: 100%; height: 0%; background: linear-gradient(to top, #4ade80, #facc15, #ef4444); }
+  #aim-fill { width: 100%; height: 0%; background: linear-gradient(to top, #3b82f6, #a855f7); }
+  
+  .slider-thumb { position: absolute; bottom: 0%; left: 50%; transform: translate(-50%, 50%); width: 32px; height: 32px; background: #fff; border-radius: 50%; border: 3px solid #333; box-shadow: 0 4px 10px rgba(0,0,0,0.5); cursor: grab; touch-action: none; }
+  .slider-thumb:active { cursor: grabbing; background: #e0e0e0; }
+  
+  .slider-label { position: absolute; bottom: -22px; width: 100%; text-align: center; font-size: 9px; font-weight: 900; color: rgba(255,255,255,0.8); pointer-events: none; }
+
+  /* --- AIM BUTTONS (- and +) --- */
+  .aim-btn { 
+    width: 36px; height: 36px; border-radius: 50%; background: #2a2d35; 
+    border: 2px solid #555; color: #fff; font-size: 24px; font-weight: bold; 
+    display: flex; justify-content: center; align-items: center; cursor: pointer; 
+    z-index: 25; transition: background 0.1s, transform 0.1s; user-select: none; touch-action: none;
+  }
+  .aim-btn:active { background: #555; transform: scale(0.9); }
+
+  /* --- SHOOT BUTTON --- */
+  #shoot-btn { position: absolute; bottom: 15px; right: 60px; width: 75px; height: 75px; background: linear-gradient(135deg, #facc15, #ef4444); border-radius: 50%; border: 4px solid #222; box-shadow: 0 5px 15px rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; font-size: 13px; font-weight: 900; color: #111; letter-spacing: 1px; cursor: pointer; z-index: 20; transition: transform 0.1s; }
+  #shoot-btn:active { transform: scale(0.92); }
+  #shoot-btn:disabled { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
+
+  /* --- BALL IN HAND OVERLAY --- */
+  #bih-overlay { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(59, 130, 246, 0.95); color: #fff; padding: 8px 18px; border-radius: 20px; font-size: 12px; font-weight: 800; z-index: 20; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5); text-align: center; pointer-events: none; }
+  #bih-overlay.on { display: block; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0% { opacity: 1; transform: translateX(-50%) scale(1); } 50% { opacity: 0.8; transform: translateX(-50%) scale(1.05); } 100% { opacity: 1; transform: translateX(-50%) scale(1); } }
+
+  /* --- MESSAGE OVERLAY & CELEBRATION --- */
+  #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 22px; font-weight: 900; color: #fff; text-shadow: 0 4px 20px rgba(0,0,0,1); pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 30; text-align: center; background: rgba(0,0,0,0.85); padding: 15px 25px; border-radius: 12px; border: 1px solid #444; }
+  #msg.on { opacity: 1; }
+
+  #celebration {
+    position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
+    background: linear-gradient(135deg, #facc15, #f97316, #ef4444);
+    padding: 20px 40px; border-radius: 20px; text-align: center;
+    box-shadow: 0 10px 40px rgba(250, 204, 21, 0.6), 0 0 0 4px #fff;
+    z-index: 40; pointer-events: none; opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  #celebration.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  #celebration h3 { margin: 0 0 5px 0; font-size: 26px; font-weight: 900; color: #000; text-shadow: 0 2px 5px rgba(255,255,255,0.5); }
+  #celebration p { margin: 0; font-size: 14px; font-weight: 700; color: #222; }
+
+  #bottom-hint { text-align: center; padding: 8px; font-size: 10px; color: #888; font-weight: 600; letter-spacing: 0.5px; background: #181a1f; }
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loading-screen">
+  <div class="loader-spinner"></div>
+  <div class="loader-text">LOADING MATCH</div>
+  <div class="loader-sub" id="loading-sub">Connecting to server...</div>
+</div>
+
+<!-- TOP SECTION -->
+<div id="top-section">
+  <div class="player-card" id="card-p1">
+    <div class="card-header">
+      <span class="p-name" id="name-p1" style="color:#4ade80">PLAYER 1</span>
+      <span class="p-type" id="type-p1">-</span>
+    </div>
+    <div class="scored-tray" id="tray-p1"></div>
+  </div>
+
+  <div id="center-info">
+    <div id="timer-display">15:00</div>
+    <div id="turn-display" class="turn-indicator">OPEN</div>
+  </div>
+
+  <div class="player-card" id="card-p2">
+    <div class="card-header">
+      <span class="p-name" id="name-p2" style="color:#f87171">PLAYER 2</span>
+      <span class="p-type" id="type-p2">-</span>
+    </div>
+    <div class="scored-tray" id="tray-p2"></div>
+  </div>
+</div>
+
+<!-- MAIN GAME AREA -->
+<div id="game-container">
+  <div id="canvas-wrap">
+    <canvas id="game"></canvas>
+    <div id="bih-overlay">DRAG TO POSITION<br><span style="font-size:10px">DOUBLE TAP TO LOCK</span></div>
+    <div id="msg"></div>
+    
+    <!-- CELEBRATION OVERLAY -->
+    <div id="celebration">
+      <h3 id="celeb-title">PLAYER 1 SCORED!</h3>
+      <p id="celeb-sub">7 balls remaining for Player 1</p>
+    </div>
+
+  </div>
+  
+  <!-- POWER SLIDER -->
+  <div id="power-slider-wrapper" class="slider-wrapper">
+    <div id="power-track" class="slider-track"><div id="power-fill"></div></div>
+    <div id="power-thumb" class="slider-thumb"></div>
+    <div class="slider-label">POWER</div>
+  </div>
+
+  <!-- AIM SLIDER & BUTTONS -->
+  <div id="aim-slider-wrapper" class="slider-wrapper">
+    <button id="aim-plus" class="aim-btn">+</button>
+    <div id="aim-track" class="slider-track"><div id="aim-fill"></div></div>
+    <div id="aim-thumb" class="slider-thumb"></div>
+    <button id="aim-minus" class="aim-btn">-</button>
+    <div class="slider-label">AIM</div>
+  </div>
+
+  <button id="shoot-btn">SHOOT</button>
+</div>
+
+<div id="bottom-hint">TAP A BALL TO AIM • DRAG FELT FOR FINE AIM • HOLD +/- TO SWEEP</div>
+
+<script type="module">
+// ==========================================
+// 1. FIREBASE SETUP
+// ==========================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBpKp2TePXAmJjc_qR-bJPCZJ123QsCyxw",
+    authDomain: "jakipot.firebaseapp.com",
+    projectId: "jakipot",
+    storageBucket: "jakipot.firebasestorage.app",
+    messagingSenderId: "396191754293",
+    appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
+    measurementId: "G-L1CL5TDHV"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+let matchData = null;
+const urlParams = new URLSearchParams(window.location.search);
+const matchId = urlParams.get('matchId');
+
+/* =========================================================
+   AUDIO ENGINE
+   ========================================================= */
+const AudioEngine = {
+  ctx: null,
+  init() {
+    if (this.ctx) return;
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+  },
+  playHit(volume) {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+    osc.type = "triangle"; osc.frequency.setValueAtTime(800 + Math.random() * 400, t);
+    osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
+    gain.gain.setValueAtTime(Math.min(0.5, volume), t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+    osc.connect(gain).connect(this.ctx.destination); osc.start(t); osc.stop(t + 0.1);
+  },
+  playPocket() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+    osc.type = "sine"; osc.frequency.setValueAtTime(150, t);
+    osc.frequency.exponentialRampToValueAtTime(40, t + 0.3);
+    gain.gain.setValueAtTime(0.6, t); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    osc.connect(gain).connect(this.ctx.destination); osc.start(t); osc.stop(t + 0.3);
+  },
+  playFoul() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+    osc.type = "sawtooth"; osc.frequency.setValueAtTime(150, t);
+    osc.frequency.linearRampToValueAtTime(100, t + 0.2); osc.frequency.linearRampToValueAtTime(150, t + 0.4);
+    gain.gain.setValueAtTime(0.3, t); gain.gain.linearRampToValueAtTime(0.3, t + 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+    osc.connect(gain).connect(this.ctx.destination); osc.start(t); osc.stop(t + 0.5);
+  },
+  playWin() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    notes.forEach((freq, i) => {
+      const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+      osc.type = "sine"; osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, t + i * 0.1);
+      gain.gain.linearRampToValueAtTime(0.3, t + i * 0.1 + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.1 + 0.5);
+      osc.connect(gain).connect(this.ctx.destination);
+      osc.start(t + i * 0.1); osc.stop(t + i * 0.1 + 0.5);
+    });
+  }
+};
+
+/* =========================================================
+   SETUP & CONSTANTS
+   ========================================================= */
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const W = 500, H = 750;
+const dpr = Math.min(window.devicePixelRatio || 1, 2);
+canvas.width = W * dpr; canvas.height = H * dpr;
+ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+const RAIL = 25; const L = RAIL, RT = W - RAIL, T = RAIL, BT = H - RAIL;
+const BR = 10; const FRICTION = 250; const REST_WALL = 0.88; const REST_BALL = 0.96; const MAX_SPEED = 2400;
+
+const POCKETS = [
+  { x: L, y: T, r: 22 }, { x: W/2, y: T - 8, r: 18 }, { x: RT, y: T, r: 22 },
+  { x: L, y: BT, r: 22 }, { x: W/2, y: BT + 8, r: 18 }, { x: RT, y: BT, r: 22 },
+];
+
+const CORNER_GAP = 20, SIDE_GAP = 20;
+const gapTB = x => x < L + CORNER_GAP || x > RT - CORNER_GAP || Math.abs(x - W / 2) < SIDE_GAP;
+const gapLR = y => y < T + CORNER_GAP || y > BT - CORNER_GAP;
+
+const SOLID_COLORS = {1:"#f0c419",2:"#1e4fd8",3:"#d02f2f",4:"#7b2fbe",5:"#e8801a",6:"#1f9a4d",7:"#8a2b2b",8:"#1c1c1c"};
+const STRIPE_COLORS = {9:"#f0c419",10:"#1e4fd8",11:"#d02f2f",12:"#7b2fbe",13:"#e8801a",14:"#1f9a4d",15:"#8a2b2b"};
+
+/* =========================================================
+   GAME STATE
+   ========================================================= */
+let balls = []; let cue = null;
+let currentPlayer = 0; 
+let p1Group = null; let p2Group = null;
+let gameOver = false;
+let gameStarted = false;
+
+let p1Scored = []; let p2Scored = []; let pottedThisShot = [];
+
+let isBallInHand = false;
+let firstHitBall = null;
+
+let aimAngle = -Math.PI / 2;
+let power = 0; 
+let betAmount = 0;
+
+let timeLeft = 15 * 60;
+let timerInterval = null;
+
+let canvasTargetAngle = -Math.PI / 2;
+let lastTapTime = 0;
+let isDraggingCue = false;
+let isAimingCanvas = false;
+
+let holdDir = 0; 
+let holdStartTime = 0;
+
+const timerDisplay = document.getElementById("timer-display");
+const turnDisplay = document.getElementById("turn-display");
+const cardP1 = document.getElementById("card-p1"); const cardP2 = document.getElementById("card-p2");
+const typeP1 = document.getElementById("type-p1"); const typeP2 = document.getElementById("type-p2");
+const trayP1 = document.getElementById("tray-p1"); const trayP2 = document.getElementById("tray-p2");
+const msgEl = document.getElementById("msg");
+const bihEl = document.getElementById("bih-overlay");
+const celebEl = document.getElementById("celebration");
+const celebTitle = document.getElementById("celeb-title");
+const celebSub = document.getElementById("celeb-sub");
+
+const powerTrack = document.getElementById("power-track"); const powerThumb = document.getElementById("power-thumb"); const powerFill = document.getElementById("power-fill");
+const aimTrack = document.getElementById("aim-track"); const aimThumb = document.getElementById("aim-thumb"); const aimFill = document.getElementById("aim-fill");
+const aimPlus = document.getElementById("aim-plus"); const aimMinus = document.getElementById("aim-minus");
+const shootBtn = document.getElementById("shoot-btn");
+
+/* =========================================================
+   INITIALIZATION FROM FIREBASE
+   ========================================================= */
+onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.replace('login.html'); return; }
+    currentUser = user;
+
+    if (!matchId) {
+        alert("No Match ID found. Redirecting to home.");
+        window.location.href = "home.html";
+        return;
+    }
+
+    try {
+        const matchRef = doc(db, 'game_challenges', matchId);
+        const matchSnap = await getDoc(matchRef);
+
+        if (matchSnap.exists()) {
+            matchData = matchSnap.data();
+            
+            // Check if current user is part of this challenge
+            if (user.uid !== matchData.challengerUid && user.uid !== matchData.opponentUid) {
+                alert("You are not a participant in this match.");
+                window.location.href = "home.html";
+                return;
+            }
+
+            betAmount = matchData.betAmount || 0;
+            
+            // Set player names
+            document.getElementById("name-p1").textContent = matchData.challengerName || "PLAYER 1";
+            document.getElementById("name-p2").textContent = matchData.opponentName || "PLAYER 2";
+
+            // Start game
+            document.getElementById("loading-screen").style.display = 'none';
+            gameStarted = true;
+            rack();
+            startTimer();
+            requestAnimationFrame(loop);
+        } else {
+            alert("Match not found.");
+            window.location.href = "home.html";
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Error loading match.");
+    }
+});
+
+/* =========================================================
+   SVG GENERATION & UI UPDATE
+   ========================================================= */
+function getBallSVG(num, isEmpty = false) {
+  if (num === 0) return "";
+  const isStripe = num >= 9;
+  const color = isStripe ? STRIPE_COLORS[num] : SOLID_COLORS[num];
+  const emptyClass = isEmpty ? "empty" : "";
+  
+  if (isStripe) {
+    return `<svg class="svg-ball ${emptyClass}" viewBox="0 0 20 20">
+      <circle cx="10" cy="10" r="9" fill="#fff" />
+      <path d="M 2 5 A 9 9 0 0 0 2 15 L 18 15 A 9 9 0 0 0 18 5 Z" fill="${color}" />
+      <circle cx="10" cy="10" r="4.5" fill="#fff" />
+      <text x="10" y="12.5" font-size="6" font-weight="bold" fill="#000" text-anchor="middle" font-family="sans-serif">${num}</text>
+    </svg>`;
+  } else {
+    return `<svg class="svg-ball ${emptyClass}" viewBox="0 0 20 20">
+      <circle cx="10" cy="10" r="9" fill="${color}" />
+      <circle cx="10" cy="10" r="4.5" fill="#fff" />
+      <text x="10" y="12.5" font-size="6" font-weight="bold" fill="#000" text-anchor="middle" font-family="sans-serif">${num}</text>
+    </svg>`;
+  }
+}
+
+function updateScoreboard() {
+  if (!p1Group) {
+    typeP1.textContent = "OPEN"; typeP2.textContent = "OPEN";
+  } else {
+    typeP1.textContent = p1Group === 'solid' ? "SOLIDS" : "STRIPES";
+    typeP2.textContent = p2Group === 'solid' ? "SOLIDS" : "STRIPES";
+  }
+
+  let p1Html = "", p2Html = "";
+  
+  if (!p1Group) {
+    p1Html = '<div style="font-size:10px;color:#555;margin-top:5px;">Awaiting pot...</div>';
+    p2Html = '<div style="font-size:10px;color:#555;margin-top:5px;">Awaiting pot...</div>';
+  } else {
+    const p1Nums = p1Group === 'solid' ? [1,2,3,4,5,6,7] : [9,10,11,12,13,14,15];
+    p1Nums.forEach(n => { p1Html += getBallSVG(n, !p1Scored.includes(n)); });
+    p1Html += getBallSVG(8, !p1Scored.includes(8));
+
+    const p2Nums = p2Group === 'solid' ? [1,2,3,4,5,6,7] : [9,10,11,12,13,14,15];
+    p2Nums.forEach(n => { p2Html += getBallSVG(n, !p2Scored.includes(n)); });
+    p2Html += getBallSVG(8, !p2Scored.includes(8));
+  }
+  
+  trayP1.innerHTML = p1Html; trayP2.innerHTML = p2Html;
+
+  cardP1.classList.toggle("active-p1", currentPlayer === 0 && !gameOver);
+  cardP2.classList.toggle("active-p2", currentPlayer === 1 && !gameOver);
+  
+  if (gameOver) {
+    turnDisplay.textContent = "OVER"; turnDisplay.className = "turn-indicator";
+  } else if (!p1Group) {
+    turnDisplay.textContent = "OPEN"; turnDisplay.className = "turn-indicator";
+  } else {
+    turnDisplay.textContent = currentPlayer === 0 ? "P1 TURN" : "P2 TURN";
+    turnDisplay.className = "turn-indicator " + (currentPlayer === 0 ? "turn-p1" : "turn-p2");
+  }
+  
+  bihEl.classList.toggle("on", isBallInHand);
+}
+
+function triggerCelebration(playerId, ballsLeft) {
+  celebTitle.textContent = `PLAYER ${playerId + 1} SCORED!`;
+  celebTitle.style.color = playerId === 0 ? "#4ade80" : "#f87171";
+  celebTitle.style.textShadow = playerId === 0 ? "0 0 10px #4ade80" : "0 0 10px #f87171";
+  
+  celebSub.textContent = ballsLeft > 0 ? `${ballsLeft} balls remaining!` : `Ready for the 8-BALL!`;
+  
+  celebEl.classList.add("show");
+  setTimeout(() => { celebEl.classList.remove("show"); }, 1800);
+}
+
+/* =========================================================
+   TIMER & GAME OVER LOGIC
+   ========================================================= */
+function startTimer() {
+  timeLeft = 15 * 60;
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      handleTimeout();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+  const s = (timeLeft % 60).toString().padStart(2, '0');
+  timerDisplay.textContent = `${m}:${s}`;
+  if (timeLeft <= 60) timerDisplay.classList.add("warning");
+  else timerDisplay.classList.remove("warning");
+}
+
+async function handleTimeout() {
+  gameOver = true;
+  clearInterval(timerInterval);
+  AudioEngine.playFoul();
+  showMsg(`TIME'S UP!\nSettling match...`, 6000);
+  updateScoreboard();
+  
+  // Call Vercel to refund (or declare draw)
+  await settleMatch(null); 
+}
+
+async function handleWin(winnerId) {
+  gameOver = true;
+  clearInterval(timerInterval);
+  AudioEngine.playWin();
+  
+  const winnerName = winnerId === 0 ? "PLAYER 1" : "PLAYER 2";
+  showMsg(`${winnerName} WINS!\nSettling payout...`, 6000);
+  updateScoreboard();
+
+  // Find the winner's UID
+  const winnerUid = winnerId === 0 ? matchData.challengerUid : matchData.opponentUid;
+  
+  // Call Vercel to pay the winner securely
+  await settleMatch(winnerUid);
+}
+
+async function settleMatch(winnerUid) {
+  try {
+    const idToken = await currentUser.getIdToken();
+    const response = await fetch('https://jakipot.vercel.app/api/settle_challenge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+      body: JSON.stringify({ matchId: matchId, winnerUid: winnerUid })
+    });
+    
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
+    
+    showMsg(winnerUid ? `PAYOUT SUCCESSFUL!` : `MATCH REFUNDED!`, 4000);
+  } catch (error) {
+    console.error("Settlement Error:", error);
+    showMsg(`ERROR SETTLING MATCH.`, 4000);
+  }
+}
+
+/* =========================================================
+   RACK & RESET
+   ========================================================= */
+function rack() {
+  balls = []; p1Scored = []; p2Scored = []; pottedThisShot = [];
+  p1Group = null; p2Group = null; gameOver = false; currentPlayer = 0;
+  isBallInHand = false; firstHitBall = null;
+  
+  const spacing = BR * 2 + 0.5; const apexY = T + 140; 
+  const order = [1, 9,2, 10,8,3, 11,4,12,5, 13,6,14,7,15];
+  let k = 0;
+  
+  for (let row = 0; row < 5; row++) {
+    for (let i = 0; i <= row; i++) {
+      balls.push({
+        x: W/2 + (i - row/2) * spacing, y: apexY + row * spacing * 0.866,
+        vx: 0, vy: 0, num: order[k++], active: true
+      });
+    }
+  }
+  
+  cue = { x: W/2, y: BT - 150, vx: 0, vy: 0, num: 0, active: true };
+  balls.push(cue);
+  
+  aimAngle = -Math.PI / 2;
+  canvasTargetAngle = -Math.PI / 2;
+  setPower(0);
+  updateAimSlider(aimAngle);
+  
+  updateScoreboard(); showMsg("");
+}
+
+function showMsg(text, ms = 2000) {
+  msgEl.textContent = text; msgEl.classList.toggle("on", !!text);
+  if (text) setTimeout(() => { if(msgEl.textContent === text) msgEl.classList.remove("on"); }, ms);
+}
+
+/* =========================================================
+   PHYSICS & RULES
+   ========================================================= */
+function potBall(b) {
+  b.active = false; b.vx = b.vy = 0;
+  if (b !== cue) { 
+    pottedThisShot.push(b.num); 
+    AudioEngine.playPocket(); 
+  }
+}
+
+function allStopped() { return balls.every(b => !b.active || (b.vx === 0 && b.vy === 0)); }
+
+function processTurnEnd() {
+  if (gameOver) return;
+
+  const scratch = !cue.active;
+  const potted8 = pottedThisShot.includes(8);
+
+  if (potted8) {
+    const pGroup = currentPlayer === 0 ? p1Group : p2Group;
+    const pScored = currentPlayer === 0 ? p1Scored : p2Scored;
+    let remainingGroupBalls = 0;
+    
+    if (pGroup === 'solid') remainingGroupBalls = [1,2,3,4,5,6,7].filter(n => !pScored.includes(n) && !pottedThisShot.includes(n)).length;
+    else remainingGroupBalls = [9,10,11,12,13,14,15].filter(n => !pScored.includes(n) && !pottedThisShot.includes(n)).length;
+
+    if (remainingGroupBalls > 0) {
+      handleWin(currentPlayer === 0 ? 1 : 0);
+      showMsg(`PLAYER ${currentPlayer === 0 ? 2 : 1} WINS!\n(8-ball early)`, 4000);
+      return;
+    } else {
+      handleWin(currentPlayer);
+      return;
+    }
+  }
+
+  let foul = false; let foulReason = "";
+
+  if (scratch) { foul = true; foulReason = "Scratch!"; }
+  else if (!firstHitBall) { foul = true; foulReason = "Missed everything!"; }
+  else {
+    if (!p1Group) {
+      if (firstHitBall.num === 8) { foul = true; foulReason = "Hit 8-ball first!"; }
+    } else {
+      const pGroup = currentPlayer === 0 ? p1Group : p2Group;
+      const isSolid = firstHitBall.num < 8; const isEight = firstHitBall.num === 8;
+      const pScored = currentPlayer === 0 ? p1Scored : p2Scored;
+      const groupCleared = pGroup === 'solid' ? [1,2,3,4,5,6,7].every(n => pScored.includes(n)) : [9,10,11,12,13,14,15].every(n => pScored.includes(n));
+
+      if (isEight && !groupCleared) { foul = true; foulReason = "Hit 8-ball early!"; }
+      else if (!isEight && (pGroup === 'solid' ? !isSolid : isSolid)) { foul = true; foulReason = "Hit opponent's ball first!"; }
+    }
+  }
+
+  if (!p1Group && pottedThisShot.length > 0) {
+    const legalPot = pottedThisShot.find(n => n !== 8);
+    if (legalPot) {
+      if (legalPot < 8) { p1Group = currentPlayer === 0 ? 'solid' : 'stripe'; p2Group = currentPlayer === 0 ? 'stripe' : 'solid'; }
+      else { p1Group = currentPlayer === 0 ? 'stripe' : 'solid'; p2Group = currentPlayer === 0 ? 'solid' : 'stripe'; }
+    }
+  }
+
+  if (currentPlayer === 0) p1Scored.push(...pottedThisShot);
+  else p2Scored.push(...pottedThisShot);
+
+  if (pottedThisShot.length > 0) {
+    const pGroup = currentPlayer === 0 ? p1Group : p2Group;
+    const pScored = currentPlayer === 0 ? p1Scored : p2Scored;
+    let rem = 0;
+    if (pGroup === 'solid') rem = [1,2,3,4,5,6,7].filter(n => !pScored.includes(n)).length;
+    else if (pGroup === 'stripe') rem = [9,10,11,12,13,14,15].filter(n => !pScored.includes(n)).length;
+    
+    triggerCelebration(currentPlayer, rem);
+  }
+
+  if (foul) {
+    AudioEngine.playFoul();
+    showMsg(`FOUL: ${foulReason}`, 2000);
+    currentPlayer = currentPlayer === 0 ? 1 : 0;
+    isBallInHand = true;
+  } else {
+    let pottedOwn = false;
+    if (p1Group) {
+      const pGroup = currentPlayer === 0 ? p1Group : p2Group;
+      pottedOwn = pottedThisShot.some(n => { if (n === 8) return false; return pGroup === 'solid' ? n < 8 : n >= 9; });
+    } else pottedOwn = pottedThisShot.length > 0;
+
+    if (!pottedOwn) currentPlayer = currentPlayer === 0 ? 1 : 0;
+  }
+
+  pottedThisShot = []; firstHitBall = null;
+
+  if (scratch) {
+    cue.active = true; cue.x = W/2; cue.y = BT - 150; cue.vx = cue.vy = 0;
+    isBallInHand = true; 
+  }
+
+  updateScoreboard();
+}
+
+function substep(dt) {
+  for (const b of balls) {
+    if (!b.active) continue;
+    const sp = Math.hypot(b.vx, b.vy);
+    if (sp > 0) { const ns = Math.max(0, sp - FRICTION * dt); b.vx = b.vx / sp * ns; b.vy = b.vy / sp * ns; }
+    b.x += b.vx * dt; b.y += b.vy * dt;
+  }
+
+  const rr = BR * 2, rr2 = rr * rr;
+  for (let i = 0; i < balls.length; i++) {
+    const a = balls[i]; if (!a.active) continue;
+    for (let j = i + 1; j < balls.length; j++) {
+      const b = balls[j]; if (!b.active) continue;
+      const dx = b.x - a.x, dy = b.y - a.y; const d2 = dx * dx + dy * dy;
+      if (d2 >= rr2 || d2 === 0) continue;
+
+      const d = Math.sqrt(d2); const nx = dx / d, ny = dy / d;
+      const push = (rr - d) * 0.5;
+      a.x -= nx * push; a.y -= ny * push; b.x += nx * push; b.y += ny * push;
+
+      const rvn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+      if (rvn > 0) continue;
+      
+      if (a === cue && !firstHitBall) firstHitBall = b;
+      if (b === cue && !firstHitBall) firstHitBall = a;
+
+      const imp = -(1 + REST_BALL) * rvn * 0.5;
+      a.vx -= imp * nx; a.vy -= imp * ny; b.vx += imp * nx; b.vy += imp * ny;
+      
+      if (Math.abs(rvn) > 50) AudioEngine.playHit(Math.min(0.2, Math.abs(rvn) / 3000));
+    }
+  }
+
+  for (const b of balls) {
+    if (!b.active) continue;
+    let gone = false;
+    for (const p of POCKETS) {
+      const dx = b.x - p.x, dy = b.y - p.y;
+      if (dx * dx + dy * dy < p.r * p.r) { potBall(b); gone = true; break; }
+    }
+    if (gone) continue;
+
+    if (b.y < T && gapTB(b.x)) { potBall(b); continue; }
+    if (b.y > BT && gapTB(b.x)) { potBall(b); continue; }
+    if (b.x < L && gapLR(b.y)) { potBall(b); continue; }
+    if (b.x > RT && gapLR(b.y)) { potBall(b); continue; }
+
+    if (b.x < L + BR && !gapLR(b.y)) { b.x = L + BR; if (b.vx < 0) b.vx = -b.vx * REST_WALL; }
+    else if (b.x > RT - BR && !gapLR(b.y)) { b.x = RT - BR; if (b.vx > 0) b.vx = -b.vx * REST_WALL; }
+    
+    if (b.y < T + BR && !gapTB(b.x)) { b.y = T + BR; if (b.vy < 0) b.vy = -b.vy * REST_WALL; }
+    else if (b.y > BT - BR && !gapTB(b.x)) { b.y = BT - BR; if (b.vy > 0) b.vy = -b.vy * REST_WALL; }
+  }
+}
+
+/* =========================================================
+   AIMING & SHOOTING
+   ========================================================= */
+function canShoot() { return cue && cue.active && allStopped() && !gameOver && !isBallInHand && gameStarted; }
+
+function raycast(ox, oy, dx, dy) {
+  let t = 4000; const rr2 = (BR * 2) * (BR * 2);
+  for (const b of balls) {
+    if (!b.active || b === cue) continue;
+    const bx = b.x - ox, by = b.y - oy; const proj = bx * dx + by * dy;
+    if (proj <= 0) continue;
+    const perp2 = bx * bx + by * by - proj * proj;
+    if (perp2 > rr2) continue;
+    const th = proj - Math.sqrt(rr2 - perp2);
+    if (th >= 0 && th < t) t = th;
+  }
+  const e = 1e-6;
+  if (dx > e) t = Math.min(t, (RT - BR - ox) / dx);
+  if (dx < -e) t = Math.min(t, (L + BR - ox) / dx);
+  if (dy > e) t = Math.min(t, (BT - BR - oy) / dy);
+  if (dy < -e) t = Math.min(t, (T + BR - oy) / dy);
+  return Math.max(0, t);
+}
+
+function shoot() {
+  if (!canShoot() || power <= 0.05) return;
+  const sp = 100 + power * MAX_SPEED;
+  cue.vx = Math.cos(aimAngle) * sp; cue.vy = Math.sin(aimAngle) * sp;
+  firstHitBall = null; setPower(0);
+}
+
+/* =========================================================
+   RENDERING
+   ========================================================= */
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  if (ctx.roundRect) { ctx.roundRect(x, y, w, h, r); return; }
+  ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+
+function drawTable() {
+  const wood = ctx.createLinearGradient(0, 0, W, H);
+  wood.addColorStop(0, "#4a2511"); wood.addColorStop(0.5, "#2d1407"); wood.addColorStop(1, "#1a0b03");
+  roundRect(0, 0, W, H, 16); ctx.fillStyle = wood; ctx.fill();
+
+  const felt = ctx.createRadialGradient(W/2, H/2, 50, W/2, H/2, H*0.7);
+  felt.addColorStop(0, "#1e9e5a"); felt.addColorStop(1, "#0d4f2b");
+  roundRect(L - 10, T - 10, (RT - L) + 20, (BT - T) + 20, 10); ctx.fillStyle = felt; ctx.fill();
+
+  ctx.save(); ctx.strokeStyle = "rgba(0,0,0,0.4)"; ctx.lineWidth = 6;
+  roundRect(L - 3, T - 3, (RT - L) + 6, (BT - T) + 6, 5); ctx.stroke(); ctx.restore();
+
+  for (const p of POCKETS) {
+    const g = ctx.createRadialGradient(p.x, p.y, 2, p.x, p.y, p.r + 4);
+    g.addColorStop(0, "#000"); g.addColorStop(0.8, "#050505"); g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r + 4, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
+  }
+}
+
+function drawBall(b) {
+  const r = BR, num = b.num, isCue = num === 0, isStripe = num >= 9;
+  const color = isCue ? "#ffffff" : (isStripe ? STRIPE_COLORS[num] : SOLID_COLORS[num]);
+
+  ctx.beginPath(); ctx.ellipse(b.x + 2, b.y + 3, r * 0.9, r * 0.7, 0, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(0,0,0,0.4)"; ctx.fill();
+
+  ctx.save(); ctx.beginPath(); ctx.arc(b.x, b.y, r, 0, Math.PI * 2); ctx.clip();
+  ctx.fillStyle = (isStripe || isCue) ? "#f4f4f0" : color;
+  ctx.fillRect(b.x - r, b.y - r, r * 2, r * 2);
+
+  if (isStripe) { ctx.fillStyle = color; ctx.fillRect(b.x - r, b.y - r * 0.55, r * 2, r * 1.1); }
+
+  const sh = ctx.createRadialGradient(b.x - r*0.4, b.y - r*0.4, r*0.1, b.x, b.y, r*1.2);
+  sh.addColorStop(0, "rgba(255,255,255,0.7)"); sh.addColorStop(0.4, "rgba(255,255,255,0)");
+  sh.addColorStop(1, "rgba(0,0,0,0.6)");
+  ctx.fillStyle = sh; ctx.fillRect(b.x - r, b.y - r, r * 2, r * 2); ctx.restore();
+
+  if (!isCue) {
+    ctx.beginPath(); ctx.arc(b.x, b.y, r * 0.5, 0, Math.PI * 2); ctx.fillStyle = "#fff"; ctx.fill();
+    ctx.fillStyle = "#000"; ctx.font = `bold ${Math.round(r * 0.7)}px sans-serif`;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(String(num), b.x, b.y + 0.5);
+  }
+  
+  if (isCue && isBallInHand) {
+    ctx.beginPath(); ctx.arc(b.x, b.y, r + 4, 0, Math.PI * 2);
+    ctx.strokeStyle = isDraggingCue ? "rgba(250, 204, 21, 0.9)" : "rgba(255, 255, 255, 0.5)";
+    ctx.lineWidth = isDraggingCue ? 3 : 1.5;
+    ctx.setLineDash(isDraggingCue ? [] : [4, 4]);
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+}
+
+function drawAim() {
+  if (!canShoot()) return;
+
+  const ux = Math.cos(aimAngle), uy = Math.sin(aimAngle);
+  const t = raycast(cue.x, cue.y, ux, uy);
+  const gx = cue.x + ux * t, gy = cue.y + uy * t;
+
+  const back = 20 + power * 80;
+  const x0 = cue.x - ux * back, y0 = cue.y - uy * back;
+  const x1 = cue.x - ux * (back + 200), y1 = cue.y - uy * (back + 200);
+
+  const grd = ctx.createLinearGradient(x0, y0, x1, y1);
+  grd.addColorStop(0, "#f5e6c8"); grd.addColorStop(0.1, "#c9a96e");
+  grd.addColorStop(0.15, "#3b2313"); grd.addColorStop(1, "#1a0f08");
+
+  ctx.save(); ctx.lineCap = "round";
+  ctx.strokeStyle = "rgba(0,0,0,0.5)"; ctx.lineWidth = 8;
+  ctx.beginPath(); ctx.moveTo(x0 + 2, y0 + 4); ctx.lineTo(x1 + 2, y1 + 4); ctx.stroke();
+  ctx.strokeStyle = grd; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+  ctx.restore();
+
+  ctx.save(); ctx.setLineDash([8, 8]); ctx.lineDashOffset = -(performance.now() / 40) % 16;
+  ctx.lineWidth = 2; ctx.strokeStyle = "rgba(255,255,255,0.7)";
+  ctx.beginPath(); ctx.moveTo(cue.x + ux * BR, cue.y + uy * BR); ctx.lineTo(gx, gy); ctx.stroke(); ctx.restore();
+
+  ctx.beginPath(); ctx.arc(gx, gy, BR, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.6)"; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.fill();
+  
+  let hitBall = null; let minD = Infinity;
+  for (const b of balls) {
+    if (!b.active || b === cue) continue;
+    const dist = Math.hypot(b.x - gx, b.y - gy);
+    if (dist < BR * 2.5 && dist < minD) { minD = dist; hitBall = b; }
+  }
+  
+  if (hitBall) {
+    const dx = hitBall.x - gx, dy = hitBall.y - gy; const d = Math.hypot(dx, dy);
+    if (d > 0) {
+      const nx = dx / d, ny = dy / d;
+      ctx.beginPath(); ctx.moveTo(hitBall.x, hitBall.y); ctx.lineTo(hitBall.x + nx * 80, hitBall.y + ny * 80);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.4)"; ctx.lineWidth = 2; ctx.stroke();
+    }
+  }
+}
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  drawTable();
+  for (const b of balls) if (b.active) drawBall(b);
+  drawAim();
+}
+
+/* =========================================================
+   SLIDER LOGIC
+   ========================================================= */
+function setPower(val) {
+  power = Math.max(0, Math.min(1, val));
+  powerFill.style.height = (power * 100) + "%";
+  powerThumb.style.bottom = (power * 100) + "%";
+  shootBtn.disabled = !canShoot() || power <= 0.05;
+}
+
+function updateAimSlider(angle) {
+  let norm = (angle + Math.PI) / (Math.PI * 2);
+  norm = norm % 1;
+  if (norm < 0) norm += 1;
+  
+  aimFill.style.height = (norm * 100) + "%";
+  aimThumb.style.bottom = (norm * 100) + "%";
+}
+
+let isDraggingPower = false;
+function handlePowerDrag(e) {
+  if (!isDraggingPower) return; e.preventDefault();
+  const rect = powerTrack.getBoundingClientRect();
+  let y = e.clientY - rect.top; y = rect.height - y;
+  setPower(y / rect.height);
+}
+
+powerThumb.addEventListener("pointerdown", e => { isDraggingPower = true; powerThumb.setPointerCapture(e.pointerId); e.stopPropagation(); });
+powerThumb.addEventListener("pointermove", handlePowerDrag);
+powerThumb.addEventListener("pointerup", e => { isDraggingPower = false; powerThumb.releasePointerCapture(e.pointerId); });
+powerTrack.addEventListener("pointerdown", e => {
+  if (e.target === powerThumb) return;
+  isDraggingPower = true; const rect = powerTrack.getBoundingClientRect();
+  let y = e.clientY - rect.top; y = rect.height - y; setPower(y / rect.height);
+  powerTrack.setPointerCapture(e.pointerId);
+});
+powerTrack.addEventListener("pointermove", handlePowerDrag);
+powerTrack.addEventListener("pointerup", e => { isDraggingPower = false; powerTrack.releasePointerCapture(e.pointerId); });
+
+let isDraggingAim = false;
+function handleAimDrag(e) {
+  if (!isDraggingAim) return; e.preventDefault();
+  const rect = aimTrack.getBoundingClientRect();
+  let y = e.clientY - rect.top; y = rect.height - y;
+  
+  let norm = Math.max(0, Math.min(1, y / rect.height));
+  let newAngle = (norm * Math.PI * 2) - Math.PI;
+  
+  aimAngle = newAngle;
+  canvasTargetAngle = newAngle; 
+  updateAimSlider(aimAngle);
+}
+
+aimThumb.addEventListener("pointerdown", e => { isDraggingAim = true; aimThumb.setPointerCapture(e.pointerId); e.stopPropagation(); });
+aimThumb.addEventListener("pointermove", handleAimDrag);
+aimThumb.addEventListener("pointerup", e => { isDraggingAim = false; aimThumb.releasePointerCapture(e.pointerId); });
+aimTrack.addEventListener("pointerdown", e => {
+  if (e.target === aimThumb) return;
+  isDraggingAim = true; const rect = aimTrack.getBoundingClientRect();
+  let y = e.clientY - rect.top; y = rect.height - y;
+  let norm = Math.max(0, Math.min(1, y / rect.height));
+  let newAngle = (norm * Math.PI * 2) - Math.PI;
+  aimAngle = newAngle;
+  canvasTargetAngle = newAngle;
+  updateAimSlider(aimAngle);
+  aimTrack.setPointerCapture(e.pointerId);
+});
+aimTrack.addEventListener("pointermove", handleAimDrag);
+aimTrack.addEventListener("pointerup", e => { isDraggingAim = false; aimTrack.releasePointerCapture(e.pointerId); });
+
+/* =========================================================
+   AIM BUTTONS
+   ========================================================= */
+const TAP_STEP = 0.006;
+const HOLD_SPEED = 1.5; 
+
+function startHold(dir) {
+  if (!canShoot()) return;
+  holdDir = dir;
+  holdStartTime = performance.now();
+  applyAimStep(holdDir * TAP_STEP);
+}
+
+function stopHold() { holdDir = 0; }
+
+function applyAimStep(step) {
+  aimAngle += step;
+  while (aimAngle > Math.PI) aimAngle -= Math.PI * 2;
+  while (aimAngle < -Math.PI) aimAngle += Math.PI * 2;
+  canvasTargetAngle = aimAngle; 
+  updateAimSlider(aimAngle);
+}
+
+const bindAimBtn = (btn, dir) => {
+  btn.addEventListener("pointerdown", e => { 
+    e.preventDefault(); 
+    btn.setPointerCapture(e.pointerId); 
+    startHold(dir); 
+  });
+  btn.addEventListener("pointerup", e => { stopHold(); btn.releasePointerCapture(e.pointerId); });
+  btn.addEventListener("pointercancel", e => { stopHold(); btn.releasePointerCapture(e.pointerId); });
+  btn.addEventListener("pointerleave", stopHold);
+};
+
+bindAimBtn(aimMinus, -1);
+bindAimBtn(aimPlus, 1);
+
+window.addEventListener("pointerup", stopHold);
+window.addEventListener("pointercancel", stopHold);
+shootBtn.addEventListener("click", () => { shoot(); });
+
+/* =========================================================
+   CANVAS INPUT
+   ========================================================= */
+function toLocal(e) {
+  const r = canvas.getBoundingClientRect();
+  return { x: (e.clientX - r.left) * (W / r.width), y: (e.clientY - r.top) * (H / r.height) };
+}
+
+canvas.addEventListener("pointerdown", e => {
+  if (gameOver || !gameStarted) return;
+  const p = toLocal(e);
+  
+  if (isBallInHand) {
+    const now = Date.now();
+    const distToCue = Math.hypot(p.x - cue.x, p.y - cue.y);
+    if (now - lastTapTime < 300 && distToCue < 40) {
+      isBallInHand = false; isDraggingCue = false;
+      updateScoreboard(); AudioEngine.playLock(); lastTapTime = 0; return;
+    }
+    lastTapTime = now;
+    isDraggingCue = true;
+    if (distToCue >= 50) moveCueBall(p.x, p.y);
+    return;
+  }
+  
+  if (canShoot()) {
+    let closestBall = null;
+    let minDist = 35; 
+    for (const b of balls) {
+      if (!b.active || b === cue) continue;
+      let d = Math.hypot(b.x - p.x, b.y - p.y);
+      if (d < minDist) {
+        minDist = d;
+        closestBall = b;
+      }
+    }
+    
+    if (closestBall) {
+      let dx = closestBall.x - cue.x;
+      let dy = closestBall.y - cue.y;
+      canvasTargetAngle = Math.atan2(dy, dx);
+      aimAngle = canvasTargetAngle;
+      updateAimSlider(aimAngle);
+    } else {
+      isAimingCanvas = true;
+      const dx = p.x - cue.x;
+      const dy = p.y - cue.y;
+      if (Math.hypot(dx, dy) > 10) {
+        canvasTargetAngle = Math.atan2(dy, dx);
+      }
+    }
+  }
+});
+
+canvas.addEventListener("pointermove", e => {
+  if (isBallInHand && isDraggingCue) {
+    const p = toLocal(e);
+    moveCueBall(p.x, p.y);
+    return;
+  }
+  
+  if (isAimingCanvas && canShoot()) {
+    const p = toLocal(e);
+    const dx = p.x - cue.x;
+    const dy = p.y - cue.y;
+    if (Math.hypot(dx, dy) > 10) {
+      canvasTargetAngle = Math.atan2(dy, dx);
+    }
+  }
+});
+
+canvas.addEventListener("pointerup", () => {
+  isDraggingCue = false;
+  isAimingCanvas = false;
+});
+
+function moveCueBall(x, y) {
+  let nx = Math.max(L + BR, Math.min(RT - BR, x));
+  let ny = Math.max(T + BR, Math.min(BT - BR, y));
+  let overlap = false;
+  for (const b of balls) {
+    if (!b.active || b === cue) continue;
+    if (Math.hypot(b.x - nx, b.y - ny) < BR * 2.2) { overlap = true; break; }
+  }
+  if (!overlap) { cue.x = nx; cue.y = ny; }
+}
+
+canvas.addEventListener("contextmenu", e => e.preventDefault());
+
+/* =========================================================
+   MAIN LOOP
+   ========================================================= */
+let lastTime = performance.now();
+let wasMoving = false;
+
+function loop(now) {
+  if (!gameStarted) return;
+  
+  const dt = Math.min(0.032, (now - lastTime) / 1000) || 0;
+  lastTime = now;
+
+  const moving = balls.some(b => b.active && (b.vx !== 0 || b.vy !== 0));
+  if (moving) {
+    const STEPS = 8;
+    for (let i = 0; i < STEPS; i++) substep(dt / STEPS);
+  } else if (wasMoving && !moving) {
+    processTurnEnd();
+    setPower(0);
+  }
+  wasMoving = moving;
+
+  if (holdDir !== 0) {
+    const elapsed = now - holdStartTime;
+    if (elapsed > 150) {
+      applyAimStep(holdDir * HOLD_SPEED * dt);
+    }
+  }
+
+  if (isAimingCanvas && canShoot()) {
+    let diff = canvasTargetAngle - aimAngle;
+    while (diff > Math.PI) diff -= Math.PI * 2;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    
+    if (Math.abs(diff) > 0.001) {
+      aimAngle += diff * 0.15; 
+      updateAimSlider(aimAngle);
+    }
+  }
+
+  shootBtn.disabled = !canShoot() || power <= 0.05;
+
+  render();
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>

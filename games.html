@@ -38,8 +38,8 @@
            ========================================== */
         .loader-overlay {
             position: fixed; inset: 0;
-            background: rgba(4, 11, 22, 0.75); /* Semi-transparent */
-            backdrop-filter: blur(8px); /* Blurs the games behind */
+            background: rgba(4, 11, 22, 0.75); 
+            backdrop-filter: blur(8px); 
             z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             transition: opacity 0.6s ease, visibility 0.6s ease;
@@ -132,7 +132,6 @@
             display: flex; flex-direction: column;
             width: 100%;
             max-width: 280px;
-            /* Initial animation for when loader fades */
             animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
@@ -171,6 +170,14 @@
             font-size: 11px; font-weight: 900; text-transform: uppercase;
             padding: 6px 12px; border-radius: 8px;
             box-shadow: 0 4px 10px rgba(251, 191, 36, 0.5);
+        }
+        
+        .badge-new {
+            position: absolute; top: 15px; right: 15px;
+            background: #10b981; color: #fff;
+            font-size: 11px; font-weight: 900; text-transform: uppercase;
+            padding: 6px 12px; border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.5);
         }
 
         /* MODAL OVERLAY */
@@ -246,7 +253,7 @@
 </head>
 <body>
 
-    <!-- ✅ RED LOADER OVERLAY (Sits on top of the games) -->
+    <!-- RED LOADER OVERLAY (Sits on top of the games) -->
     <div class="loader-overlay" id="loader">
         <div class="spinner-red"></div>
         <div class="loading-text">Loading Games...</div>
@@ -301,15 +308,50 @@
         const auth = getAuth(app);
 
         // ==========================================
-        // 1. GAME DATA
+        // 1. GAME DATA (All Single-Player Games)
         // ==========================================
         const gamesData = [
             {
                 id: 'fruit-777',
                 title: 'Fruit 777',
                 image: 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?q=80&w=600&auto=format&fit=crop',
-                link: 'fruit.html',
+                link: 'fruit_777.html',
                 badge: 'hot'
+            },
+            {
+                id: 'super-spin',
+                title: 'Super Spin',
+                image: 'https://images.unsplash.com/photo-1606167668584-78701c57f13d?q=80&w=600&auto=format&fit=crop',
+                link: 'super_spin.html',
+                badge: 'new'
+            },
+            {
+                id: 'lucky-number',
+                title: 'Lucky Number Hunt',
+                image: 'https://images.unsplash.com/photo-1605870445919-838d190e8e1b?q=80&w=600&auto=format&fit=crop',
+                link: 'lucky_number.html',
+                badge: ''
+            },
+            {
+                id: 'lucky-target',
+                title: 'Lucky Target',
+                image: 'https://images.unsplash.com/photo-1511882150382-421056c89033?q=80&w=600&auto=format&fit=crop',
+                link: 'lucky_target.html',
+                badge: ''
+            },
+            {
+                id: 'lucky-treasure',
+                title: 'Lucky Treasure',
+                image: 'https://images.unsplash.com/photo-1627637454030-5b6c5b42590c?q=80&w=600&auto=format&fit=crop',
+                link: 'lucky_treasure.html',
+                badge: 'hot'
+            },
+            {
+                id: 'animal-spin',
+                title: 'Animal Spin',
+                image: 'https://images.unsplash.com/photo-1546182990-dffeafbe841d?q=80&w=600&auto=format&fit=crop',
+                link: 'animal_spin.html',
+                badge: ''
             }
         ];
 
@@ -327,6 +369,7 @@
             gamesData.forEach(game => {
                 let badgeHtml = '';
                 if (game.badge === 'hot') badgeHtml = `<div class="badge-hot">🔥 Hot</div>`;
+                if (game.badge === 'new') badgeHtml = `<div class="badge-new">✨ New</div>`;
 
                 const card = document.createElement('div');
                 card.className = 'game-card';
