@@ -151,6 +151,7 @@
             aspect-ratio: 1 / 1;
             object-fit: cover;
             border-bottom: 2px solid var(--border-light);
+            background-color: #1a2235; /* Fallback background color */
         }
 
         .game-info {
@@ -215,6 +216,7 @@
             aspect-ratio: 1 / 1;
             object-fit: cover;
             border-bottom: 2px solid var(--border-light);
+            background-color: #1a2235;
         }
 
         .modal-body {
@@ -309,49 +311,50 @@
         const auth = getAuth(app);
 
         // ==========================================
-        // 1. GAME DATA (Updated with your exact filenames)
+        // 1. GAME DATA (Updated with working image links)
         // ==========================================
         const gamesData = [
             {
                 id: 'fruit-777',
                 title: 'Fruit 777',
                 image: 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?q=80&w=600&auto=format&fit=crop',
-                link: 'fruit.html', // ✅ Updated
+                link: 'fruit.html', 
                 badge: 'hot'
             },
             {
                 id: 'super-spin',
                 title: 'Super Spin',
                 image: 'https://images.unsplash.com/photo-1606167668584-78701c57f13d?q=80&w=600&auto=format&fit=crop',
-                link: 'super_spin.html', // ✅ (Leave this as it was working)
+                link: 'super_spin.html', 
                 badge: 'new'
             },
             {
                 id: 'lucky-number',
                 title: 'Lucky Number Hunt',
                 image: 'https://images.unsplash.com/photo-1605870445919-838d190e8e1b?q=80&w=600&auto=format&fit=crop',
-                link: 'lucky-number-hunt.html', // ✅ Updated
+                link: 'lucky-number-hunt.html', 
                 badge: ''
             },
             {
                 id: 'lucky-target',
                 title: 'Lucky Target',
                 image: 'https://images.unsplash.com/photo-1511882150382-421056c89033?q=80&w=600&auto=format&fit=crop',
-                link: 'lucky-target.html', // ✅ Updated
+                link: 'lucky-target.html', 
                 badge: ''
             },
             {
                 id: 'lucky-treasure',
                 title: 'Lucky Treasure',
-                image: 'https://images.unsplash.com/photo-1627637454030-5b6c5b42590c?q=80&w=600&auto=format&fit=crop',
-                link: 'lucky-treasure.html', // ✅ Updated
+                // ✅ FIXED: Replaced the broken Unsplash URL with a working Treasure Chest image
+                image: 'https://images.unsplash.com/photo-1582284540020-8acbe03f4924?q=80&w=600&auto=format&fit=crop',
+                link: 'lucky-treasure.html', 
                 badge: 'hot'
             },
             {
                 id: 'animal-spin',
                 title: 'Animal Spin',
                 image: 'https://images.unsplash.com/photo-1546182990-dffeafbe841d?q=80&w=600&auto=format&fit=crop',
-                link: 'animal-spin.html', // ✅ Updated
+                link: 'animal-spin.html', 
                 badge: ''
             }
         ];

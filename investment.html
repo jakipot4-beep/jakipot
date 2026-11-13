@@ -17,6 +17,7 @@
             --emerald-glow: rgba(16, 185, 129, 0.4);
             --cyan: #38bdf8;
             --cyan-glow: rgba(56, 189, 248, 0.4);
+            --red: #ef4444;
             --white: #ffffff;
             --text-muted: #94a3b8;
             --border-light: rgba(255, 255, 255, 0.08);
@@ -59,12 +60,11 @@
             text-shadow: 0 0 20px var(--gold-glow), 0 0 40px var(--gold-glow);
             animation: pulse-gold 1.5s infinite alternate;
             margin-bottom: 20px;
-            font-family: 'Inter', sans-serif;
             letter-spacing: -3px;
         }
 
         .loader-text {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -106,78 +106,167 @@
 
         /* MAIN CONTENT */
         .main-content {
-            padding: 25px 20px 50px 20px;
+            padding: 20px 15px 50px 15px;
             max-width: 600px;
             margin: 0 auto;
             width: 100%;
             flex: 1;
         }
 
-        .section-desc {
-            font-size: 14px; color: var(--text-muted); font-weight: 500;
-            margin-bottom: 25px; line-height: 1.5;
+        /* ==========================================
+           TOP FEATURES GRID (Family, Market, Trends, Buy/Sell)
+           ========================================== */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .feature-box {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            aspect-ratio: 16 / 9;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .feature-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .feature-box:hover img {
+            transform: scale(1.1);
+        }
+
+        .feature-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 20%, rgba(6, 11, 25, 0.95) 100%);
+            display: flex;
+            align-items: flex-end;
+            padding: 12px;
+        }
+
+        .feature-text {
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .feature-text span { font-size: 16px; }
+
+        .section-heading {
+            font-size: 18px; 
+            font-weight: 900; 
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-heading::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--border-light), transparent);
+            margin-left: 10px;
         }
 
         /* ==========================================
-           INVESTMENT CARDS (WIDE LANDSCAPE DESIGN)
+           INVESTMENT CARDS (Image Banners)
            ========================================== */
         .investment-list {
-            display: flex; flex-direction: column; gap: 16px;
+            display: flex; flex-direction: column; gap: 18px;
         }
 
         .inv-card {
-            display: flex; align-items: center; gap: 18px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-light);
+            position: relative;
             border-radius: 20px;
-            padding: 20px;
+            overflow: hidden;
             text-decoration: none; color: var(--white);
-            position: relative; overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            border: 1px solid var(--border-light);
+            transition: transform 0.3s, box-shadow 0.3s;
+            isolation: isolate;
         }
 
-        .inv-card:hover { transform: translateX(5px); }
+        .inv-card-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            transition: transform 0.5s ease;
+        }
+
+        .inv-card:hover .inv-card-bg {
+            transform: scale(1.05);
+        }
+
+        /* Gradient overlay to make text readable */
+        .inv-card-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(6, 11, 25, 0.95) 0%, rgba(6, 11, 25, 0.7) 50%, transparent 100%);
+            z-index: -1;
+        }
+
+        .inv-content {
+            padding: 24px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .inv-icon {
+            width: 50px; height: 50px;
+            border-radius: 14px;
+            display: grid; place-items: center;
+            font-size: 24px;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+        }
+
+        .inv-info { flex: 1; }
+        .inv-info h3 { font-size: 18px; font-weight: 900; margin-bottom: 4px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+        .inv-info p { font-size: 12px; color: #cbd5e1; font-weight: 500; line-height: 1.4; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 
         /* Card Themes */
-        .inv-card.live-trending { border-left: 4px solid var(--cyan); }
-        .inv-card.live-trending:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(56, 189, 248, 0.15); }
-        
-        .inv-card.locked-plans { border-left: 4px solid var(--gold); }
-        .inv-card.locked-plans:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(251, 191, 36, 0.15); }
-        
-        .inv-card.trending-machine { border-left: 4px solid var(--emerald); }
-        .inv-card.trending-machine:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(16, 185, 129, 0.15); }
+        .live-trending:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(56, 189, 248, 0.3); border-color: var(--cyan); transform: translateY(-3px); }
+        .live-trending .inv-icon { color: var(--cyan); }
 
-        /* Card Icon */
-        .inv-icon {
-            width: 55px; height: 55px; flex-shrink: 0;
-            border-radius: 16px; display: grid; place-items: center;
-            font-size: 26px;
-        }
-        .live-trending .inv-icon { background: rgba(56, 189, 248, 0.1); color: var(--cyan); }
-        .locked-plans .inv-icon { background: rgba(251, 191, 36, 0.1); color: var(--gold); }
-        .trending-machine .inv-icon { background: rgba(16, 185, 129, 0.1); color: var(--emerald); }
+        .locked-plans:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(251, 191, 36, 0.3); border-color: var(--gold); transform: translateY(-3px); }
+        .locked-plans .inv-icon { color: var(--gold); }
 
-        /* Card Info */
-        .inv-info { flex: 1; }
-        .inv-info h3 { font-size: 17px; font-weight: 800; margin-bottom: 4px; }
-        .inv-info p { font-size: 12px; color: var(--text-muted); font-weight: 500; line-height: 1.4; }
+        .trending-machine:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(16, 185, 129, 0.3); border-color: var(--emerald); transform: translateY(-3px); }
+        .trending-machine .inv-icon { color: var(--emerald); }
 
-        /* Card Arrow */
         .inv-arrow {
-            font-size: 20px; color: var(--text-muted);
-            transition: 0.2s; padding: 0 5px;
+            font-size: 22px; color: #fff;
+            opacity: 0.7;
+            transition: 0.2s;
         }
-        .inv-card:hover .inv-arrow { color: var(--white); transform: translateX(5px); }
-        .live-trending:hover .inv-arrow { color: var(--cyan); }
-        .locked-plans:hover .inv-arrow { color: var(--gold); }
-        .trending-machine:hover .inv-arrow { color: var(--emerald); }
+        .inv-card:hover .inv-arrow { opacity: 1; transform: translateX(5px); }
 
     </style>
 </head>
 <body>
 
-    <!-- ✅ WELCOME LOADER -->
+    <!-- WELCOME LOADER -->
     <div class="loader-overlay" id="loader">
         <div class="loader-j">J</div>
         <div class="loader-text">Welcome to investment place for jakipot</div>
@@ -185,7 +274,6 @@
 
     <!-- MAIN APP CONTENT -->
     <header class="top-header">
-        <!-- ✅ Back button to home.html -->
         <a href="home.html" class="back-btn">
             <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         </a>
@@ -193,40 +281,81 @@
     </header>
 
     <main class="main-content">
-        <div class="section-desc">
-            Grow your wealth with our premium investment opportunities. Choose a plan below to get started.
+        
+        <!-- TOP FEATURES (Family, Market, Trends, Buy/Sell) -->
+        <div class="features-grid">
+            <div class="feature-box">
+                <img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=400&auto=format&fit=crop" alt="Family">
+                <div class="feature-overlay">
+                    <div class="feature-text"><span></span> Family</div>
+                </div>
+            </div>
+            <div class="feature-box">
+                <img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=400&auto=format&fit=crop" alt="Marketplace">
+                <div class="feature-overlay">
+                    <div class="feature-text"><span></span> Marketplace</div>
+                </div>
+            </div>
+            <div class="feature-box">
+                <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=400&auto=format&fit=crop" alt="Live Trend">
+                <div class="feature-overlay">
+                    <div class="feature-text"><span></span> Live Trend</div>
+                </div>
+            </div>
+            <div class="feature-box">
+                <img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=400&auto=format&fit=crop" alt="Buy and Sell">
+                <div class="feature-overlay">
+                    <div class="feature-text"><span></span> Buy & Sell</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-heading">
+            <span></span> Premium Plans
         </div>
 
         <div class="investment-list">
             
             <!-- 1. LIVE TRENDING -->
             <a href="live-trending.html" class="inv-card live-trending">
-                <div class="inv-icon">📈</div>
-                <div class="inv-info">
-                    <h3>Live Trending</h3>
-                    <p>Play the multiplier crash game. Cash out before the plane flies away!</p>
+                <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=800&auto=format&fit=crop" class="inv-card-bg" alt="Live Trending">
+                <div class="inv-card-overlay"></div>
+                <div class="inv-content">
+                    <div class="inv-icon"></div>
+                    <div class="inv-info">
+                        <h3>Live Trending</h3>
+                        <p>Play the multiplier crash game. Cash out before the plane flies away!</p>
+                    </div>
+                    <div class="inv-arrow"></div>
                 </div>
-                <div class="inv-arrow">➔</div>
             </a>
 
             <!-- 2. LOCKED PLANS -->
             <a href="locked-plans.html" class="inv-card locked-plans">
-                <div class="inv-icon">🔒</div>
-                <div class="inv-info">
-                    <h3>Locked Plans</h3>
-                    <p>Secure your funds for a set period and earn guaranteed daily returns.</p>
+                <img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=800&auto=format&fit=crop" class="inv-card-bg" alt="Locked Plans">
+                <div class="inv-card-overlay"></div>
+                <div class="inv-content">
+                    <div class="inv-icon"></div>
+                    <div class="inv-info">
+                        <h3>Locked Plans</h3>
+                        <p>Secure your funds for a set period and earn guaranteed daily returns.</p>
+                    </div>
+                    <div class="inv-arrow"></div>
                 </div>
-                <div class="inv-arrow">➔</div>
             </a>
 
             <!-- 3. TRENDING MACHINE -->
             <a href="trending-machine.html" class="inv-card trending-machine">
-                <div class="inv-icon">🏭</div>
-                <div class="inv-info">
-                    <h3>Trending Machine</h3>
-                    <p>Invest in market trends and earn high yield multipliers.</p>
+                <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop" class="inv-card-bg" alt="Trending Machine">
+                <div class="inv-card-overlay"></div>
+                <div class="inv-content">
+                    <div class="inv-icon"></div>
+                    <div class="inv-info">
+                        <h3>Trending Machine</h3>
+                        <p>Invest in market trends and earn high yield multipliers.</p>
+                    </div>
+                    <div class="inv-arrow"></div>
                 </div>
-                <div class="inv-arrow">➔</div>
             </a>
 
         </div>
@@ -261,7 +390,7 @@
             setTimeout(() => {
                 document.getElementById('loader').classList.add('hidden');
                 document.body.style.opacity = '1';
-            }, 2000); // 2 seconds to enjoy the welcome screen
+            }, 1500); // 1.5 seconds to enjoy the welcome screen
         });
     </script>
 </body>

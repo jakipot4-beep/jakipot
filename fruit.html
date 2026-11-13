@@ -132,19 +132,6 @@
             text-shadow: 0 0 10px var(--gold-glow); text-align: center;
             transition: color 0.3s;
         }
-        .loss-tracker {
-            font-size: 11px; font-weight: 700; color: var(--text-muted);
-            background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 10px;
-            display: flex; align-items: center; gap: 4px;
-        }
-        .loss-tracker.unlocked {
-            color: var(--emerald); background: rgba(16, 185, 129, 0.15); border: 1px solid var(--emerald);
-            animation: pulse-glow 1.5s infinite;
-        }
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 5px rgba(16,185,129,0.4); }
-            50% { box-shadow: 0 0 15px rgba(16,185,129,0.8); }
-        }
 
         .bet-controls {
             display: flex; align-items: center; justify-content: space-between;
@@ -272,9 +259,7 @@
         
         <div class="jackpot-info">
             <div class="jackpot-text" id="jackpot-text">Chance to win K1,000.00</div>
-            <div class="loss-tracker" id="loss-tracker">
-                Daily Loss: K0.00 / K3,000
-            </div>
+            <!-- ✅ REMOVED: Daily Loss Tracker HTML -->
         </div>
 
         <div class="bet-controls">
@@ -345,7 +330,7 @@
         let pendingWin = 0;
         let bigWinAnimationId = null;
 
-        // DAILY TRACKER STATE
+        // DAILY TRACKER STATE (Still tracked internally by backend, but hidden)
         let dailyLoss = 0;
         let lastPlayDate = '';
         const LOSS_TARGET = 3000;
@@ -404,8 +389,8 @@
             currentUser = user;
 
             onSnapshot(doc(db, 'users', user.uid), (snap) => {
-                // ✅ FIXED: Removed () from exists
-                if (snap.exists) {
+                // ✅ FIXED: Added () for Web SDK
+                if (snap.exists()) {
                     const data = snap.data();
                     userCurrency = data.currency || 'ZMW';
                     currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
@@ -424,8 +409,8 @@
             });
 
             onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
-                // ✅ FIXED: Removed () from exists
-                if (snap.exists) {
+                // ✅ FIXED: Added () for Web SDK
+                if (snap.exists()) {
                     userBalance = snap.data().balance || 0;
                     updateBalanceUI();
                     // Finish loading once we get the user data
@@ -453,15 +438,8 @@
             const scaleFactor = currentBet / 6;
             const potentialJackpot = 1000 * scaleFactor;
             document.getElementById('jackpot-text').innerText = `Chance to win ${currencySymbol}${potentialJackpot.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-
-            const trackerEl = document.getElementById('loss-tracker');
-            if (dailyLoss >= LOSS_TARGET) {
-                trackerEl.innerText = `🔓 777 JACKPOT UNLOCKED!`;
-                trackerEl.classList.add('unlocked');
-            } else {
-                trackerEl.innerText = `Daily Loss: ${currencySymbol}${dailyLoss.toFixed(2)} / ${currencySymbol}${LOSS_TARGET}`;
-                trackerEl.classList.remove('unlocked');
-            }
+            
+            // ✅ REMOVED: Daily Loss UI update logic is gone, keeping it invisible
         }
 
         window.adjustBet = (amount) => {
@@ -608,34 +586,45 @@
                 });
             }, 50);
 
+            // 2. SETUP ABORT CONTROLLER TIMEOUT
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second limit
+
             try {
-                // 2. GET SECURE TOKEN FROM FIREBASE AUTH
+                // 3. GET SECURE TOKEN FROM FIREBASE AUTH
                 const idToken = await currentUser.getIdToken();
 
-                // 3. CALL VERCEL SECURE SERVER
+                // 4. CALL VERCEL SECURE SERVER
                 const response = await fetch('https://jakipot.vercel.app/api/play', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${idToken}`
                     },
-                    body: JSON.stringify({ gameType: 'fruit_777', betAmount: currentBet })
+                    body: JSON.stringify({ gameType: 'fruit_777', betAmount: currentBet }),
+                    signal: controller.signal
                 });
+
+                clearTimeout(timeoutId); // Stop timer
+
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.error || `Server Error (${response.status})`);
+                }
 
                 const data = await response.json();
                 if (data.error) throw new Error(data.error);
 
-                // 4. STOP FAKE SPIN & UPDATE BALANCES
+                // 5. STOP FAKE SPIN & UPDATE BALANCES
                 clearInterval(fakeSpinInterval);
                 userBalance = data.newBalance;
                 dailyLoss = data.newDailyLoss;
                 updateBalanceUI();
                 updateBetUI();
 
-                // 5. SET THE REAL RESULTS FROM SERVER
+                // 6. SET THE REAL RESULTS FROM SERVER
                 let winAmount = data.payoutAmount;
 
-                // ✅ Handles 'winFruit' correctly based on the play.js we fixed
                 if (data.winFruit) {
                     const serverFruit = fruits.find(f => f.icon === data.winFruit.icon);
                     spinResults = [serverFruit, serverFruit, serverFruit];
@@ -656,15 +645,22 @@
 
                 isProcessingTx = false;
                 
-                // 6. PLAY THE REAL ANIMATION
+                // 7. PLAY THE REAL ANIMATION
                 animateColumn(0, 3000);
                 animateColumn(1, 3500);
                 animateColumn(2, 4000);
 
             } catch (e) {
-                clearInterval(fakeSpinInterval);
-                console.error("Transaction failed:", e);
-                alert(e.message || "Failed to process spin. Please check your connection.");
+                clearTimeout(timeoutId);
+                clearInterval(fakeSpinInterval); // ✅ FIXED: Stop the fake spin!
+                
+                if (e.name === 'AbortError') {
+                    alert("Request Timed Out! Vercel is taking too long to respond.");
+                } else {
+                    console.error("Transaction failed:", e);
+                    alert(e.message || "Failed to process spin. Please check your connection.");
+                }
+                
                 isSpinning = false; isProcessingTx = false;
                 document.getElementById('spin-btn').disabled = false;
                 document.getElementById('spin-btn').innerText = `SPIN - ${currencySymbol}${currentBet}`;

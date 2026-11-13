@@ -421,7 +421,7 @@
             storageBucket: "jakipot.firebasestorage.app",
             messagingSenderId: "396191754293",
             appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
-            measurementId: "G-L1CLB5TDHV"
+            measurementId: "G-L1CL5TDHV"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -515,8 +515,8 @@
 
             // Get User Currency
             onSnapshot(doc(db, 'users', user.uid), (snap) => {
-                // ✅ FIXED: Removed () from exists
-                if (snap.exists) {
+                // ✅ FIXED: Added () for Web SDK
+                if (snap.exists()) {
                     const data = snap.data();
                     const userCurrency = data.currency || 'ZMW';
                     currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
@@ -527,8 +527,8 @@
 
             // Get Wallet Balance
             onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
-                // ✅ FIXED: Removed () from exists
-                if (snap.exists) {
+                // ✅ FIXED: Added () for Web SDK
+                if (snap.exists()) {
                     balance = snap.data().balance || 0;
                     updateUI();
                     finishLoading(); // Hide loader once loaded
@@ -714,34 +714,46 @@
                 wheelEl.style.transform = `rotate(${spinSpeed}deg)`;
             }, 16); // ~60fps
 
+            // 2. SETUP ABORT CONTROLLER TIMEOUT
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second limit
+
             try {
-                // 2. GET SECURE TOKEN
+                // 3. GET SECURE TOKEN
                 const idToken = await currentUser.getIdToken();
 
-                // 3. CALL VERCEL SECURE SERVER
+                // 4. CALL VERCEL SECURE SERVER
                 const response = await fetch('https://jakipot.vercel.app/api/play', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${idToken}`
                     },
-                    body: JSON.stringify({ gameType: 'super_spin', betAmount: currentBet })
+                    body: JSON.stringify({ gameType: 'super_spin', betAmount: currentBet }),
+                    signal: controller.signal
                 });
+
+                clearTimeout(timeoutId); // Stop timer
+
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.error || `Server Error (${response.status})`);
+                }
 
                 const data = await response.json();
                 if (data.error) throw new Error(data.error);
 
-                // 4. STOP FAKE SPIN
+                // 5. STOP FAKE SPIN
                 clearInterval(fakeInterval);
 
-                // 5. UPDATE BALANCES
+                // 6. UPDATE BALANCES
                 balance = data.newBalance;
                 updateUI();
 
                 const winIndex = data.winData.winIndex;
                 const winAmount = data.payoutAmount;
 
-                // 6. ANIMATE TO THE REAL RESULT
+                // 7. ANIMATE TO THE REAL RESULT
                 const angleStep = 360 / WHEEL_DATA.length;
                 const targetModulo = 360 - (winIndex * angleStep);
                 let currentModulo = spinSpeed % 360;
@@ -794,8 +806,15 @@
                 }, 6100);
 
             } catch (e) {
-                clearInterval(fakeInterval);
-                alert(e.message);
+                clearTimeout(timeoutId);
+                clearInterval(fakeInterval); // ✅ FIXED: Stop the fake spin!
+                
+                if (e.name === 'AbortError') {
+                    alert("Request Timed Out! Vercel is taking too long to respond.");
+                } else {
+                    alert(e.message || "An error occurred.");
+                }
+                
                 isSpinning = false;
                 spinBtn.disabled = false;
                 neonRing.classList.remove('spinning');

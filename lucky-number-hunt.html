@@ -500,8 +500,8 @@
     currentUser = user;
 
     onSnapshot(doc(db, 'users', user.uid), (snap) => {
-      // ✅ FIXED: Removed () from exists
-      if (snap.exists) {
+      // ✅ FIXED: Added () to exists for Web SDK
+      if (snap.exists()) {
         const userCurrency = snap.data().currency || 'ZMW';
         currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
         updateBetUI();
@@ -509,8 +509,8 @@
     });
 
     onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
-      // ✅ FIXED: Removed () from exists
-      if (snap.exists) {
+      // ✅ FIXED: Added () to exists for Web SDK
+      if (snap.exists()) {
         balance = snap.data().balance || 0;
         balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
         finishLoading();
@@ -597,19 +597,36 @@
       cycleCount++;
     }, 50);
 
+    // 2. SETUP ABORT CONTROLLER TIMEOUT
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second limit
+
     try {
-      // 2. CALL SECURE VERCEL BACKEND
+      // 3. CALL SECURE VERCEL BACKEND
       const idToken = await currentUser.getIdToken();
       const response = await fetch('https://jakipot.vercel.app/api/play', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
-        body: JSON.stringify({ gameType: 'lucky_number', betAmount: currentBet, selectedNum: selectedNum })
+        body: JSON.stringify({ 
+            gameType: 'lucky_number', 
+            betAmount: currentBet, 
+            payload: { selectedNum: selectedNum } // ✅ Fixed payload format
+        }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId); // Stop the timer if we got a response
+
+      // Handle HTTP errors gracefully
+      if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || `Server Error (${response.status})`);
+      }
 
       const data = await response.json();
       if (data.error) throw new Error(data.error);
 
-      // 3. STOP ANIMATION AND SHOW REAL RESULT
+      // 4. STOP ANIMATION AND SHOW REAL RESULT
       clearInterval(cycleInterval);
       displayNumber.classList.remove('draw-anim');
       
@@ -664,10 +681,16 @@
       }
 
     } catch (error) {
+      clearTimeout(timeoutId);
       clearInterval(cycleInterval);
       displayNumber.classList.remove('draw-anim');
-      console.error("Server Error:", error);
-      alert(error.message || "Failed to draw number.");
+      
+      if (error.name === 'AbortError') {
+          alert("Request Timed Out! Vercel is taking too long to respond.");
+      } else {
+          console.error("Server Error:", error);
+          alert(error.message || "Failed to draw number.");
+      }
       
       // Refund UI if server fails
       displayNumber.textContent = '?';
