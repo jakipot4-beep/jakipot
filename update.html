@@ -36,13 +36,18 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
+        html, body { 
+            height: 100dvh; /* ✅ Fixes bottom nav moving on mobile scroll */
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+        }
+
         body { 
             background-color: var(--bg-color); 
             color: var(--text-main); 
-            height: 100vh; 
             display: flex; 
             flex-direction: column;
-            overflow: hidden;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
@@ -109,7 +114,16 @@
         .verified-badge { width: 14px; height: 14px; fill: #53BDEB; }
 
         .post-content { padding: 0 15px 15px 15px; }
-        .post-text { font-size: 15px; line-height: 1.5; margin-bottom: 12px; word-wrap: break-word; }
+        .post-text { font-size: 15px; line-height: 1.5; margin-bottom: 12px; word-wrap: break-word; white-space: pre-wrap; }
+
+        .see-more-btn {
+            color: var(--primary-green-text);
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-block;
+            margin-top: 5px;
+            font-size: 14px;
+        }
 
         .post-image {
             width: 100%;
@@ -153,7 +167,7 @@
         body.dark-mode .comments-section { background: rgba(0,0,0,0.1); }
 
         .comments-list {
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
             padding: 10px 15px;
             display: flex; flex-direction: column; gap: 10px;
@@ -357,14 +371,42 @@
                     const dateObj = post.createdAt ? new Date(post.createdAt.toMillis()) : new Date();
                     const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-                    // Check if liked
+                    // ✅ SIMULATED LIKES LOGIC
+                    // Calculates fake likes based on how many hours have passed since posting (40 per hour)
+                    const createdTime = post.createdAt ? post.createdAt.toMillis() : Date.now();
+                    const timeDiffMs = Date.now() - createdTime;
+                    const timeDiffHours = timeDiffMs / (1000 * 60 * 60);
+                    
+                    // Base random likes (so it doesn't start at 0) + 40 per hour
+                    const fakeLikes = Math.floor(Math.random() * 15) + Math.floor(timeDiffHours * 40);
+                    
+                    // Real likes from the database
                     const likesArray = post.likes || [];
                     const isLiked = likesArray.includes(currentUser.uid);
+                    const realLikesCount = likesArray.length;
+
+                    // Total Displayed Likes = Fake + Real
+                    const totalLikes = fakeLikes + realLikesCount;
+                    
                     const likeClass = isLiked ? 'liked' : '';
-                    const likeCount = likesArray.length;
+                    
+                    // ✅ SEE MORE LOGIC (Truncate long text)
+                    let textHtml = '';
+                    if (post.text && post.text.length > 150) {
+                        const truncated = post.text.substring(0, 150);
+                        textHtml = `
+                            <div class="post-text" id="text-preview-${postId}" style="display:block;">${truncated}... <span class="see-more-btn" onclick="toggleText('${postId}', true)">See More</span></div>
+                            <div class="post-text" id="text-full-${postId}" style="display:none;">${post.text} <span class="see-more-btn" onclick="toggleText('${postId}', false)">See Less</span></div>
+                        `;
+                    } else {
+                        textHtml = `<div class="post-text">${post.text || ''}</div>`;
+                    }
 
                     // Image HTML
                     const imageHtml = post.imageUrl ? `<img src="${post.imageUrl}" class="post-image" onclick="viewImage('${post.imageUrl}')">` : '';
+
+                    // Comment Count (fetched dynamically later, but placeholder here)
+                    const commentCount = post.comments ? post.comments.length : 0;
 
                     feedContainer.innerHTML += `
                         <div class="post-card">
@@ -378,14 +420,14 @@
                                 </div>
                             </div>
                             <div class="post-content">
-                                <div class="post-text">${post.text}</div>
+                                ${textHtml}
                                 ${imageHtml}
                             </div>
                             
                             <div class="post-actions">
                                 <button class="action-btn ${likeClass}" onclick="toggleLike('${postId}', ${isLiked})">
                                     <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                    <span>${likeCount > 0 ? likeCount : ''} Like</span>
+                                    <span id="like-count-${postId}">${totalLikes > 0 ? totalLikes : ''} Like</span>
                                 </button>
                                 <button class="action-btn" onclick="toggleComments('${postId}')">
                                     <svg viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
@@ -399,7 +441,7 @@
                                     <div style="text-align:center; font-size:12px; color:var(--text-secondary);">Loading comments...</div>
                                 </div>
                                 <div class="comment-input-area">
-                                    <input type="text" id="comment-input-${postId}" placeholder="Write a comment...">
+                                    <input type="text" id="comment-input-${postId}" placeholder="Write a comment..." onkeypress="if(event.key==='Enter')addComment('${postId}')">
                                     <button onclick="addComment('${postId}')">
                                         <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                                     </button>
@@ -412,7 +454,23 @@
         }
 
         // ==========================================
-        // 2. LIKE LOGIC
+        // 2. SEE MORE LOGIC
+        // ==========================================
+        window.toggleText = (postId, showFull) => {
+            const preview = document.getElementById(`text-preview-${postId}`);
+            const full = document.getElementById(`text-full-${postId}`);
+            
+            if (showFull) {
+                preview.style.display = 'none';
+                full.style.display = 'block';
+            } else {
+                preview.style.display = 'block';
+                full.style.display = 'none';
+            }
+        };
+
+        // ==========================================
+        // 3. LIKE LOGIC
         // ==========================================
         window.toggleLike = async (postId, isLiked) => {
             const postRef = doc(db, 'updates', postId);
@@ -428,7 +486,7 @@
         };
 
         // ==========================================
-        // 3. COMMENTS LOGIC
+        // 4. COMMENTS LOGIC
         // ==========================================
         window.toggleComments = (postId) => {
             const section = document.getElementById(`comments-${postId}`);
@@ -497,7 +555,7 @@
         };
 
         // ==========================================
-        // 4. IMAGE VIEWER
+        // 5. IMAGE VIEWER
         // ==========================================
         window.viewImage = (url) => {
             document.getElementById('viewer-img').src = url;

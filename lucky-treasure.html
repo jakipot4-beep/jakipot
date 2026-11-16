@@ -432,6 +432,8 @@
   let state = 'IDLE';
   let history = [];
   let isMuted = localStorage.getItem('jakipotTreasureMuted') === 'true';
+  let isProcessingTx = false; // ✅ NEW
+  let pendingNewBalance = 0;  // ✅ NEW
 
   const chestGrid = document.getElementById('chestGrid');
   const instruction = document.getElementById('instruction');
@@ -504,7 +506,6 @@
     currentUser = user;
 
     onSnapshot(doc(db, 'users', user.uid), (snap) => {
-      // ✅ FIXED: Added () for Web SDK
       if (snap.exists()) {
         const userCurrency = snap.data().currency || 'ZMW';
         currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
@@ -513,10 +514,13 @@
     });
 
     onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
-      // ✅ FIXED: Added () for Web SDK
       if (snap.exists()) {
-        balance = snap.data().balance || 0;
-        balanceEl.textContent = balance.toLocaleString(undefined, {minimumFractionDigits: 2});
+        const serverBalance = snap.data().balance || 0;
+        // ✅ FIX: Ignore server updates while opening
+        if (!isProcessingTx && state !== 'OPENING') {
+            balance = serverBalance;
+            balanceEl.textContent = balance.toLocaleString(undefined, {minimumFractionDigits: 2});
+        }
         finishLoading();
       }
     });
@@ -639,6 +643,12 @@
     if (balance < currentBet) { instruction.textContent = 'Not enough balance!'; return; }
 
     state = 'OPENING';
+    isProcessingTx = true; // ✅ NEW
+
+    // ✅ FIX: Deduct bet instantly from UI
+    balance -= currentBet;
+    balanceEl.textContent = balance.toLocaleString(undefined, {minimumFractionDigits: 2});
+
     openBtn.disabled = true;
     openBtn.style.display = 'none';
     instruction.classList.remove('highlight');
@@ -677,10 +687,9 @@
       const data = await response.json();
       if (data.error) throw new Error(data.error);
 
-      // 4. STOP FAKE ANIMATION & UPDATE BALANCES
+      // 4. STOP FAKE ANIMATION & STORE NEW BALANCE
       clearInterval(fakeInterval);
-      balance = data.newBalance;
-      balanceEl.textContent = balance.toLocaleString(undefined, {minimumFractionDigits: 2});
+      pendingNewBalance = data.newBalance; // ✅ Store it, don't apply yet
 
       // 5. SET REAL RESULT FROM SERVER
       const reward = REWARDS.find(r => r.key === data.winData.key) || REWARDS[0];
@@ -696,7 +705,7 @@
           cell.classList.add('revealing');
           const revealDiv = cell.querySelector('.reward-reveal');
           
-          // ✅ FIX: Show net profit, not just payout
+          // Show net profit, not just payout
           const badgeText = netProfit >= 0 ? `+${netProfit.toLocaleString()}` : `${netProfit.toLocaleString()}`;
           if (revealDiv) revealDiv.innerHTML = getRewardSVG(reward) + `<div class="points-badge" style="color: ${netProfit >= 0 ? '#000' : '#ef4444'}; background: ${netProfit >= 0 ? 'linear-gradient(180deg, #fde047 0%, #eab308 100%)' : '#1a1a1a'}; border-color: ${netProfit >= 0 ? '#fef9c3' : '#ef4444'}">${badgeText}</div>`;
 
@@ -714,9 +723,14 @@
 
           setTimeout(() => {
             state = 'REVEALED';
+            isProcessingTx = false; // ✅ Now turn it off
             playAgainBtn.style.display = 'block';
+
+            // ✅ FIX: Apply the server's new balance NOW
+            balance = pendingNewBalance;
+            balanceEl.textContent = balance.toLocaleString(undefined, {minimumFractionDigits: 2});
             
-            // ✅ FIX: Accurate instruction text based on profit
+            // Accurate instruction text based on profit
             if (netProfit > 0) {
                 instruction.textContent = `You won ${currencySymbol}${netProfit.toLocaleString()} profit!`;
                 instruction.style.color = '#facc15';
@@ -740,6 +754,11 @@
       clearTimeout(timeoutId);
       clearInterval(fakeInterval);
       
+      // ✅ FIX: Refund UI on error
+      balance += currentBet;
+      balanceEl.textContent = balance.toLocaleString(undefined, {minimumFractionDigits: 2});
+      isProcessingTx = false; // ✅ Now turn it off
+
       if (error.name === 'AbortError') {
           alert("Request Timed Out! Vercel is taking too long to respond. (12s limit)");
       } else {
@@ -747,7 +766,7 @@
           alert(error.message || "Failed to open treasure.");
       }
       
-      // Reset UI safely (DO NOT manually refund balance, let Firestore sync it)
+      // Reset UI safely
       state = 'IDLE';
       openBtn.style.display = 'flex';
       openBtn.disabled = false;

@@ -56,7 +56,7 @@
         .row-title { font-size: 16px; font-weight: 800; color: var(--text-white); }
         .row-sub { font-size: 13px; color: var(--text-muted); font-weight: 600; }
         .row-sub span { color: var(--text-white); }
-        .row-actions { display: flex; gap: 10px; align-items: center; }
+        .row-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
         .badge { padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 900; text-transform: uppercase; }
         .badge-pending { background: rgba(251, 191, 36, 0.15); color: var(--gold); border: 1px solid rgba(251, 191, 36, 0.3); }
@@ -337,7 +337,7 @@
             <div class="list-container" id="plans-list"></div>
         </div>
 
-        <!-- 📢 NEW ADS TAB -->
+        <!-- 📢 ADS TAB -->
         <div class="tab-panel" id="tab-ads">
             <div class="page-title">Create New Advertisement</div>
             <p style="font-size: 13px; color: var(--gold); margin-bottom: 20px; line-height: 1.5;">
@@ -381,15 +381,30 @@
             </div>
         </div>
 
+        <!-- 🏭 TRENDING MACHINE -->
         <div class="tab-panel" id="tab-machine">
             <div class="page-title">Create Trending Machine</div>
             <div class="form-card">
                 <div class="form-grid">
                     <div class="input-group"><label>Country Name</label><input type="text" id="machine-country-name" placeholder="e.g. Zambia, USA, Japan"></div>
                     <div class="input-group"><label>Country Code (for flag)</label><input type="text" id="machine-country-code" placeholder="e.g. zm, us, jp" maxlength="2"></div>
-                    <div class="input-group"><label>Seller Name / Location</label><input type="text" id="machine-seller" placeholder="e.g. Lusaka Branch"></div>
+                    <div class="input-group"><label>Personal Name / Location</label><input type="text" id="machine-seller" placeholder="e.g. John Doe / Lusaka Branch"></div>
                 </div>
+                
                 <div class="form-grid">
+                    <div class="input-group">
+                        <label>Machine Image (Cloudinary)</label>
+                        <input type="file" id="machine-image-file" accept="image/*" hidden onchange="uploadMachineImage(this)">
+                        <button type="button" class="btn btn-neutral" id="upload-machine-btn" onclick="document.getElementById('machine-image-file').click()" style="width: 100%; padding: 14px; font-size: 14px;">📁 Upload Image</button>
+                    </div>
+                </div>
+
+                <div class="img-preview-box" id="machine-img-preview">
+                    <span class="img-preview-badge">LIVE PREVIEW</span>
+                    <img id="machine-img-preview-tag" src="" alt="Machine preview" onerror="this.parentElement.classList.remove('show')">
+                </div>
+
+                <div class="form-grid" style="margin-top: 15px;">
                     <div class="input-group"><label>Duration (Days)</label><input type="number" id="machine-duration" placeholder="7"></div>
                     <div class="input-group"><label>Min Amount</label><input type="number" id="machine-min" placeholder="100"></div>
                     <div class="input-group"><label>Max Amount</label><input type="number" id="machine-max" placeholder="5000"></div>
@@ -428,7 +443,7 @@
         <div class="tab-panel" id="tab-live-trending">
             <div class="page-title">Live Trending Engine</div>
             <p style="font-size: 13px; color: var(--gold); margin-bottom: 20px; line-height: 1.5;">
-                <b>Note:</b> This panel is for emergency manual override and preview. For the game to run 24/7 automatically without this page open, the <b>live-trending.html</b> client file handles the rounds using atomic transactions.
+                <b>Note:</b> This panel is for emergency manual override and preview. To prevent hacking, all rounds are now created via the Vercel Backend API.
             </p>
             <div class="engine-status-box">
                 <div class="engine-round" id="engine-round-display">ROUND 0 / 20</div>
@@ -673,6 +688,7 @@
         let uploadedGroupImageUrl = '';
         let uploadedUpdateImageUrl = '';
         let uploadedAdImageUrl = '';
+        let uploadedMachineImageUrl = '';
         
         const userCache = {};
         let lastChatGroupsSnapshot = null;
@@ -960,7 +976,8 @@
                 await addDoc(collection(db, 'updates'), {
                     text: text,
                     imageUrl: uploadedUpdateImageUrl || null,
-                    likes: [],
+                    likes: [], // Array of user UIDs who liked
+                    comments: [], // Array of comment objects
                     createdAt: serverTimestamp()
                 });
                 alert("✅ Update posted successfully!");
@@ -995,7 +1012,7 @@
                             <div class="row-info">
                                 <div class="row-title">${textPreview}</div>
                                 <div class="row-sub">Posted: <span>${dateStr}</span></div>
-                                <div class="row-sub">Likes: <span>${(d.likes || []).length}</span></div>
+                                <div class="row-sub">Likes: <span>${(d.likes || []).length}</span> | Comments: <span>${(d.comments || []).length}</span></div>
                             </div>
                             <div class="row-actions">
                                 <button class="btn btn-reject" onclick="deleteUpdate('${doc.id}')">🗑️ Delete</button>
@@ -1254,12 +1271,21 @@
                             </div>
                             <div class="row-actions">
                                 ${statusBadge}
+                                <button class="btn btn-reject" onclick="deleteChallenge('${doc.id}')">🗑️ Delete</button>
                             </div>
                         </div>
                     `;
                 });
             });
         }
+
+        window.deleteChallenge = async (challengeId) => {
+            if (!confirm("Delete this challenge? Players will not be able to play it.")) return;
+            try {
+                await deleteDoc(doc(db, 'game_challenges', challengeId));
+                alert("Challenge deleted.");
+            } catch (e) { alert("Failed: " + e.message); }
+        };
 
         // ============================================================
         // DASHBOARD LISTENERS
@@ -1275,8 +1301,19 @@
                     const u = doc.data();
                     const isBlocked = u.status === 'suspended';
                     
+                    // Fetch active plans
                     const plansSnap = await getDocs(query(collection(db, 'user_investments'), where('uid', '==', doc.id), where('status', '==', 'active')));
-                    const plansList = plansSnap.docs.map(p => p.data().planName).join(', ') || 'None';
+                    
+                    let plansHtml = 'None';
+                    if (!plansSnap.empty) {
+                        plansHtml = plansSnap.docs.map(p => {
+                            const planData = p.data();
+                            return `<div style="display:inline-block; margin-right:10px; margin-bottom:5px; background:rgba(255,255,255,0.05); padding:5px 10px; border-radius:5px;">
+                                        <span style="font-size:12px; font-weight:bold; color:var(--cyan);">${planData.planName || 'Plan'}</span>
+                                        <button class="btn btn-reject" style="padding: 2px 8px; font-size: 10px; margin-left: 8px;" onclick="deleteUserPlan('${p.id}')">❌ Delete</button>
+                                    </div>`;
+                        }).join('');
+                    }
 
                     list.innerHTML += `
                         <div class="row-card">
@@ -1284,11 +1321,12 @@
                                 <div class="row-title">${u.fullName || 'User'}</div>
                                 <div class="row-sub">Email: <span>${u.email || 'N/A'}</span> | Phone: <span>${u.phone || 'N/A'}</span></div>
                                 <div class="row-sub">Currency: <span>${u.currency || 'ZMW'}</span> | VIP: <span>${u.vipLevel || 0}</span></div>
-                                <div class="row-sub">Active Plans: <span>${plansList}</span></div>
+                                <div class="row-sub" style="margin-top:5px;">Active Plans: <span>${plansHtml}</span></div>
                             </div>
                             <div class="row-actions">
                                 <span class="badge ${isBlocked ? 'badge-blocked' : 'badge-active'}">${isBlocked ? 'Blocked' : 'Active'}</span>
                                 <button class="btn btn-neutral" onclick="openBalanceModal('${doc.id}', ${u.balance || 0})">💰 Adjust</button>
+                                <button class="btn btn-neutral" onclick="regenerateWithdrawPin('${doc.id}', '${u.fullName || 'User'}')">🔑 Regenerate PIN</button>
                                 <button class="btn ${isBlocked ? 'btn-approve' : 'btn-reject'}" onclick="toggleBlock('${doc.id}', '${u.status}')">${isBlocked ? 'Unblock' : 'Block'}</button>
                                 <button class="btn btn-reject" onclick="deleteUser('${doc.id}')">🗑️</button>
                             </div>
@@ -1527,6 +1565,39 @@
                 renderChatSidebar();
             });
         }
+
+        // ============================================================
+        // USER ACTIONS (PIN & PLANS)
+        // ============================================================
+        window.deleteUserPlan = async (planId) => {
+            if (!confirm("Delete this active investment plan? The user will lose this plan.")) return;
+            try {
+                await deleteDoc(doc(db, 'user_investments', planId));
+                alert("Plan deleted.");
+            } catch (e) { alert("Failed to delete plan: " + e.message); }
+        };
+
+        window.regenerateWithdrawPin = async (uid, userName) => {
+            if (!confirm(`Regenerate withdrawal PIN for ${userName}?`)) return;
+            
+            const newPin = Math.floor(1000 + Math.random() * 9000).toString();
+            
+            try {
+                // 1. Update user_secrets with new PIN
+                await setDoc(doc(db, 'user_secrets', uid), { withdrawPinHash: newPin }, { merge: true });
+                
+                // 2. Send message to user
+                await addDoc(collection(db, 'system_messages'), {
+                    title: 'Withdrawal PIN Reset',
+                    body: `Your withdrawal PIN has been reset by admin. Your new PIN is: ${newPin}. Please change it inside your profile after logging in.`,
+                    createdAt: serverTimestamp()
+                });
+                
+                alert(`✅ PIN regenerated successfully: ${newPin}\nUser has been notified via message.`);
+            } catch (e) {
+                alert("Failed to regenerate PIN: " + e.message);
+            }
+        };
 
         // ============================================================
         // CHAT SIDEBAR
@@ -2017,6 +2088,44 @@
         // ============================================================
         // MACHINES
         // ============================================================
+        window.uploadMachineImage = async (input) => {
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > 5 * 1024 * 1024) { alert("Image must be less than 5MB."); return; }
+
+            const btn = document.getElementById('upload-machine-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "Uploading...";
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY.uploadPreset);
+                formData.append('folder', 'jakipot/machines');
+
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, { method: 'POST', body: formData });
+                const data = await res.json();
+
+                if (data.secure_url) {
+                    uploadedMachineImageUrl = data.secure_url;
+                    document.getElementById('machine-img-preview-tag').src = data.secure_url;
+                    document.getElementById('machine-img-preview').classList.add('show');
+                    btn.innerText = "Image Uploaded ✓";
+                    setTimeout(() => { btn.innerText = "Change Image"; }, 3000);
+                } else {
+                    throw new Error("Upload failed");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Failed to upload image.");
+                btn.innerText = originalText;
+            } finally {
+                btn.disabled = false;
+                input.value = '';
+            }
+        };
+
         function loadMachines() {
             const q = query(collection(db, 'trending_machines'), orderBy('createdAt', 'desc'));
             onSnapshot(q, (snap) => {
@@ -2027,10 +2136,13 @@
                     const m = doc.data();
                     list.innerHTML += `
                         <div class="row-card">
-                            <div class="row-info">
-                                <div class="row-title">${m.countryName} Market (${m.durationDays} Days)</div>
-                                <div class="row-sub">Seller/Location: <span>${m.sellerName || 'N/A'}</span></div>
-                                <div class="row-sub">Min: <span>${m.minAmount}</span> | Max: <span>${m.maxAmount}</span> | Mult: <span>${m.payoutMultiplier}x</span></div>
+                            <div style="display: flex; align-items: center; gap: 15px; flex: 1; min-width: 0;">
+                                ${m.imageUrl ? `<img src="${m.imageUrl}" style="height: 50px; width: 50px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-light);">` : ''}
+                                <div class="row-info">
+                                    <div class="row-title">${m.countryName} Market (${m.durationDays} Days)</div>
+                                    <div class="row-sub">Personal Name / Seller: <span>${m.sellerName || 'N/A'}</span></div>
+                                    <div class="row-sub">Min: <span>${m.minAmount}</span> | Max: <span>${m.maxAmount}</span> | Mult: <span>${m.payoutMultiplier}x</span></div>
+                                </div>
                             </div>
                             <div class="row-actions"><button class="btn btn-reject" onclick="deleteMachine('${doc.id}')">Delete</button></div>
                         </div>
@@ -2051,7 +2163,16 @@
             if (!countryName || !countryCode || !sellerName || !duration || !min || !max || !multiplier) { alert("Please fill all fields."); return; }
             
             await addDoc(collection(db, 'trending_machines'), { 
-                countryName, countryCode, sellerName, durationDays: duration, minAmount: min, maxAmount: max, payoutMultiplier: multiplier, isActive: true, createdAt: serverTimestamp() 
+                countryName, 
+                countryCode, 
+                sellerName, 
+                imageUrl: uploadedMachineImageUrl || null,
+                durationDays: duration, 
+                minAmount: min, 
+                maxAmount: max, 
+                payoutMultiplier: multiplier, 
+                isActive: true, 
+                createdAt: serverTimestamp() 
             });
             alert("Trending Machine Created!");
             document.getElementById('machine-country-name').value = ''; 
@@ -2061,6 +2182,10 @@
             document.getElementById('machine-min').value = ''; 
             document.getElementById('machine-max').value = ''; 
             document.getElementById('machine-multiplier').value = '';
+            document.getElementById('machine-img-preview').classList.remove('show');
+            document.getElementById('machine-img-preview-tag').src = '';
+            document.getElementById('upload-machine-btn').innerText = '📁 Upload Image';
+            uploadedMachineImageUrl = '';
         };
 
         window.deleteMachine = async (id) => {
@@ -2183,9 +2308,7 @@
                 document.getElementById('engine-state-display').innerText = `🔀 Sequence shuffled! (Loop ${currentLoopIndex + 1})`;
             }
 
-            const crashPoint = crashSequence[currentRoundIndex];
-            currentCrashPoint = crashPoint;
-            
+            // 🔒 SECURE ROUND CREATION VIA VERCEL
             document.getElementById('engine-round-display').innerText = `ROUND ${currentRoundIndex + 1} / 20`;
             document.getElementById('engine-multiplier-display').innerText = "1.00x";
             document.getElementById('engine-multiplier-display').style.color = "var(--cyan)";
@@ -2193,15 +2316,21 @@
             document.getElementById('engine-state-display').style.color = "var(--gold)";
 
             try {
-                const roundRef = await addDoc(collection(db, 'live_trends'), {
-                    roundNumber: currentRoundIndex + 1,
-                    loopNumber: currentLoopIndex + 1,
-                    crashPoint: crashPoint,
-                    status: 'waiting',
-                    startTime: serverTimestamp(),
-                    createdAt: serverTimestamp()
+                const token = await currentAdmin.getIdToken();
+                const response = await fetch('https://jakipot.vercel.app/api/crash', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ action: 'admin_create_round' })
                 });
-                currentRoundId = roundRef.id;
+
+                const data = await response.json();
+                if (!data.success) throw new Error(data.error || "Failed to create round");
+
+                currentRoundId = data.roundId;
+                currentCrashPoint = data.crashPoint;
 
                 // Update game_counter.index for the NEXT round (or 20 to trigger shuffle)
                 try {
@@ -2218,8 +2347,13 @@
 
                 document.getElementById('engine-state-display').innerText = "Plane is flying!";
                 document.getElementById('engine-state-display').style.color = "var(--emerald)";
-                await updateDoc(doc(db, 'live_trends', currentRoundId), { status: 'running' });
-
+                
+                // Update round status to running via Vercel? 
+                // Wait, Vercel API doesn't have an endpoint to start the round. It just creates it as 'waiting'.
+                // The client (live-trending.html) will see status 'waiting' and start the animation.
+                // So we don't need to update the status to 'running' here. The client does it.
+                // But the admin dashboard needs to show the animation.
+                
                 liveMultiplier = 1.00;
                 let msSinceStart = 0;
 
@@ -2234,7 +2368,15 @@
                             clearInterval(engineInterval);
                             document.getElementById('engine-multiplier-display').style.color = "var(--danger)";
                             document.getElementById('engine-multiplier-display').innerText = currentCrashPoint.toFixed(2) + "x CRASHED";
+                            
+                            // We need to update the round status to 'crashed' via Vercel API? 
+                            // Vercel API doesn't have a crash endpoint. The client (live-trending.html) triggers the crash.
+                            // Wait, if the admin dashboard is running the engine, the admin dashboard should trigger the crash.
+                            // But the user wanted the client to trigger it. If the admin dashboard triggers it, the client will see the status 'crashed'.
+                            // Let's use the Vercel API to update the status.
+                            // But we don't have an API for that. We'll use direct Firestore update for now (admin is allowed).
                             await updateDoc(doc(db, 'live_trends', currentRoundId), { status: 'crashed', crashedAt: serverTimestamp() });
+                            
                             document.getElementById('engine-state-display').innerText = "Crashed! Waiting for next round...";
                             engineTimeout = setTimeout(() => { currentRoundIndex++; runRound(); }, 5000);
                             resolve();
@@ -2244,6 +2386,7 @@
             } catch (e) {
                 console.error("Engine Error:", e);
                 document.getElementById('engine-state-display').innerText = "Error! Check network.";
+                document.getElementById('engine-state-display').style.color = "var(--danger)";
                 engineTimeout = setTimeout(runRound, 5000);
             }
         }

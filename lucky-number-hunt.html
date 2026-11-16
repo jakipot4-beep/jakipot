@@ -429,6 +429,8 @@
   let history = [];
   let gameState = 'IDLE';
   let selectedNum = null;
+  let isProcessingTx = false; // ✅ NEW
+  let pendingNewBalance = 0;  // ✅ NEW
 
   const CURRENCY_MAP = { 'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'TZS': 'TSh', 'UGX': 'USh', 'BWP': 'P', 'MWK': 'MK', 'MZN': 'MT', 'NAD': 'N$', 'AOA': 'Kz', 'PHP': '₱', 'IDR': 'Rp', 'PKR': '₨', 'BDT': '৳' };
 
@@ -500,7 +502,6 @@
     currentUser = user;
 
     onSnapshot(doc(db, 'users', user.uid), (snap) => {
-      // ✅ FIXED: Added () to exists for Web SDK
       if (snap.exists()) {
         const userCurrency = snap.data().currency || 'ZMW';
         currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
@@ -509,10 +510,13 @@
     });
 
     onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
-      // ✅ FIXED: Added () to exists for Web SDK
       if (snap.exists()) {
-        balance = snap.data().balance || 0;
-        balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        const serverBalance = snap.data().balance || 0;
+        // ✅ FIX: Ignore server updates while drawing
+        if (!isProcessingTx && gameState !== 'DRAWING') {
+            balance = serverBalance;
+            balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        }
         finishLoading();
       }
     });
@@ -579,6 +583,12 @@
   async function confirmDraw() {
     if (gameState !== 'SELECTED') return;
     gameState = 'DRAWING';
+    isProcessingTx = true; // ✅ NEW
+
+    // ✅ FIX: Deduct bet instantly from UI
+    balance -= currentBet;
+    balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
     confirmBtn.disabled = true;
     document.querySelectorAll('.num-ball').forEach(b => b.classList.add('disabled'));
     instruction.textContent = 'Drawing...';
@@ -634,8 +644,8 @@
       const winAmount = data.payoutAmount;
       const netProfit = winAmount - currentBet;
       
-      balance = data.newBalance;
-      balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+      // ✅ FIX: Store new balance instead of applying immediately
+      pendingNewBalance = data.newBalance;
 
       displayNumber.textContent = winData.drawnNum;
       
@@ -669,11 +679,16 @@
         showFloatingPoints(-currentBet, false);
       }
 
+      // ✅ FIX: Apply the server's new balance NOW
+      balance = pendingNewBalance;
+      balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
       addHistory(selectedNum, winData.drawnNum, winData.resultName, netProfit);
       
       roundNumber++;
       roundNumEl.textContent = roundNumber;
       gameState = 'REVEALED';
+      isProcessingTx = false; // ✅ NEW
       confirmBtn.style.display = 'none';
       playAgainBtn.style.display = 'flex';
       
@@ -686,6 +701,10 @@
       clearTimeout(timeoutId);
       clearInterval(cycleInterval);
       displayNumber.classList.remove('draw-anim');
+      
+      // ✅ FIX: Refund UI on error
+      balance += currentBet;
+      balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
       
       if (error.name === 'AbortError') {
           alert("Request Timed Out! Vercel is taking too long to respond. (12s limit)");
@@ -700,6 +719,7 @@
       instruction.textContent = 'Something went wrong. Try again.';
       
       gameState = 'IDLE';
+      isProcessingTx = false; // ✅ NEW
       confirmBtn.disabled = false;
       document.querySelectorAll('.num-ball').forEach(b => b.classList.remove('disabled'));
     }

@@ -394,6 +394,8 @@
   let aimPosition = 0;
   let aimDirection = 1;
   let animationFrameId = null;
+  let isProcessingTx = false; // ✅ NEW
+  let pendingNewBalance = 0;  // ✅ NEW
 
   const CURRENCY_MAP = { 'ZMW': 'K', 'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'TZS': 'TSh', 'UGX': 'USh', 'BWP': 'P', 'MWK': 'MK', 'MZN': 'MT', 'NAD': 'N$', 'AOA': 'Kz', 'PHP': '₱', 'IDR': 'Rp', 'PKR': '₨', 'BDT': '৳' };
 
@@ -461,7 +463,6 @@
     currentUser = user;
 
     onSnapshot(doc(db, 'users', user.uid), (snap) => {
-      // ✅ FIXED: Added () for Web SDK
       if (snap.exists()) {
         const userCurrency = snap.data().currency || 'ZMW';
         currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
@@ -470,10 +471,13 @@
     });
 
     onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
-      // ✅ FIXED: Added () for Web SDK
       if (snap.exists()) {
-        balance = snap.data().balance || 0;
-        balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        const serverBalance = snap.data().balance || 0;
+        // ✅ FIX: Ignore server updates while throwing
+        if (!isProcessingTx && gameState !== 'THROWING') {
+            balance = serverBalance;
+            balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        }
         finishLoading();
       }
     });
@@ -554,6 +558,12 @@
     
     cancelAnimationFrame(animationFrameId);
     gameState = 'THROWING';
+    isProcessingTx = true; // ✅ NEW
+
+    // ✅ FIX: Deduct bet instantly from UI
+    balance -= currentBet;
+    balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
     aimLine.classList.remove('active');
     throwBtn.disabled = true;
     instruction.textContent = 'Dart is flying...';
@@ -598,9 +608,8 @@
       const data = await response.json();
       if (data.error) throw new Error(data.error);
 
-      // 4. UPDATE BALANCE
-      balance = data.newBalance;
-      balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+      // 4. STORE NEW BALANCE (Do not apply yet)
+      pendingNewBalance = data.newBalance;
 
       // 5. MOVE DART TO REAL RESULT (from server)
       const winData = data.winData;
@@ -618,6 +627,11 @@
           if (winData.name === 'Miss') hitMarker.classList.add('miss');
           else hitMarker.classList.remove('miss');
           hitMarker.classList.add('show');
+
+          // ✅ FIX: Apply the server's new balance NOW
+          balance = pendingNewBalance;
+          balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+          isProcessingTx = false; // ✅ Now turn it off
 
           // ✅ FIX: Only show a WIN state if netProfit is positive
           if (netProfit > 0) {
@@ -668,6 +682,11 @@
     } catch (error) {
       clearTimeout(timeoutId);
       
+      // ✅ FIX: Refund UI on error
+      balance += currentBet;
+      balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+      isProcessingTx = false; // ✅ Now turn it off
+
       if (error.name === 'AbortError') {
           alert("Request Timed Out! Vercel is taking too long to respond. (12s limit)");
       } else {

@@ -99,19 +99,8 @@
         .action-btn.stop { background: linear-gradient(90deg, #ff3366, #ff6b6b); box-shadow: 0 4px 15px rgba(255, 51, 102, 0.4); opacity: 1; }
         .action-btn:disabled { background: rgba(255,255,255,0.1); color: var(--text-muted); cursor: not-allowed; box-shadow: none; opacity: 1; }
         
-        /* NEW: GREEN READY BUTTON */
-        .action-btn.ready { 
-            background: linear-gradient(90deg, #10b981, #059669); 
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); 
-            color: #fff; 
-            cursor: not-allowed; 
-            opacity: 1;
-            animation: pulse-green 1.5s infinite;
-        }
-        @keyframes pulse-green {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(16, 185, 129, 0.6); }
-            50% { transform: scale(1.02); box-shadow: 0 0 25px rgba(16, 185, 129, 0.9); }
-        }
+        .action-btn.ready { background: linear-gradient(90deg, #10b981, #059669); box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); color: #fff; cursor: not-allowed; opacity: 1; animation: pulse-green 1.5s infinite; }
+        @keyframes pulse-green { 0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(16, 185, 129, 0.6); } 50% { transform: scale(1.02); box-shadow: 0 0 25px rgba(16, 185, 129, 0.9); } }
 
         .timeout-overlay { position: absolute; inset: 0; background: rgba(4, 11, 22, 0.95); z-index: 50; display: flex; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .timeout-overlay.active { opacity: 1; pointer-events: auto; }
@@ -200,7 +189,6 @@
     </div>
 
     <script type="module">
-        // 🔒 LOCKED TO 13.1.0
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, collection, query, orderBy, limit, onSnapshot, serverTimestamp, increment, where, writeBatch, getDocs, runTransaction, deleteDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
@@ -212,7 +200,7 @@
             storageBucket: "jakipot.firebasestorage.app",
             messagingSenderId: "396191754293",
             appId: "1:396191754293:web:5b11a11d82e773d19ee97c",
-            measurementId: "G-L1CLB5TDHV"
+            measurementId: "G-L1CL5TDHV"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -461,79 +449,18 @@
         }
 
         // ==========================================
-        // ⚡ ATOMIC ROUND CREATION (Transaction Lock)
+        // ⚡ SECURE ROUND CREATION VIA VERCEL
         // ==========================================
-        async function createNewRoundAtomic() {
-            const stateRef = doc(db, 'settings', 'game_counter');
-            let nextCrashPoint = 2.0;
-            let shouldCreate = false;
-            
+        async function createNewRoundViaVercel() {
             try {
-                await runTransaction(db, async (transaction) => {
-                    const stateSnap = await transaction.get(stateRef);
-                    const state = stateSnap.exists() ? stateSnap.data() : {};
-                    const now = Date.now();
-                    const lastCreatedAt = state.lastCreatedAt?.toMillis() || 0;
-                    
-                    // Cooldown - prevent multiple rounds
-                    if (now - lastCreatedAt < 8000) {
-                        return; 
-                    }
-                    
-                    // Read crash sequence within transaction
-                    const seqRef = doc(db, 'settings', 'crash_sequence');
-                    const seqSnap = await transaction.get(seqRef);
-                    
-                    let sequence = seqSnap.exists() ? seqSnap.data().rounds : [];
-                    if (!Array.isArray(sequence) || sequence.length < 20) {
-                        sequence = Array(20).fill(2.0);
-                    } else {
-                        sequence = [...sequence];
-                    }
-                    
-                    let currentIndex = state.index || 0;
-                    
-                    // SHUFFLE WHEN ALL 20 ROUNDS ARE DONE
-                    if (currentIndex >= 20) {
-                        // Fisher-Yates Shuffle
-                        for (let i = sequence.length - 1; i > 0; i--) {
-                            const j = Math.floor(Math.random() * (i + 1));
-                            [sequence[i], sequence[j]] = [sequence[j], sequence[i]];
-                        }
-                        currentIndex = 0;
-                        transaction.set(seqRef, { rounds: sequence });
-                    }
-                    
-                    nextCrashPoint = sequence[currentIndex] || 2.0;
-                    
-                    // Atomically update counter + lock timestamp
-                    transaction.set(stateRef, {
-                        index: currentIndex + 1,
-                        lastCreatedAt: serverTimestamp()
-                    }, { merge: true });
-                    
-                    shouldCreate = true;
+                const token = await currentUser.getIdToken();
+                await fetch('https://jakipot.vercel.app/api/crash', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ action: 'create_round' })
                 });
-            } catch(e) {
-                console.warn("Round lock transaction failed:", e);
-                return false;
-            }
-            
-            if (!shouldCreate) return false;
-            
-            // Winner creates the round
-            try {
-                await addDoc(collection(db, 'live_trends'), {
-                    status: 'waiting',
-                    startTime: serverTimestamp(),
-                    roundNumber: Date.now(),
-                    crashPoint: nextCrashPoint,
-                    createdAt: serverTimestamp()
-                });
-                return true;
-            } catch(e) {
-                console.warn("Failed to create round doc:", e);
-                return false;
+            } catch (e) { 
+                console.warn("Failed to create round:", e); 
             }
         }
 
@@ -545,7 +472,7 @@
             
             onSnapshot(q, (snapshot) => {
                 if (snapshot.empty) {
-                    createNewRoundAtomic();
+                    createNewRoundViaVercel();
                     return;
                 }
 
@@ -627,7 +554,7 @@
                 
                 activePlayers.sort((a, b) => (b.isSelf ? 1 : 0) - (a.isSelf ? 1 : 0) || a.name.localeCompare(b.name));
                 renderPlayers();
-                updateUIState(); // Update button immediately when bet is detected
+                updateUIState(); 
             });
         }
 
@@ -688,7 +615,9 @@
 
                 if (isPlaying) {
                     const winAmount = betAmount * currentMultiplier;
-                    document.getElementById('action-btn').innerHTML = `<span class="btn-main-text">STOP TREND</span><span class="btn-sub-text">${currencySymbol}${winAmount.toFixed(2)}</span>`;
+                    const btn = document.getElementById('action-btn');
+                    btn.innerHTML = `<span class="btn-main-text">STOP TREND</span><span class="btn-sub-text">${currencySymbol}${winAmount.toFixed(2)}</span>`;
+                    btn.disabled = false; 
                 }
 
                 if (currentMultiplier >= crashPoint) {
@@ -783,8 +712,8 @@
                     
                     const tryCreate = async () => {
                         if (gameStatus !== 'crashed') return; 
-                        const success = await createNewRoundAtomic();
-                        if (!success && gameStatus === 'crashed') {
+                        await createNewRoundViaVercel();
+                        if (gameStatus === 'crashed') {
                             setTimeout(tryCreate, 2000); 
                         }
                     };
@@ -798,7 +727,6 @@
 
             if (gameStatus === 'waiting') {
                 if (myBetId) {
-                    // 🚨 NEW: GREEN READY BUTTON
                     btn.innerHTML = `<span class="btn-main-text">READY ✓</span><span class="btn-sub-text">WAITING...</span>`;
                     btn.className = 'action-btn ready';
                     btn.disabled = true;
@@ -812,7 +740,7 @@
                 document.getElementById('status-text').innerText = 'Analyzing Trend...';
                 if (isPlaying) {
                     btn.className = 'action-btn stop';
-                    btn.disabled = false;
+                    btn.disabled = false; 
                 } else {
                     btn.innerHTML = `<span class="btn-main-text">MONITORING...</span>`;
                     btn.className = 'action-btn';
@@ -838,6 +766,9 @@
             }
         };
 
+        // ==========================================
+        // ⚡ SECURE PLACE BET VIA VERCEL
+        // ==========================================
         async function placeBet() {
             if (betAmount < 50) { alert(`Minimum trend amount is ${currencySymbol}50`); return; }
             if (betAmount > userBalance) { alert('Insufficient balance!'); return; }
@@ -847,71 +778,55 @@
             btn.disabled = true;
 
             try {
-                const batch = writeBatch(db);
-                
-                const walletRef = doc(db, 'wallets', currentUser.uid);
-                const txRef = doc(collection(db, 'transactions'));
-                
-                batch.update(walletRef, { 
-                    balance: increment(-betAmount),
-                    lastTxId: txRef.id 
+                const token = await currentUser.getIdToken();
+                const res = await fetch('https://jakipot.vercel.app/api/crash', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ action: 'place_bet', betAmount: betAmount, roundId: currentRoundId })
                 });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Bet failed.");
 
-                batch.set(txRef, {
-                    uid: currentUser.uid, type: 'bet', amount: -betAmount, status: 'completed', createdAt: serverTimestamp()
-                });
-
-                const betRef = doc(collection(db, 'live_bets'));
-                batch.set(betRef, {
-                    uid: currentUser.uid,
-                    username: userFullName,
-                    roundId: currentRoundId,
-                    amount: betAmount,
-                    status: 'active',
-                    cashOutMultiplier: 0,
-                    payout: 0,
-                    profilePic: userProfilePic,
-                    createdAt: serverTimestamp()
-                });
-
-                await batch.commit();
                 playClick(); 
+                
+                // Set local state so button updates immediately
+                myBetId = 'pending'; // Will be updated by the live_bets listener
+                isPlaying = true;
+                hasBetThisRound = true;
+                updateUIState();
 
             } catch (e) { 
                 console.error(e); 
-                alert("Transaction failed."); 
-                updateUIState(); // Reset button on failure
+                alert(e.message); 
+                updateUIState(); 
             }
         }
 
+        // ==========================================
+        // ⚡ SECURE CASHOUT VIA VERCEL
+        // ==========================================
         async function cashOut() {
-            if (!isPlaying) return;
+            if (!isPlaying || !myBetId) return;
             
             const cashoutMultiplier = currentMultiplier;
-            const payout = betAmount * cashoutMultiplier;
+            
+            // Disable button immediately to prevent double-clicks
+            document.getElementById('action-btn').disabled = true;
 
             try {
-                const batch = writeBatch(db);
-
-                batch.update(doc(db, 'live_bets', myBetId), {
-                    status: 'won',
-                    cashOutMultiplier: cashoutMultiplier,
-                    payout: payout
+                const token = await currentUser.getIdToken();
+                const res = await fetch('https://jakipot.vercel.app/api/crash', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ 
+                        action: 'cashout', 
+                        betAmount: betAmount, 
+                        roundId: currentRoundId, 
+                        cashoutMultiplier: cashoutMultiplier 
+                    })
                 });
-
-                const walletRef = doc(db, 'wallets', currentUser.uid);
-                const txRef = doc(collection(db, 'transactions'));
-                
-                batch.update(walletRef, { 
-                    balance: increment(payout),
-                    lastTxId: txRef.id 
-                });
-
-                batch.set(txRef, {
-                    uid: currentUser.uid, type: 'payout', amount: payout, status: 'completed', createdAt: serverTimestamp()
-                });
-
-                await batch.commit();
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Cashout failed.");
 
                 playCashout(); 
                 
@@ -920,7 +835,11 @@
                 myBetId = null;
                 updateUIState();
 
-            } catch(e) { console.error(e); }
+            } catch(e) { 
+                console.error(e); 
+                alert(e.message);
+                updateUIState(); 
+            }
         }
 
         // ==========================================

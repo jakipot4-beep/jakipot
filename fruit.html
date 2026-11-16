@@ -326,6 +326,7 @@
         let isProcessingTx = false;
         
         let pendingWin = 0;
+        let pendingNewBalance = 0; // ✅ NEW
         let bigWinAnimationId = null;
         let dailyLoss = 0;
         let lastPlayDate = '';
@@ -403,8 +404,12 @@
 
             onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
                 if (snap.exists()) {
-                    userBalance = snap.data().balance || 0;
-                    updateBalanceUI();
+                    const serverBalance = snap.data().balance || 0;
+                    // ✅ FIX: Ignore server updates while spinning
+                    if (!isSpinning && !isProcessingTx) {
+                        userBalance = serverBalance;
+                        updateBalanceUI();
+                    }
                     finishLoading();
                 }
             });
@@ -568,6 +573,10 @@
             document.getElementById('spin-btn').disabled = true;
             document.getElementById('spin-btn').innerText = "SPINNING...";
 
+            // ✅ FIX: Deduct bet instantly from UI
+            userBalance -= currentBet;
+            updateBalanceUI();
+
             let fakeSpinInterval = setInterval(() => {
                 document.querySelectorAll('.reel-strip').forEach(strip => {
                     strip.style.transform = `translateY(${Math.random() * -500}px)`;
@@ -602,10 +611,9 @@
                 if (data.error) throw new Error(data.error);
 
                 clearInterval(fakeSpinInterval);
-                userBalance = data.newBalance;
+                // ✅ FIX: Store new balance instead of applying immediately
+                pendingNewBalance = data.newBalance;
                 dailyLoss = data.newDailyLoss;
-                updateBalanceUI();
-                updateBetUI();
 
                 let winAmount = data.payoutAmount;
 
@@ -627,8 +635,9 @@
                     pendingWin = 0;
                 }
 
-                isProcessingTx = false;
-                
+                // Don't set isProcessingTx = false here! Wait for animation to finish.
+                // isProcessingTx = false; 
+
                 animateColumn(0, 3000);
                 animateColumn(1, 3500);
                 animateColumn(2, 4000);
@@ -636,6 +645,10 @@
             } catch (e) {
                 clearTimeout(timeoutId);
                 clearInterval(fakeSpinInterval);
+                
+                // ✅ FIX: Refund UI on error
+                userBalance += currentBet;
+                updateBalanceUI();
                 
                 if (e.name === 'AbortError') {
                     alert("Request Timed Out! Vercel is taking too long to respond. (12s limit)");
@@ -687,8 +700,14 @@
                 } else {
                     if (colIndex === 2) {
                         isSpinning = false;
+                        isProcessingTx = false; // ✅ Now turn it off
                         document.getElementById('spin-btn').disabled = false;
                         document.getElementById('spin-btn').innerText = `SPIN - ${currencySymbol}${currentBet}`;
+                        
+                        // ✅ FIX: Apply the server's new balance NOW
+                        userBalance = pendingNewBalance;
+                        updateBalanceUI();
+                        
                         evaluateResult();
                     }
                 }
