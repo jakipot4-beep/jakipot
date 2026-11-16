@@ -32,10 +32,10 @@ module.exports = async (req, res) => {
     const decodedToken = await admin.auth().verifyIdToken(token);
     const uid = decodedToken.uid;
 
-    const { action, betAmount, roundId, cashoutMultiplier } = req.body;
+    const { action, betAmount, roundId, cashoutMultiplier, crashPoint } = req.body;
 
     // ==========================================
-    // ACTION 1: SECURELY CREATE A NEW ROUND
+    // ACTION 1: SECURELY CREATE A NEW ROUND (Auto)
     // ==========================================
     if (action === 'create_round') {
       const stateRef = db.collection('settings').doc('game_counter');
@@ -203,36 +203,19 @@ module.exports = async (req, res) => {
         return res.status(403).json({ error: "Unauthorized. Admin access required." });
       }
 
-      const stateRef = db.collection('settings').doc('game_counter');
-      let nextCrashPoint = 2.0;
-
-      await db.runTransaction(async (t) => {
-        const stateDoc = await t.get(stateRef);
-        const state = stateDoc.exists ? stateDoc.data() : {};
-        const now = Date.now();
-        const lastCreatedAt = state.lastCreatedAt?.toMillis() || 0;
-
-        if (now - lastCreatedAt < 5000) return; // 5-second admin cooldown
-
-        const rand = Math.random();
-        if (rand < 0.50) nextCrashPoint = 1.0 + (Math.random() * 1.5); 
-        else if (rand < 0.80) nextCrashPoint = 2.5 + (Math.random() * 3.5); 
-        else if (rand < 0.95) nextCrashPoint = 6.0 + (Math.random() * 14.0); 
-        else nextCrashPoint = 20.0 + (Math.random() * 80.0); 
-
-        nextCrashPoint = parseFloat(nextCrashPoint.toFixed(2));
-
-        t.set(stateRef, { lastCreatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
-      });
+      // ✅ Get the crash point sent by the Admin Dashboard
+      if (!crashPoint || crashPoint < 1.01) {
+        throw new Error("Invalid crash point provided by Admin.");
+      }
 
       const roundRef = await db.collection('live_trends').add({
         status: 'waiting',
         startTime: admin.firestore.FieldValue.serverTimestamp(),
-        crashPoint: nextCrashPoint,
+        crashPoint: parseFloat(crashPoint), // ✅ Use the Admin's crash point
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
 
-      return res.status(200).json({ success: true, roundId: roundRef.id, crashPoint: nextCrashPoint });
+      return res.status(200).json({ success: true, roundId: roundRef.id, crashPoint: parseFloat(crashPoint) });
     }
 
     return res.status(400).json({ error: "Invalid action." });
