@@ -4,7 +4,6 @@ const admin = require('firebase-admin');
 // INITIALIZE FIREBASE ADMIN
 // ==========================================
 if (!admin.apps.length) {
-  // Fix the newline formatting for Vercel environment variables
   const formattedPrivateKey = process.env.FIREBASE_KEY 
     ? process.env.FIREBASE_KEY.replace(/\\n/g, '\n') 
     : undefined;
@@ -77,7 +76,6 @@ module.exports = async (req, res) => {
     const decodedToken = await admin.auth().verifyIdToken(token);
     const uid = decodedToken.uid;
     
-    // Extract request body
     const { gameType, betAmount, payload } = req.body;
     
     // ✅ FIX: Force betAmount to be a strict number
@@ -94,7 +92,6 @@ module.exports = async (req, res) => {
       const walletDoc = await t.get(walletRef);
       if (!walletDoc.exists) throw new Error("Wallet not found.");
       
-      // ✅ FIX: Force balance to be a strict number
       const balance = Number(walletDoc.data().balance) || 0;
       if (balance < safeBetAmount) throw new Error("Insufficient funds.");
 
@@ -103,9 +100,6 @@ module.exports = async (req, res) => {
       let winFruit = null;
       let finalDailyLoss = 0;
 
-      // ==========================================
-      // GAME 1: FRUIT 777
-      // ==========================================
       if (gameType === 'fruit_777') {
         const userDoc = await t.get(userRef);
         let currentDailyLoss = 0;
@@ -138,10 +132,6 @@ module.exports = async (req, res) => {
         finalDailyLoss = (fruitResult && fruitResult.isJackpot) ? 0 : (currentDailyLoss + netLoss);
         t.update(userRef, { fruitDailyLoss: finalDailyLoss, lastFruitPlayDate: todayStr });
       } 
-      
-      // ==========================================
-      // GAME 2: SUPER SPIN
-      // ==========================================
       else if (gameType === 'super_spin') {
         const totalWeight = SUPER_SPIN.reduce((sum, item) => sum + item.weight, 0);
         let rand = Math.random() * totalWeight;
@@ -154,10 +144,6 @@ module.exports = async (req, res) => {
         payoutAmount = Math.floor(SUPER_SPIN[winIndex].base * safeBetAmount);
         winData = { winIndex: winIndex }; 
       }
-      
-      // ==========================================
-      // GAME 3: ANIMAL SPIN
-      // ==========================================
       else if (gameType === 'animal_spin') {
         const rand = Math.random() * 100;
         let cumulative = 0;
@@ -169,10 +155,6 @@ module.exports = async (req, res) => {
         payoutAmount = Math.floor(ANIMALS[winIndex].mult * safeBetAmount);
         winData = { winIndex: winIndex };
       }
-
-      // ==========================================
-      // GAME 4: LUCKY NUMBER
-      // ==========================================
       else if (gameType === 'lucky_number') {
         const isMatch = Math.random() < (1 / 24);
         let drawnNum = Math.floor(Math.random() * 24) + 1;
@@ -183,59 +165,32 @@ module.exports = async (req, res) => {
             let mult = 0;
             let resultName = '';
             
-            if (tierRoll < 0.70) { 
-                mult = 10; 
-                resultName = 'Standard Match'; 
-            } else if (tierRoll < 0.95) { 
-                mult = 30; 
-                resultName = 'Special Match'; 
-            } else { 
-                mult = 150; 
-                resultName = 'Jackpot Match'; 
-            }
+            if (tierRoll < 0.70) { mult = 10; resultName = 'Standard Match'; } 
+            else if (tierRoll < 0.95) { mult = 30; resultName = 'Special Match'; } 
+            else { mult = 150; resultName = 'Jackpot Match'; }
             
             payoutAmount = Math.floor(safeBetAmount * mult);
             winData = { drawnNum: drawnNum, mult: mult, resultName: resultName };
         } else {
-            while (drawnNum === selectedNum) {
-                drawnNum = Math.floor(Math.random() * 24) + 1;
-            }
+            while (drawnNum === selectedNum) { drawnNum = Math.floor(Math.random() * 24) + 1; }
             winData = { drawnNum: drawnNum, mult: 0, resultName: 'No Match' };
         }
       }
-
-      // ==========================================
-      // GAME 5: LUCKY TARGET
-      // ==========================================
       else if (gameType === 'lucky_target') {
         const rand = Math.random() * 100;
         let mult = 0;
         let zoneName = 'Miss';
         let visualPos = 50;
         
-        if (rand < 5) { 
-            mult = 4.0; zoneName = 'Bullseye'; 
-            visualPos = 50 + (Math.random() * 4 - 2); 
-        } else if (rand < 20) { 
-            mult = 1.5; zoneName = 'Inner'; 
-            visualPos = Math.random() < 0.5 ? 50 - (4 + Math.random() * 6) : 50 + (4 + Math.random() * 6); 
-        } else if (rand < 50) { 
-            mult = 0.5; zoneName = 'Middle'; 
-            visualPos = Math.random() < 0.5 ? 50 - (10 + Math.random() * 10) : 50 + (10 + Math.random() * 10); 
-        } else if (rand < 80) { 
-            mult = 0.15; zoneName = 'Outer'; 
-            visualPos = Math.random() < 0.5 ? 50 - (20 + Math.random() * 10) : 50 + (20 + Math.random() * 10); 
-        } else {
-            visualPos = Math.random() < 0.5 ? 5 + Math.random() * 15 : 80 + Math.random() * 15;
-        }
+        if (rand < 5) { mult = 4.0; zoneName = 'Bullseye'; visualPos = 50 + (Math.random() * 4 - 2); } 
+        else if (rand < 20) { mult = 1.5; zoneName = 'Inner'; visualPos = Math.random() < 0.5 ? 50 - (4 + Math.random() * 6) : 50 + (4 + Math.random() * 6); } 
+        else if (rand < 50) { mult = 0.5; zoneName = 'Middle'; visualPos = Math.random() < 0.5 ? 50 - (10 + Math.random() * 10) : 50 + (10 + Math.random() * 10); } 
+        else if (rand < 80) { mult = 0.15; zoneName = 'Outer'; visualPos = Math.random() < 0.5 ? 50 - (20 + Math.random() * 10) : 50 + (20 + Math.random() * 10); } 
+        else { visualPos = Math.random() < 0.5 ? 5 + Math.random() * 15 : 80 + Math.random() * 15; }
         
         payoutAmount = Math.floor(safeBetAmount * mult);
         winData = { name: zoneName, mult: mult, visualPos: visualPos };
       }
-
-      // ==========================================
-      // GAME 6: LUCKY TREASURE
-      // ==========================================
       else if (gameType === 'lucky_treasure') {
         const rand = Math.random() * 100;
         let cumulative = 0;
@@ -248,14 +203,10 @@ module.exports = async (req, res) => {
         payoutAmount = Math.floor(reward.mult * safeBetAmount);
         winData = { key: reward.key, name: reward.name, mult: reward.mult };
       }
-
       else {
         throw new Error("Unknown game type: " + gameType);
       }
 
-      // ==========================================
-      // UPDATE DATABASE
-      // ==========================================
       // ✅ FIX: Force strict number math
       const safePayout = Number(payoutAmount) || 0;
       const netChange = safePayout - safeBetAmount;
