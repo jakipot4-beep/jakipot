@@ -597,9 +597,9 @@
       cycleCount++;
     }, 50);
 
-    // 2. SETUP ABORT CONTROLLER TIMEOUT
+    // 2. SETUP ABORT CONTROLLER TIMEOUT (Increased to 12 seconds)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second limit
+    const timeoutId = setTimeout(() => controller.abort(), 12000); 
 
     try {
       // 3. CALL SECURE VERCEL BACKEND
@@ -610,7 +610,7 @@
         body: JSON.stringify({ 
             gameType: 'lucky_number', 
             betAmount: currentBet, 
-            payload: { selectedNum: selectedNum } // ✅ Fixed payload format
+            payload: { selectedNum: selectedNum }
         }),
         signal: controller.signal
       });
@@ -632,6 +632,7 @@
       
       const winData = data.winData;
       const winAmount = data.payoutAmount;
+      const netProfit = winAmount - currentBet;
       
       balance = data.newBalance;
       balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
@@ -645,19 +646,20 @@
         }
         instruction.textContent = `${winData.resultName}!`;
         instruction.style.color = '#facc15';
-        displayResult.textContent = `${winData.resultName} · +${winAmount.toLocaleString()}`;
+        // Show the net profit for accuracy
+        displayResult.textContent = `${winData.resultName} · +${netProfit.toLocaleString()}`;
         displayResult.className = 'display-result win';
         
         if (winData.resultName === 'Jackpot Match') {
           displayArea.classList.add('jackpot-win');
           displayResult.className = 'display-result jackpot';
           playJackpot();
-          jpPoints.textContent = '+' + winAmount.toLocaleString();
+          jpPoints.textContent = '+' + netProfit.toLocaleString();
           jackpotOverlay.classList.add('active');
         } else {
           playWin();
         }
-        showFloatingPoints(winAmount, true);
+        showFloatingPoints(netProfit, true);
       } else {
         instruction.textContent = `No match. Lost.`;
         instruction.style.color = '#ef4444';
@@ -667,7 +669,7 @@
         showFloatingPoints(-currentBet, false);
       }
 
-      addHistory(selectedNum, winData.drawnNum, winData.resultName, winAmount);
+      addHistory(selectedNum, winData.drawnNum, winData.resultName, netProfit);
       
       roundNumber++;
       roundNumEl.textContent = roundNumber;
@@ -686,7 +688,7 @@
       displayNumber.classList.remove('draw-anim');
       
       if (error.name === 'AbortError') {
-          alert("Request Timed Out! Vercel is taking too long to respond.");
+          alert("Request Timed Out! Vercel is taking too long to respond. (12s limit)");
       } else {
           console.error("Server Error:", error);
           alert(error.message || "Failed to draw number.");

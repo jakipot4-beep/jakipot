@@ -574,9 +574,9 @@
       dartWrapper.style.transform = `translateX(calc(${fakePercent}% - 50%)) translateY(${endY - startY}px)`;
     }, 50);
 
-    // 2. SETUP ABORT CONTROLLER TIMEOUT
+    // 2. SETUP ABORT CONTROLLER TIMEOUT (Increased to 12 seconds)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second limit
+    const timeoutId = setTimeout(() => controller.abort(), 12000); 
 
     try {
       // 3. CALL SECURE VERCEL BACKEND
@@ -605,6 +605,7 @@
       // 5. MOVE DART TO REAL RESULT (from server)
       const winData = data.winData;
       const winAmount = data.payoutAmount;
+      const netProfit = winAmount - currentBet;
       const visualPercent = winData.visualPos;
 
       setTimeout(() => {
@@ -618,7 +619,8 @@
           else hitMarker.classList.remove('miss');
           hitMarker.classList.add('show');
 
-          if (winAmount > 0) {
+          // ✅ FIX: Only show a WIN state if netProfit is positive
+          if (netProfit > 0) {
             balanceEl.classList.remove('pulse');
             void balanceEl.offsetWidth;
             balanceEl.classList.add('pulse');
@@ -633,23 +635,28 @@
 
             if (winData.name === 'Bullseye') {
               playBullseyeSound();
-              instruction.textContent = `BULLSEYE! +${currencySymbol}${winAmount.toLocaleString()}!`;
+              instruction.textContent = `BULLSEYE! +${currencySymbol}${netProfit.toLocaleString()} Profit!`;
               instruction.style.color = '#facc15';
             } else {
               playWinSound();
-              instruction.textContent = `${winData.name} hit! +${currencySymbol}${winAmount.toLocaleString()}`;
+              instruction.textContent = `${winData.name} hit! +${currencySymbol}${netProfit.toLocaleString()} Profit!`;
               instruction.style.color = '#facc15';
             }
 
-            showFloatingPoints(winAmount, visualPercent, true);
+            showFloatingPoints(netProfit, visualPercent, true);
+          } else if (netProfit === 0) {
+            playLoseSound();
+            instruction.textContent = `You broke even.`;
+            instruction.style.color = '#a3a3a3';
+            showFloatingPoints(0, visualPercent, false);
           } else {
             playLoseSound();
-            instruction.textContent = `MISSED! Lost ${currencySymbol}${currentBet.toLocaleString()}`;
+            instruction.textContent = `${winData.name} hit. Lost ${currencySymbol}${Math.abs(netProfit).toLocaleString()}`;
             instruction.style.color = '#ef4444';
-            showFloatingPoints(-currentBet, visualPercent, false);
+            showFloatingPoints(netProfit, visualPercent, false);
           }
 
-          addHistory(winData.name, winAmount);
+          addHistory(winData.name, netProfit);
           
           gameState = 'REVEALED';
           throwBtn.style.display = 'none';
@@ -662,7 +669,7 @@
       clearTimeout(timeoutId);
       
       if (error.name === 'AbortError') {
-          alert("Request Timed Out! Vercel is taking too long to respond.");
+          alert("Request Timed Out! Vercel is taking too long to respond. (12s limit)");
       } else {
           console.error("Server Error:", error);
           alert(error.message || "Failed to throw dart.");
@@ -725,7 +732,9 @@
       const div = document.createElement('div');
       div.className = 'history-item';
       const amountClass = h.amount > 0 ? 'win' : 'loss';
-      div.innerHTML = `<span class="h-round">#${h.num}</span><span class="h-reward">${h.zone}</span><span class="h-points ${amountClass}">${h.amount > 0 ? '+' + h.amount.toLocaleString() : '0'}</span>`;
+      // ✅ FIX: Ensure negative numbers show correctly in history
+      const amountText = h.amount > 0 ? '+' + h.amount.toLocaleString() : h.amount.toLocaleString();
+      div.innerHTML = `<span class="h-round">#${h.num}</span><span class="h-reward">${h.zone}</span><span class="h-points ${amountClass}">${amountText}</span>`;
       historyList.appendChild(div);
     });
   }

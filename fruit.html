@@ -574,8 +574,9 @@
                 });
             }, 50);
 
+            // 2. SETUP ABORT CONTROLLER TIMEOUT (Increased to 12 seconds)
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000);
+            const timeoutId = setTimeout(() => controller.abort(), 12000);
 
             try {
                 const idToken = await currentUser.getIdToken();
@@ -637,7 +638,7 @@
                 clearInterval(fakeSpinInterval);
                 
                 if (e.name === 'AbortError') {
-                    alert("Request Timed Out! Vercel is taking too long to respond.");
+                    alert("Request Timed Out! Vercel is taking too long to respond. (12s limit)");
                 } else {
                     console.error("Transaction failed:", e);
                     alert(e.message || "Failed to process spin. Please check your connection.");

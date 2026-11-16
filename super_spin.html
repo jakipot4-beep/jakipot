@@ -714,9 +714,9 @@
                 wheelEl.style.transform = `rotate(${spinSpeed}deg)`;
             }, 16); // ~60fps
 
-            // 2. SETUP ABORT CONTROLLER TIMEOUT
+            // 2. SETUP ABORT CONTROLLER TIMEOUT (Increased to 12 seconds)
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second limit
+            const timeoutId = setTimeout(() => controller.abort(), 12000); 
 
             try {
                 // 3. GET SECURE TOKEN
@@ -752,6 +752,7 @@
 
                 const winIndex = data.winData.winIndex;
                 const winAmount = data.payoutAmount;
+                const netProfit = winAmount - currentBet;
 
                 // 7. ANIMATE TO THE REAL RESULT
                 const angleStep = 360 / WHEEL_DATA.length;
@@ -793,16 +794,19 @@
                         }, 3000);
                     }
 
-                    // Show Win Animations
-                    const isBigWin = WHEEL_DATA[winIndex].base >= 10;
-                    if (isBigWin) {
-                        playBigWinSound();
-                        bigWinOverlay.classList.add('active');
-                        animateValue(bigWinAmount, 0, winAmount, 2000); 
-                        setTimeout(() => bigWinOverlay.classList.remove('active'), 3500);
-                    } else if (winAmount > 0) {
-                        playWinSound();
-                    }
+                    // ✅ FIX: Only show Big Win if the user made a profit
+                    const multiplier = WHEEL_DATA[winIndex].base;
+                    if (netProfit > 0) {
+                        if (multiplier >= 10) {
+                            playBigWinSound();
+                            bigWinOverlay.classList.add('active');
+                            animateValue(bigWinAmount, 0, netProfit, 2000); // Show net profit
+                            setTimeout(() => bigWinOverlay.classList.remove('active'), 3500);
+                        } else {
+                            playWinSound();
+                        }
+                    } 
+                    // If netProfit <= 0 (loss or break even), do nothing (silent loss)
                 }, 6100);
 
             } catch (e) {
@@ -810,7 +814,7 @@
                 clearInterval(fakeInterval); // ✅ FIXED: Stop the fake spin!
                 
                 if (e.name === 'AbortError') {
-                    alert("Request Timed Out! Vercel is taking too long to respond.");
+                    alert("Request Timed Out! Vercel is taking too long to respond. (12s limit)");
                 } else {
                     alert(e.message || "An error occurred.");
                 }

@@ -158,10 +158,10 @@
   }
   .h-round { color: #666; font-weight: 700; }
   .h-box { color: var(--gold-4); font-weight: 700; }
-  .h-points { font-weight: 900; color: var(--gold-2); }
+  .h-points { font-weight: 900; }
 
   /* FLOATING TEXT */
-  .floating-pts { position: fixed; font-size: 22px; font-weight: 900; color: var(--gold-2); text-shadow: 0 0 15px rgba(250, 204, 21, 1); pointer-events: none; z-index: 500; animation: floatUp 1.5s ease-out forwards; }
+  .floating-pts { position: fixed; font-size: 22px; font-weight: 900; pointer-events: none; z-index: 500; animation: floatUp 1.5s ease-out forwards; }
   @keyframes floatUp { 0% { opacity: 0; transform: translateY(0) scale(0.5); } 20% { opacity: 1; transform: translateY(-15px) scale(1.1); } 100% { opacity: 0; transform: translateY(-80px) scale(0.8); } }
 
   /* TOP BUTTONS */
@@ -653,9 +653,9 @@
       chestGrid.querySelector(`[data-index="${randomBox}"]`).classList.add('selected');
     }, 100);
 
-    // 2. SETUP ABORT CONTROLLER TIMEOUT
+    // 2. SETUP ABORT CONTROLLER TIMEOUT (Increased to 12 seconds)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second limit
+    const timeoutId = setTimeout(() => controller.abort(), 12000); 
 
     try {
       // 3. CALL SECURE VERCEL BACKEND
@@ -685,6 +685,7 @@
       // 5. SET REAL RESULT FROM SERVER
       const reward = REWARDS.find(r => r.key === data.winData.key) || REWARDS[0];
       const winAmount = data.payoutAmount;
+      const netProfit = winAmount - currentBet;
       
       const cell = chestGrid.querySelector(`[data-index="${selectedBox}"]`);
       document.querySelectorAll('.chest-cell').forEach(c => c.classList.remove('selected'));
@@ -694,23 +695,39 @@
         setTimeout(() => {
           cell.classList.add('revealing');
           const revealDiv = cell.querySelector('.reward-reveal');
-          if (revealDiv) revealDiv.innerHTML = getRewardSVG(reward) + `<div class="points-badge">+${winAmount.toLocaleString()}</div>`;
+          
+          // ✅ FIX: Show net profit, not just payout
+          const badgeText = netProfit >= 0 ? `+${netProfit.toLocaleString()}` : `${netProfit.toLocaleString()}`;
+          if (revealDiv) revealDiv.innerHTML = getRewardSVG(reward) + `<div class="points-badge" style="color: ${netProfit >= 0 ? '#000' : '#ef4444'}; background: ${netProfit >= 0 ? 'linear-gradient(180deg, #fde047 0%, #eab308 100%)' : '#1a1a1a'}; border-color: ${netProfit >= 0 ? '#fef9c3' : '#ef4444'}">${badgeText}</div>`;
 
           roundNumber++;
           roundsEl.textContent = roundNumber;
-          setTimeout(() => showFloatingPoints(winAmount, cell), 200);
-          addHistoryEntry(roundNumber, selectedBox + 1, reward, winAmount);
+          
+          setTimeout(() => showFloatingPoints(netProfit, cell), 200);
+          addHistoryEntry(roundNumber, selectedBox + 1, reward, netProfit);
 
           if (reward.key === 'jackpot') {
-            setTimeout(() => showJackpotCelebration(winAmount), 800);
-          } else {
+            setTimeout(() => showJackpotCelebration(netProfit), 800);
+          } else if (netProfit > 0) {
             playWinSound();
           }
 
           setTimeout(() => {
             state = 'REVEALED';
             playAgainBtn.style.display = 'block';
-            instruction.textContent = `You won ${winAmount.toLocaleString()}!`;
+            
+            // ✅ FIX: Accurate instruction text based on profit
+            if (netProfit > 0) {
+                instruction.textContent = `You won ${currencySymbol}${netProfit.toLocaleString()} profit!`;
+                instruction.style.color = '#facc15';
+            } else if (netProfit === 0) {
+                instruction.textContent = `You broke even.`;
+                instruction.style.color = '#a3a3a3';
+            } else {
+                instruction.textContent = `You lost ${currencySymbol}${Math.abs(netProfit).toLocaleString()}.`;
+                instruction.style.color = '#ef4444';
+            }
+
             if (balance < currentBet) {
               currentBet = Math.max(3, Math.min(balance, 1000));
               updateBetDisplay();
@@ -724,7 +741,7 @@
       clearInterval(fakeInterval);
       
       if (error.name === 'AbortError') {
-          alert("Request Timed Out! Vercel is taking too long to respond.");
+          alert("Request Timed Out! Vercel is taking too long to respond. (12s limit)");
       } else {
           console.error("Server Error:", error);
           alert(error.message || "Failed to open treasure.");
@@ -748,7 +765,18 @@
     const rect = cell.getBoundingClientRect();
     const el = document.createElement('div');
     el.className = 'floating-pts';
-    el.textContent = '+' + points.toLocaleString();
+    
+    // ✅ FIX: Handle negative numbers for floating text
+    el.textContent = (points > 0 ? '+' : '') + points.toLocaleString();
+    
+    if (points > 0) {
+        el.style.color = 'var(--gold-2)';
+        el.style.textShadow = '0 0 15px rgba(250, 204, 21, 1)';
+    } else {
+        el.style.color = '#ef4444';
+        el.style.textShadow = '0 0 15px rgba(239, 68, 68, 1)';
+    }
+
     el.style.left = (rect.left + rect.width / 2) + 'px';
     el.style.top = (rect.top + rect.height / 2) + 'px';
     el.style.transform = 'translate(-50%, -50%)';
@@ -756,22 +784,29 @@
     setTimeout(() => el.remove(), 1500);
   }
 
-  function addHistoryEntry(round, boxNum, reward, winAmount) {
-    history.unshift({ round, boxNum, reward, winAmount });
+  function addHistoryEntry(round, boxNum, reward, netProfit) {
+    history.unshift({ round, boxNum, reward, netProfit });
     if (history.length > 10) history.pop();
     if (history.length === 0) { historyList.innerHTML = '<div class="history-empty">No history</div>'; return; }
     historyList.innerHTML = '';
+    
     history.forEach(h => {
       const item = document.createElement('div');
       item.className = 'history-item';
-      item.innerHTML = `<span class="h-round">#${h.round}</span> <span class="h-box">Box ${h.boxNum}</span> <span class="h-points">+${h.winAmount.toLocaleString()}</span>`;
+      
+      // ✅ FIX: Color code the history based on net profit
+      const isWin = h.netProfit >= 0;
+      const color = isWin ? 'var(--green)' : '#ef4444';
+      const text = isWin ? `+${h.netProfit.toLocaleString()}` : `${h.netProfit.toLocaleString()}`;
+      
+      item.innerHTML = `<span class="h-round">#${h.round}</span> <span class="h-box">Box ${h.boxNum}</span> <span class="h-points" style="color:${color}">${text}</span>`;
       historyList.appendChild(item);
     });
   }
 
-  function showJackpotCelebration(winAmount) {
+  function showJackpotCelebration(netProfit) {
     playJackpotSound();
-    jpPoints.textContent = '+' + winAmount.toLocaleString();
+    jpPoints.textContent = '+' + netProfit.toLocaleString();
     jackpotOverlay.classList.add('active');
   }
 

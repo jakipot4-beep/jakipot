@@ -474,7 +474,6 @@
     currentUser = user;
 
     onSnapshot(doc(db, 'users', user.uid), (snap) => {
-      // ✅ FIXED: Added () for Web SDK
       if (snap.exists()) {
         const userCurrency = snap.data().currency || 'ZMW';
         currencySymbol = CURRENCY_MAP[userCurrency] || userCurrency;
@@ -483,7 +482,6 @@
     });
 
     onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
-      // ✅ FIXED: Added () for Web SDK
       if (snap.exists()) {
         balance = snap.data().balance || 0;
         balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
@@ -602,9 +600,9 @@
       wheelGroup.style.transform = `rotate(${fakeSpeed}deg)`;
     }, 16);
 
-    // 2. SETUP ABORT CONTROLLER TIMEOUT
+    // 2. SETUP ABORT CONTROLLER TIMEOUT (Increased to 12 seconds)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second limit
+    const timeoutId = setTimeout(() => controller.abort(), 12000); 
 
     try {
       // 3. CALL SECURE VERCEL BACKEND
@@ -639,6 +637,7 @@
       const winIndex = data.winData.winIndex;
       const winner = ANIMALS[winIndex];
       const winAmount = data.payoutAmount;
+      const netProfit = winAmount - currentBet;
 
       const targetModulo = 360 - (winIndex * SLICE_ANGLE);
       let currentModulo = fakeSpeed % 360;
@@ -666,23 +665,28 @@
         isSpinning = false;
         spinBtn.disabled = false;
 
-        if (winAmount > 0) {
-          instruction.textContent = `${winner.name} hit ${winner.multiplier}x! +${currencySymbol}${winAmount.toLocaleString()}!`;
+        // ✅ FIX: Only show the win popup if netProfit is greater than 0
+        if (netProfit > 0) {
+          instruction.textContent = `${winner.name} hit ${winner.multiplier}x! +${currencySymbol}${netProfit.toLocaleString()} Profit!`;
           instruction.className = 'instruction win';
           
           if (winner.name === 'Lion') playJackpot();
           else playWin();
           
-          showWinPopup(winner, winAmount);
+          showWinPopup(winner, netProfit);
+        } else if (netProfit === 0) {
+          instruction.textContent = `${winner.name} landed. You broke even.`;
+          instruction.className = 'instruction';
+          playLose();
         } else {
-          instruction.textContent = `${winner.name} landed. No win.`;
+          instruction.textContent = `${winner.name} landed. You lost ${currencySymbol}${Math.abs(netProfit).toLocaleString()}.`;
           instruction.className = 'instruction';
           playLose();
         }
 
         roundNumber++;
         roundNumEl.textContent = roundNumber;
-        addHistory(winner.name, winAmount);
+        addHistory(winner.name, netProfit);
         playAgainBtn.style.display = 'flex';
         
         if (balance < currentBet) {
@@ -699,7 +703,7 @@
       spinBtn.disabled = false;
       
       if (error.name === 'AbortError') {
-          alert("Request Timed Out! Vercel is taking too long to respond.");
+          alert("Request Timed Out! Vercel is taking too long to respond. (12s limit)");
       } else {
           console.error("Server Error:", error);
           alert(error.message || "Failed to spin.");
@@ -710,10 +714,10 @@
     }
   });
 
-  function showWinPopup(winner, winAmount) {
+  function showWinPopup(winner, profitAmount) {
     winIcon.innerHTML = `<svg viewBox="0 0 100 100" width="100%" height="100%">${getAnimalSVG(winner.icon, 50, 50)}</svg>`;
     winTitle.textContent = winner.name.toUpperCase() + ' WIN!';
-    winAmount.textContent = '+' + winAmount.toLocaleString();
+    winAmount.textContent = '+' + profitAmount.toLocaleString();
     winOverlay.classList.add('active');
   }
 
@@ -733,7 +737,7 @@
       const div = document.createElement('div');
       div.className = 'history-item';
       const ptsClass = h.pts > 0 ? 'win' : 'loss';
-      div.innerHTML = `<span class="h-round">#${h.round}</span> <span class="h-animal">${h.animal}</span> <span class="h-points ${ptsClass}">${h.pts > 0 ? '+' + h.pts : '0'}</span>`;
+      div.innerHTML = `<span class="h-round">#${h.round}</span> <span class="h-animal">${h.animal}</span> <span class="h-points ${ptsClass}">${h.pts > 0 ? '+' + h.pts : h.pts}</span>`;
       historyList.appendChild(div);
     });
   }
