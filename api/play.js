@@ -1,8 +1,5 @@
 const admin = require('firebase-admin');
 
-// ==========================================
-// INITIALIZE FIREBASE ADMIN
-// ==========================================
 if (!admin.apps.length) {
   const formattedPrivateKey = process.env.FIREBASE_KEY 
     ? process.env.FIREBASE_KEY.replace(/\\n/g, '\n') 
@@ -19,66 +16,36 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-// ==========================================
-// GAME DATA & PROBABILITIES
-// ==========================================
-const FRUITS = [
-    { icon: '🍏', name: 'Green Apple', basePay: 1, prob: 8.0 },
-    { icon: '🍓', name: 'Strawberry', basePay: 2, prob: 4.0 },
-    { icon: '🍋', name: 'Lemon', basePay: 3, prob: 3.0 },
-    { icon: '🍍', name: 'Pineapple', basePay: 4, prob: 2.0 },
-    { icon: '🥥', name: 'Coconut', basePay: 5, prob: 1.5 },
-    { icon: '🍒', name: 'Cherry', basePay: 8, prob: 1.0 },
-    { icon: '🍎', name: 'Apple', basePay: 10, prob: 0.8 },
-    { icon: '🍉', name: 'Melon', basePay: 15, prob: 0.5 },
-    { icon: '🍌', name: 'Banana', basePay: 20, prob: 0.3 },
-    { icon: '🍇', name: 'Grape', basePay: 50, prob: 0.2 },
-    { icon: '🔔', name: 'Bell', basePay: 60, prob: 0.1 },
-    { icon: '🍊', name: 'Orange', basePay: 120, prob: 0.05 },
-    { icon: '🥭', name: 'Mango', basePay: 210, prob: 0.04 },
-    { icon: '777', name: 'JACKPOT', basePay: 1000, prob: 0.01, isJackpot: true }
-];
+// ... (Your FRUITS, SUPER_SPIN, ANIMALS, TREASURES arrays stay exactly the same) ...
+const FRUITS = [ /* ... */ ];
 const LOSS_TARGET = 3000;
+const SUPER_SPIN = [ /* ... */ ];
+const ANIMALS = [ /* ... */ ];
+const TREASURES = [ /* ... */ ];
 
-const SUPER_SPIN = [
-    { base: 100, weight: 0.01 }, { base: 0.5, weight: 37.67 }, { base: 50, weight: 0.02 },
-    { base: 0.8, weight: 20 }, { base: 10, weight: 0.1 }, { base: 0.9, weight: 15 },
-    { base: 5.0, weight: 0.2 }, { base: 1.2, weight: 12 }, { base: 1.5, weight: 8 },
-    { base: 2.0, weight: 5 }, { base: 3.0, weight: 2 }
-];
-
-const ANIMALS = [
-    { mult: 0.1, prob: 45.0 }, { mult: 0.3, prob: 25.0 }, { mult: 1.0, prob: 15.0 },
-    { mult: 2.0, prob: 8.0 }, { mult: 3.0, prob: 4.0 }, { mult: 5.0, prob: 2.0 },
-    { mult: 15.0, prob: 0.8 }, { mult: 100.0, prob: 0.2 }
-];
-
-const TREASURES = [
-    { key: 'small', name: 'Small', mult: 0.2, prob: 55.0 },
-    { key: 'silver', name: 'Silver', mult: 0.5, prob: 27.0 },
-    { key: 'gold', name: 'Gold', mult: 1.0, prob: 12.0 },
-    { key: 'diamond', name: 'Diamond', mult: 3.0, prob: 4.0 },
-    { key: 'mega', name: 'Mega', mult: 10.0, prob: 1.7 },
-    { key: 'jackpot', name: 'Jackpot', mult: 100.0, prob: 0.3 }
-];
-
-// ==========================================
-// MAIN API ENDPOINT
-// ==========================================
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    const token = req.headers.authorization.split('Bearer ')[1];
+    // ✅ SAFE HEADER EXTRACTION
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log("❌ Error: Missing or invalid Authorization header");
+      return res.status(401).json({ error: "Unauthorized: Missing token." });
+    }
+    const token = authHeader.split('Bearer ')[1];
+    
+    console.log("⏳ Verifying Firebase Token...");
     const decodedToken = await admin.auth().verifyIdToken(token);
     const uid = decodedToken.uid;
+    console.log("✅ Token Verified for UID:", uid);
     
     const { gameType, betAmount, payload } = req.body;
     
-    // ✅ FIX: Force betAmount to be a strict number
     const safeBetAmount = Number(betAmount) || 0;
     if (safeBetAmount <= 0) throw new Error("Invalid bet amount.");
 
@@ -87,6 +54,8 @@ module.exports = async (req, res) => {
     const walletRef = db.collection("wallets").doc(uid);
     const userRef = db.collection("users").doc(uid);
     const todayStr = new Date().toISOString().split('T')[0];
+
+    console.log(`🎮 Starting Firestore Transaction for ${gameType}...`);
 
     const result = await db.runTransaction(async (t) => {
       const walletDoc = await t.get(walletRef);
@@ -207,7 +176,6 @@ module.exports = async (req, res) => {
         throw new Error("Unknown game type: " + gameType);
       }
 
-      // ✅ FIX: Force strict number math
       const safePayout = Number(payoutAmount) || 0;
       const netChange = safePayout - safeBetAmount;
       const newBalance = balance + netChange;
@@ -236,10 +204,11 @@ module.exports = async (req, res) => {
       };
     });
 
+    console.log("✅ Transaction Complete! Sending Response.");
     return res.status(200).json({ success: true, ...result });
 
   } catch (error) {
-    console.error("Play Error:", error);
+    console.error("❌ Play Error:", error);
     res.status(500).json({ error: error.message });
   }
 };
