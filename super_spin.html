@@ -451,8 +451,8 @@
         let isSpinning = false;
         let currentRotation = 0;
         let isMuted = localStorage.getItem('jakipotFruitMuted') === 'true';
-        let isProcessingTx = false; // ✅ NEW
-        let pendingNewBalance = 0;  // ✅ NEW
+        let isProcessingTx = false; 
+        let pendingNewBalance = 0;  
 
         // DOM Elements
         const wheelEl = document.getElementById('wheel');
@@ -529,7 +529,6 @@
             onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
                 if (snap.exists()) {
                     const serverBalance = snap.data().balance || 0;
-                    // ✅ FIX: Ignore server updates while spinning
                     if (!isSpinning && !isProcessingTx) {
                         balance = serverBalance;
                         updateUI();
@@ -706,31 +705,34 @@
             }
 
             isSpinning = true;
-            isProcessingTx = true; // ✅ NEW
+            isProcessingTx = true; 
             spinBtn.disabled = true;
             neonRing.classList.add('spinning');
 
-            // ✅ FIX: Deduct bet instantly from UI
             balance -= currentBet;
             updateUI();
 
-            // 1. FAKE SPIN ANIMATION (Starts instantly)
             let spinSpeed = 0;
             let fakeInterval = setInterval(() => {
                 spinSpeed += 15;
-                wheelEl.style.transition = 'none'; // Remove transition for instant rotation
+                wheelEl.style.transition = 'none'; 
                 wheelEl.style.transform = `rotate(${spinSpeed}deg)`;
-            }, 16); // ~60fps
+            }, 16); 
 
-            // 2. SETUP ABORT CONTROLLER TIMEOUT (Increased to 12 seconds)
+            // ✅ INCREASED TIMEOUT TO 25 SECONDS
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 12000); 
+            const timeoutId = setTimeout(() => controller.abort(), 25000); 
+
+            // ✅ SHOW MESSAGE IF SERVER IS SLOW
+            setTimeout(() => {
+                if (isProcessingTx) {
+                    spinBtn.innerHTML = `CONNECTING...<div class="spin-sub">WAKING SERVER</div>`;
+                }
+            }, 5000);
 
             try {
-                // 3. GET SECURE TOKEN
                 const idToken = await currentUser.getIdToken();
 
-                // 4. CALL VERCEL SECURE SERVER
                 const response = await fetch('https://jakipot.vercel.app/api/play', {
                     method: 'POST',
                     headers: {
@@ -741,7 +743,7 @@
                     signal: controller.signal
                 });
 
-                clearTimeout(timeoutId); // Stop timer
+                clearTimeout(timeoutId); 
 
                 if (!response.ok) {
                     const errData = await response.json().catch(() => ({}));
@@ -751,17 +753,14 @@
                 const data = await response.json();
                 if (data.error) throw new Error(data.error);
 
-                // 5. STOP FAKE SPIN
                 clearInterval(fakeInterval);
 
-                // ✅ FIX: Store new balance instead of applying immediately
                 pendingNewBalance = data.newBalance;
 
                 const winIndex = data.winData.winIndex;
                 const winAmount = data.payoutAmount;
                 const netProfit = winAmount - currentBet;
 
-                // 6. ANIMATE TO THE REAL RESULT
                 const angleStep = 360 / WHEEL_DATA.length;
                 const targetModulo = 360 - (winIndex * angleStep);
                 let currentModulo = spinSpeed % 360;
@@ -771,7 +770,6 @@
                 const baseSpins = 360 * 8;
                 const targetRotation = spinSpeed + baseSpins + diff;
                 
-                // Apply the real CSS transition for the final spin
                 wheelEl.style.transition = 'transform 6s cubic-bezier(0.15, 0.9, 0.15, 1)';
                 wheelEl.style.transform = `rotate(${targetRotation}deg)`;
                 currentRotation = targetRotation;
@@ -785,15 +783,14 @@
                 setTimeout(() => {
                     clearInterval(tickInterval);
                     isSpinning = false;
-                    isProcessingTx = false; // ✅ Now turn it off
+                    isProcessingTx = false; 
                     spinBtn.disabled = false;
+                    spinBtn.innerHTML = `SPIN!<div class="spin-sub">HOLD FOR AUTO</div>`;
                     neonRing.classList.remove('spinning');
                     
-                    // ✅ FIX: Apply the server's new balance NOW
                     balance = pendingNewBalance;
                     updateUI();
 
-                    // Highlight winning slice
                     const sliceEl = document.getElementById(`slice-${winIndex}`);
                     if (sliceEl) {
                         sliceEl.style.stroke = "#fff";
@@ -806,38 +803,36 @@
                         }, 3000);
                     }
 
-                    // ✅ FIX: Only show Big Win if the user made a profit
                     const multiplier = WHEEL_DATA[winIndex].base;
                     if (netProfit > 0) {
                         if (multiplier >= 10) {
                             playBigWinSound();
                             bigWinOverlay.classList.add('active');
-                            animateValue(bigWinAmount, 0, netProfit, 2000); // Show net profit
+                            animateValue(bigWinAmount, 0, netProfit, 2000); 
                             setTimeout(() => bigWinOverlay.classList.remove('active'), 3500);
                         } else {
                             playWinSound();
                         }
                     } 
-                    // If netProfit <= 0 (loss or break even), do nothing (silent loss)
                 }, 6100);
 
             } catch (e) {
                 clearTimeout(timeoutId);
-                clearInterval(fakeInterval); // ✅ FIXED: Stop the fake spin!
+                clearInterval(fakeInterval); 
                 
-                // ✅ FIX: Refund UI on error
                 balance += currentBet;
                 updateUI();
-                isProcessingTx = false; // ✅ Now turn it off
+                isProcessingTx = false; 
 
                 if (e.name === 'AbortError') {
-                    alert("Request Timed Out! Vercel is taking too long to respond. (12s limit)");
+                    alert("Request Timed Out! Vercel is taking too long to respond. (25s limit)");
                 } else {
                     alert(e.message || "An error occurred.");
                 }
                 
                 isSpinning = false;
                 spinBtn.disabled = false;
+                spinBtn.innerHTML = `SPIN!<div class="spin-sub">HOLD FOR AUTO</div>`;
                 neonRing.classList.remove('spinning');
             }
         };

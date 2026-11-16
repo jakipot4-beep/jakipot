@@ -326,7 +326,7 @@
         let isProcessingTx = false;
         
         let pendingWin = 0;
-        let pendingNewBalance = 0; // ✅ NEW
+        let pendingNewBalance = 0; 
         let bigWinAnimationId = null;
         let dailyLoss = 0;
         let lastPlayDate = '';
@@ -405,7 +405,6 @@
             onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
                 if (snap.exists()) {
                     const serverBalance = snap.data().balance || 0;
-                    // ✅ FIX: Ignore server updates while spinning
                     if (!isSpinning && !isProcessingTx) {
                         userBalance = serverBalance;
                         updateBalanceUI();
@@ -573,7 +572,6 @@
             document.getElementById('spin-btn').disabled = true;
             document.getElementById('spin-btn').innerText = "SPINNING...";
 
-            // ✅ FIX: Deduct bet instantly from UI
             userBalance -= currentBet;
             updateBalanceUI();
 
@@ -583,9 +581,16 @@
                 });
             }, 50);
 
-            // 2. SETUP ABORT CONTROLLER TIMEOUT (Increased to 12 seconds)
+            // ✅ INCREASED TIMEOUT TO 25 SECONDS
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 12000);
+            const timeoutId = setTimeout(() => controller.abort(), 25000);
+
+            // ✅ SHOW MESSAGE IF SERVER IS SLOW
+            setTimeout(() => {
+                if (isSpinning) {
+                    document.getElementById('spin-btn').innerText = "WAKING SERVER...";
+                }
+            }, 5000);
 
             try {
                 const idToken = await currentUser.getIdToken();
@@ -611,7 +616,6 @@
                 if (data.error) throw new Error(data.error);
 
                 clearInterval(fakeSpinInterval);
-                // ✅ FIX: Store new balance instead of applying immediately
                 pendingNewBalance = data.newBalance;
                 dailyLoss = data.newDailyLoss;
 
@@ -635,9 +639,6 @@
                     pendingWin = 0;
                 }
 
-                // Don't set isProcessingTx = false here! Wait for animation to finish.
-                // isProcessingTx = false; 
-
                 animateColumn(0, 3000);
                 animateColumn(1, 3500);
                 animateColumn(2, 4000);
@@ -646,12 +647,11 @@
                 clearTimeout(timeoutId);
                 clearInterval(fakeSpinInterval);
                 
-                // ✅ FIX: Refund UI on error
                 userBalance += currentBet;
                 updateBalanceUI();
                 
                 if (e.name === 'AbortError') {
-                    alert("Request Timed Out! Vercel is taking too long to respond. (12s limit)");
+                    alert("Request Timed Out! Vercel is taking too long to respond. (25s limit)");
                 } else {
                     console.error("Transaction failed:", e);
                     alert(e.message || "Failed to process spin. Please check your connection.");
@@ -700,11 +700,10 @@
                 } else {
                     if (colIndex === 2) {
                         isSpinning = false;
-                        isProcessingTx = false; // ✅ Now turn it off
+                        isProcessingTx = false;
                         document.getElementById('spin-btn').disabled = false;
                         document.getElementById('spin-btn').innerText = `SPIN - ${currencySymbol}${currentBet}`;
                         
-                        // ✅ FIX: Apply the server's new balance NOW
                         userBalance = pendingNewBalance;
                         updateBalanceUI();
                         
@@ -720,7 +719,6 @@
                 const winAmount = pendingWin;
                 const netProfit = winAmount - currentBet;
                 
-                // ✅ FIX: Only show WIN screens if the payout is GREATER than the bet
                 if (netProfit > 0) {
                     if (winAmount >= 15) {
                         showBigWin(winAmount, netProfit);
@@ -728,14 +726,11 @@
                         showSmallWin(lastSpinFruit, winAmount, netProfit);
                     }
                 } else {
-                    // Payout was less than or equal to bet (e.g. won K1 on K10 bet)
-                    // Treat as a loss silently so user isn't confused
                     pendingWin = 0;
                     lastSpinFruit = null;
                     updateBetUI(); 
                 }
             } else {
-                // Complete loss (0 payout)
                 updateBetUI(); 
             }
         }
@@ -786,7 +781,6 @@
             } else {
                 icon.innerHTML = getFruitSVG(fruit.icon);
                 title.innerText = 'You Won!';
-                // ✅ FIX: Clearly show the Payout and the Net Profit
                 msg.innerText = `3x ${fruit.name}! Payout: ${currencySymbol}${winAmount.toLocaleString()} (Profit: +${currencySymbol}${netProfit.toLocaleString()})`;
             }
 
