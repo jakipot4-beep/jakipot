@@ -3,5 +3,12 @@
   "version": "1.0.0",
   "dependencies": {
     "firebase-admin": "^11.8.0"
+  },
+  "vercel": {
+    "functions": {
+      "api/*.js": {
+        "maxDuration": 30
+      }
+    }
   }
 }
