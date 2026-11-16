@@ -79,7 +79,12 @@ module.exports = async (req, res) => {
     
     // Extract request body
     const { gameType, betAmount, payload } = req.body;
-    const selectedNum = (payload && payload.selectedNum) || req.body.selectedNum || 1;
+    
+    // ✅ FIX: Force betAmount to be a strict number
+    const safeBetAmount = Number(betAmount) || 0;
+    if (safeBetAmount <= 0) throw new Error("Invalid bet amount.");
+
+    const selectedNum = Number((payload && payload.selectedNum) || req.body.selectedNum || 1);
 
     const walletRef = db.collection("wallets").doc(uid);
     const userRef = db.collection("users").doc(uid);
@@ -89,8 +94,9 @@ module.exports = async (req, res) => {
       const walletDoc = await t.get(walletRef);
       if (!walletDoc.exists) throw new Error("Wallet not found.");
       
-      const balance = walletDoc.data().balance;
-      if (balance < betAmount) throw new Error("Insufficient funds.");
+      // ✅ FIX: Force balance to be a strict number
+      const balance = Number(walletDoc.data().balance) || 0;
+      if (balance < safeBetAmount) throw new Error("Insufficient funds.");
 
       let payoutAmount = 0;
       let winData = null;
@@ -104,9 +110,8 @@ module.exports = async (req, res) => {
         const userDoc = await t.get(userRef);
         let currentDailyLoss = 0;
         
-        // ✅ Fixed: No parentheses on exists
         if (userDoc.exists && userDoc.data().lastFruitPlayDate === todayStr) {
-            currentDailyLoss = userDoc.data().fruitDailyLoss || 0;
+            currentDailyLoss = Number(userDoc.data().fruitDailyLoss) || 0;
         }
         const isUnlocked = currentDailyLoss >= LOSS_TARGET;
 
@@ -124,12 +129,12 @@ module.exports = async (req, res) => {
             cumulative += f.prob;
         }
 
-        const scaleFactor = betAmount / 6;
+        const scaleFactor = safeBetAmount / 6;
         payoutAmount = fruitResult ? Math.floor(fruitResult.basePay * scaleFactor) : 0;
         winFruit = fruitResult;
         winData = fruitResult;
 
-        const netLoss = Math.max(0, betAmount - payoutAmount);
+        const netLoss = Math.max(0, safeBetAmount - payoutAmount);
         finalDailyLoss = (fruitResult && fruitResult.isJackpot) ? 0 : (currentDailyLoss + netLoss);
         t.update(userRef, { fruitDailyLoss: finalDailyLoss, lastFruitPlayDate: todayStr });
       } 
@@ -146,7 +151,7 @@ module.exports = async (req, res) => {
             if (rand < SUPER_SPIN[i].weight) { winIndex = i; break; }
             rand -= SUPER_SPIN[i].weight;
         }
-        payoutAmount = Math.floor(SUPER_SPIN[winIndex].base * betAmount);
+        payoutAmount = Math.floor(SUPER_SPIN[winIndex].base * safeBetAmount);
         winData = { winIndex: winIndex }; 
       }
       
@@ -161,7 +166,7 @@ module.exports = async (req, res) => {
             if (rand <= cumulative + ANIMALS[i].prob) { winIndex = i; break; }
             cumulative += ANIMALS[i].prob;
         }
-        payoutAmount = Math.floor(ANIMALS[winIndex].mult * betAmount);
+        payoutAmount = Math.floor(ANIMALS[winIndex].mult * safeBetAmount);
         winData = { winIndex: winIndex };
       }
 
@@ -189,7 +194,7 @@ module.exports = async (req, res) => {
                 resultName = 'Jackpot Match'; 
             }
             
-            payoutAmount = Math.floor(betAmount * mult);
+            payoutAmount = Math.floor(safeBetAmount * mult);
             winData = { drawnNum: drawnNum, mult: mult, resultName: resultName };
         } else {
             while (drawnNum === selectedNum) {
@@ -224,7 +229,7 @@ module.exports = async (req, res) => {
             visualPos = Math.random() < 0.5 ? 5 + Math.random() * 15 : 80 + Math.random() * 15;
         }
         
-        payoutAmount = Math.floor(betAmount * mult);
+        payoutAmount = Math.floor(safeBetAmount * mult);
         winData = { name: zoneName, mult: mult, visualPos: visualPos };
       }
 
@@ -240,7 +245,7 @@ module.exports = async (req, res) => {
             if (rand <= cumulative + r.prob) { reward = r; break; }
             cumulative += r.prob;
         }
-        payoutAmount = Math.floor(reward.mult * betAmount);
+        payoutAmount = Math.floor(reward.mult * safeBetAmount);
         winData = { key: reward.key, name: reward.name, mult: reward.mult };
       }
 
@@ -251,13 +256,15 @@ module.exports = async (req, res) => {
       // ==========================================
       // UPDATE DATABASE
       // ==========================================
-      const netChange = payoutAmount - betAmount;
+      // ✅ FIX: Force strict number math
+      const safePayout = Number(payoutAmount) || 0;
+      const netChange = safePayout - safeBetAmount;
       const newBalance = balance + netChange;
 
       const txRef = db.collection("transactions").doc();
       t.set(txRef, {
         uid: uid, amount: netChange, type: 'game', gameType: gameType,
-        betAmount: betAmount, payoutAmount: payoutAmount,
+        betAmount: safeBetAmount, payoutAmount: safePayout,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
 
@@ -265,14 +272,14 @@ module.exports = async (req, res) => {
 
       const sessionRef = db.collection("game_sessions").doc();
       t.set(sessionRef, {
-        uid: uid, gameType: gameType, betAmount: betAmount, payoutAmount: payoutAmount,
+        uid: uid, gameType: gameType, betAmount: safeBetAmount, payoutAmount: safePayout,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
 
       return { 
         winData, 
         winFruit, 
-        payoutAmount, 
+        payoutAmount: safePayout, 
         newBalance, 
         newDailyLoss: finalDailyLoss 
       };
