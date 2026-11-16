@@ -259,7 +259,6 @@
         
         <div class="jackpot-info">
             <div class="jackpot-text" id="jackpot-text">Chance to win K1,000.00</div>
-            <!-- ✅ REMOVED: Daily Loss Tracker HTML -->
         </div>
 
         <div class="bet-controls">
@@ -326,16 +325,12 @@
         let isSpinning = false;
         let isProcessingTx = false;
         
-        // PENDING WIN STATE
         let pendingWin = 0;
         let bigWinAnimationId = null;
-
-        // DAILY TRACKER STATE (Still tracked internally by backend, but hidden)
         let dailyLoss = 0;
         let lastPlayDate = '';
         const LOSS_TARGET = 3000;
 
-        // AUDIO & MUTE STATE
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
         let isMuted = localStorage.getItem('jakipotFruitMuted') === 'true';
@@ -365,7 +360,6 @@
 
         updateMuteIcon();
 
-        // Fake Loading Progress
         let loadProgress = 0;
         const loadBar = document.getElementById('loader-bar');
         const loadInterval = setInterval(() => {
@@ -389,7 +383,6 @@
             currentUser = user;
 
             onSnapshot(doc(db, 'users', user.uid), (snap) => {
-                // ✅ FIXED: Added () for Web SDK
                 if (snap.exists()) {
                     const data = snap.data();
                     userCurrency = data.currency || 'ZMW';
@@ -409,11 +402,9 @@
             });
 
             onSnapshot(doc(db, 'wallets', user.uid), (snap) => {
-                // ✅ FIXED: Added () for Web SDK
                 if (snap.exists()) {
                     userBalance = snap.data().balance || 0;
                     updateBalanceUI();
-                    // Finish loading once we get the user data
                     finishLoading();
                 }
             });
@@ -438,8 +429,6 @@
             const scaleFactor = currentBet / 6;
             const potentialJackpot = 1000 * scaleFactor;
             document.getElementById('jackpot-text').innerText = `Chance to win ${currencySymbol}${potentialJackpot.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-            
-            // ✅ REMOVED: Daily Loss UI update logic is gone, keeping it invisible
         }
 
         window.adjustBet = (amount) => {
@@ -579,22 +568,18 @@
             document.getElementById('spin-btn').disabled = true;
             document.getElementById('spin-btn').innerText = "SPINNING...";
 
-            // 1. FAKE SPIN ANIMATION (Starts instantly)
             let fakeSpinInterval = setInterval(() => {
                 document.querySelectorAll('.reel-strip').forEach(strip => {
                     strip.style.transform = `translateY(${Math.random() * -500}px)`;
                 });
             }, 50);
 
-            // 2. SETUP ABORT CONTROLLER TIMEOUT
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second limit
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
 
             try {
-                // 3. GET SECURE TOKEN FROM FIREBASE AUTH
                 const idToken = await currentUser.getIdToken();
 
-                // 4. CALL VERCEL SECURE SERVER
                 const response = await fetch('https://jakipot.vercel.app/api/play', {
                     method: 'POST',
                     headers: {
@@ -605,7 +590,7 @@
                     signal: controller.signal
                 });
 
-                clearTimeout(timeoutId); // Stop timer
+                clearTimeout(timeoutId);
 
                 if (!response.ok) {
                     const errData = await response.json().catch(() => ({}));
@@ -615,14 +600,12 @@
                 const data = await response.json();
                 if (data.error) throw new Error(data.error);
 
-                // 5. STOP FAKE SPIN & UPDATE BALANCES
                 clearInterval(fakeSpinInterval);
                 userBalance = data.newBalance;
                 dailyLoss = data.newDailyLoss;
                 updateBalanceUI();
                 updateBetUI();
 
-                // 6. SET THE REAL RESULTS FROM SERVER
                 let winAmount = data.payoutAmount;
 
                 if (data.winFruit) {
@@ -645,14 +628,13 @@
 
                 isProcessingTx = false;
                 
-                // 7. PLAY THE REAL ANIMATION
                 animateColumn(0, 3000);
                 animateColumn(1, 3500);
                 animateColumn(2, 4000);
 
             } catch (e) {
                 clearTimeout(timeoutId);
-                clearInterval(fakeSpinInterval); // ✅ FIXED: Stop the fake spin!
+                clearInterval(fakeSpinInterval);
                 
                 if (e.name === 'AbortError') {
                     alert("Request Timed Out! Vercel is taking too long to respond.");
@@ -716,18 +698,29 @@
         function evaluateResult() {
             if (lastSpinFruit) {
                 const winAmount = pendingWin;
+                const netProfit = winAmount - currentBet;
                 
-                if (winAmount >= 15) {
-                    showBigWin(winAmount);
+                // ✅ FIX: Only show WIN screens if the payout is GREATER than the bet
+                if (netProfit > 0) {
+                    if (winAmount >= 15) {
+                        showBigWin(winAmount, netProfit);
+                    } else {
+                        showSmallWin(lastSpinFruit, winAmount, netProfit);
+                    }
                 } else {
-                    showSmallWin(lastSpinFruit, winAmount);
+                    // Payout was less than or equal to bet (e.g. won K1 on K10 bet)
+                    // Treat as a loss silently so user isn't confused
+                    pendingWin = 0;
+                    lastSpinFruit = null;
+                    updateBetUI(); 
                 }
             } else {
+                // Complete loss (0 payout)
                 updateBetUI(); 
             }
         }
 
-        function showBigWin(winAmount) {
+        function showBigWin(winAmount, netProfit) {
             playSound('big_win');
             const overlay = document.getElementById('big-win-overlay');
             const amountEl = document.getElementById('big-win-amount');
@@ -755,7 +748,7 @@
             bigWinAnimationId = requestAnimationFrame(updateCounter);
         }
 
-        function showSmallWin(fruit, winAmount) {
+        function showSmallWin(fruit, winAmount, netProfit) {
             playSound('win');
             const overlay = document.getElementById('result-overlay');
             const card = document.getElementById('result-card');
@@ -769,17 +762,17 @@
                 card.classList.add('jackpot-mode');
                 icon.innerHTML = getFruitSVG('777');
                 title.innerText = 'JAKIPOT 777!';
-                msg.innerText = `MASSIVE WIN! You hit the jackpot for ${currencySymbol}${winAmount.toLocaleString()}!`;
+                msg.innerText = `MASSIVE WIN! Payout: ${currencySymbol}${winAmount.toLocaleString()} (Profit: +${currencySymbol}${netProfit.toLocaleString()})`;
             } else {
                 icon.innerHTML = getFruitSVG(fruit.icon);
                 title.innerText = 'You Won!';
-                msg.innerText = `3x ${fruit.name}! You won ${currencySymbol}${winAmount.toLocaleString()}!`;
+                // ✅ FIX: Clearly show the Payout and the Net Profit
+                msg.innerText = `3x ${fruit.name}! Payout: ${currencySymbol}${winAmount.toLocaleString()} (Profit: +${currencySymbol}${netProfit.toLocaleString()})`;
             }
 
             overlay.classList.add('active');
         }
 
-        // --- COLLECT LOGIC (Just closes the modal, server already paid) ---
         window.collectWin = () => {
             document.getElementById('result-overlay').classList.remove('active');
             document.getElementById('big-win-overlay').classList.remove('active');
