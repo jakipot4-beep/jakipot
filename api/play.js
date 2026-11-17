@@ -16,12 +16,12 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-// ... (Your FRUITS, SUPER_SPIN, ANIMALS, TREASURES arrays stay exactly the same) ...
-const FRUITS = [ /* ... */ ];
+// 🚨 PASTE YOUR ACTUAL ARRAYS HERE 🚨
+const FRUITS = [ /* Paste your real Fruit array data here */ ];
 const LOSS_TARGET = 3000;
-const SUPER_SPIN = [ /* ... */ ];
-const ANIMALS = [ /* ... */ ];
-const TREASURES = [ /* ... */ ];
+const SUPER_SPIN = [ /* Paste your real Super Spin array data here */ ];
+const ANIMALS = [ /* Paste your real Animals array data here */ ];
+const TREASURES = [ /* Paste your real Treasures array data here */ ];
 
 module.exports = async (req, res) => {
   // ✅ CORS HEADERS
@@ -32,7 +32,6 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   // 🚨 THE COLD START FIX: INSTANT WARMUP BYPASS
-  // This wakes the server up instantly without verifying auth or hitting the DB.
   if (req.body?.action === 'warmup') {
       return res.status(200).json({ status: 'awake' });
   }
@@ -63,9 +62,6 @@ module.exports = async (req, res) => {
     console.log(`🎮 Starting Firestore Transaction for ${gameType}...`);
 
     const result = await db.runTransaction(async (t) => {
-      // ... YOUR EXACT TRANSACTION LOGIC STAYS HERE, DO NOT CHANGE IT ...
-      // (Copy paste your existing runTransaction block here)
-      
       const walletDoc = await t.get(walletRef);
       if (!walletDoc.exists) throw new Error("Wallet not found.");
       
@@ -110,7 +106,6 @@ module.exports = async (req, res) => {
         t.update(userRef, { fruitDailyLoss: finalDailyLoss, lastFruitPlayDate: todayStr });
       } 
       else if (gameType === 'super_spin') {
-        // ... super spin logic ...
         const totalWeight = SUPER_SPIN.reduce((sum, item) => sum + item.weight, 0);
         let rand = Math.random() * totalWeight;
         let winIndex = 1;
@@ -121,7 +116,68 @@ module.exports = async (req, res) => {
         payoutAmount = Math.floor(SUPER_SPIN[winIndex].base * safeBetAmount);
         winData = { winIndex: winIndex }; 
       }
-      // ... rest of your games ...
+      else if (gameType === 'animal_spin') {
+        const rand = Math.random() * 100;
+        let cumulative = 0;
+        let winIndex = 0;
+        for (let i = 0; i < ANIMALS.length; i++) {
+            if (rand <= cumulative + ANIMALS[i].prob) { winIndex = i; break; }
+            cumulative += ANIMALS[i].prob;
+        }
+        payoutAmount = Math.floor(ANIMALS[winIndex].mult * safeBetAmount);
+        winData = { winIndex: winIndex };
+      }
+      else if (gameType === 'lucky_number') {
+        const isMatch = Math.random() < (1 / 24);
+        let drawnNum = Math.floor(Math.random() * 24) + 1;
+        
+        if (isMatch) {
+            drawnNum = selectedNum;
+            const tierRoll = Math.random();
+            let mult = 0;
+            let resultName = '';
+            
+            if (tierRoll < 0.70) { mult = 10; resultName = 'Standard Match'; } 
+            else if (tierRoll < 0.95) { mult = 30; resultName = 'Special Match'; } 
+            else { mult = 150; resultName = 'Jackpot Match'; }
+            
+            payoutAmount = Math.floor(safeBetAmount * mult);
+            winData = { drawnNum: drawnNum, mult: mult, resultName: resultName };
+        } else {
+            while (drawnNum === selectedNum) { drawnNum = Math.floor(Math.random() * 24) + 1; }
+            winData = { drawnNum: drawnNum, mult: 0, resultName: 'No Match' };
+        }
+      }
+      else if (gameType === 'lucky_target') {
+        const rand = Math.random() * 100;
+        let mult = 0;
+        let zoneName = 'Miss';
+        let visualPos = 50;
+        
+        if (rand < 5) { mult = 4.0; zoneName = 'Bullseye'; visualPos = 50 + (Math.random() * 4 - 2); } 
+        else if (rand < 20) { mult = 1.5; zoneName = 'Inner'; visualPos = Math.random() < 0.5 ? 50 - (4 + Math.random() * 6) : 50 + (4 + Math.random() * 6); } 
+        else if (rand < 50) { mult = 0.5; zoneName = 'Middle'; visualPos = Math.random() < 0.5 ? 50 - (10 + Math.random() * 10) : 50 + (10 + Math.random() * 10); } 
+        else if (rand < 80) { mult = 0.15; zoneName = 'Outer'; visualPos = Math.random() < 0.5 ? 50 - (20 + Math.random() * 10) : 50 + (20 + Math.random() * 10); } 
+        else { visualPos = Math.random() < 0.5 ? 5 + Math.random() * 15 : 80 + Math.random() * 15; }
+        
+        payoutAmount = Math.floor(safeBetAmount * mult);
+        winData = { name: zoneName, mult: mult, visualPos: visualPos };
+      }
+      else if (gameType === 'lucky_treasure') {
+        const rand = Math.random() * 100;
+        let cumulative = 0;
+        let reward = TREASURES[0];
+        
+        for (let r of TREASURES) {
+            if (rand <= cumulative + r.prob) { reward = r; break; }
+            cumulative += r.prob;
+        }
+        payoutAmount = Math.floor(reward.mult * safeBetAmount);
+        winData = { key: reward.key, name: reward.name, mult: reward.mult };
+      }
+      else {
+        throw new Error("Unknown game type: " + gameType);
+      }
 
       const safePayout = Number(payoutAmount) || 0;
       const netChange = safePayout - safeBetAmount;
