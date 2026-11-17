@@ -419,6 +419,16 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // 🚨 WARMUP PING: Wakes up the Vercel server instantly on page load
+  window.addEventListener('DOMContentLoaded', () => {
+      fetch('https://jakipot.vercel.app/api/play', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'warmup' }),
+          keepalive: true
+      }).catch(() => {}); 
+  });
+
   let currentUser = null;
   let balance = 0;
   let currencySymbol = 'K';
@@ -604,17 +614,11 @@
       cycleCount++;
     }, 50);
 
-    // ✅ INCREASED TIMEOUT TO 25 SECONDS
+    // ✅ INCREASED TIMEOUT TO 32 SECONDS
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000); 
+    const timeoutId = setTimeout(() => controller.abort(), 32000); 
 
-    // ✅ SHOW MESSAGE IF SERVER IS SLOW
-    setTimeout(() => {
-        if (gameState === 'DRAWING') {
-            displayResult.textContent = 'Waking up server, please wait...';
-            instruction.textContent = 'Server is starting up...';
-        }
-    }, 5000); // After 5 seconds, show the message
+    // ❌ REMOVED THE "WAKING SERVER" MESSAGE
 
     try {
       const idToken = await currentUser.getIdToken();
@@ -705,7 +709,7 @@
       balanceEl.textContent = `${currencySymbol} ${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
       
       if (error.name === 'AbortError') {
-          alert("Request Timed Out! Vercel is taking too long to respond. (25s limit)");
+          alert("Request Timed Out! Please try again. (32s limit)");
       } else {
           console.error("Server Error:", error);
           alert(error.message || "Failed to draw number.");

@@ -411,6 +411,16 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // 🚨 WARMUP PING: Wakes up the Vercel server instantly on page load
+  window.addEventListener('DOMContentLoaded', () => {
+      fetch('https://jakipot.vercel.app/api/play', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'warmup' }),
+          keepalive: true
+      }).catch(() => {}); 
+  });
+
   const REWARDS = [
     { key: 'small',   name: 'Small',   multiplier: 0.2,   dot: '#cd7f32' },
     { key: 'silver',  name: 'Silver',  multiplier: 0.5,   dot: '#c0c0c0' },
@@ -660,16 +670,11 @@
       chestGrid.querySelector(`[data-index="${randomBox}"]`).classList.add('selected');
     }, 100);
 
-    // ✅ INCREASED TIMEOUT TO 25 SECONDS
+    // ✅ INCREASED TIMEOUT TO 32 SECONDS
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000); 
+    const timeoutId = setTimeout(() => controller.abort(), 32000); 
 
-    // ✅ SHOW MESSAGE IF SERVER IS SLOW
-    setTimeout(() => {
-        if (isProcessingTx) {
-            instruction.textContent = 'Waking up server, please wait...';
-        }
-    }, 5000);
+    // ❌ REMOVED THE "WAKING SERVER" MESSAGE
 
     try {
       const idToken = await currentUser.getIdToken();
@@ -757,7 +762,7 @@
       isProcessingTx = false;
 
       if (error.name === 'AbortError') {
-          alert("Request Timed Out! Vercel is taking too long to respond. (25s limit)");
+          alert("Request Timed Out! Please try again. (32s limit)");
       } else {
           console.error("Server Error:", error);
           alert(error.message || "Failed to open treasure.");

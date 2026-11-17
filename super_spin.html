@@ -427,6 +427,16 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // 🚨 WARMUP PING: Wakes up the Vercel server instantly on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            fetch('https://jakipot.vercel.app/api/play', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'warmup' }),
+                keepalive: true
+            }).catch(() => {}); 
+        });
+
         // ==========================================
         // 2. GAME DATA & VARIABLES
         // ==========================================
@@ -719,16 +729,11 @@
                 wheelEl.style.transform = `rotate(${spinSpeed}deg)`;
             }, 16); 
 
-            // ✅ INCREASED TIMEOUT TO 25 SECONDS
+            // ✅ INCREASED TIMEOUT TO 32 SECONDS
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 25000); 
+            const timeoutId = setTimeout(() => controller.abort(), 32000); 
 
-            // ✅ SHOW MESSAGE IF SERVER IS SLOW
-            setTimeout(() => {
-                if (isProcessingTx) {
-                    spinBtn.innerHTML = `CONNECTING...<div class="spin-sub">WAKING SERVER</div>`;
-                }
-            }, 5000);
+            // ❌ REMOVED THE "WAKING SERVER" MESSAGE
 
             try {
                 const idToken = await currentUser.getIdToken();
@@ -825,7 +830,7 @@
                 isProcessingTx = false; 
 
                 if (e.name === 'AbortError') {
-                    alert("Request Timed Out! Vercel is taking too long to respond. (25s limit)");
+                    alert("Request Timed Out! Please try again. (32s limit)");
                 } else {
                     alert(e.message || "An error occurred.");
                 }
