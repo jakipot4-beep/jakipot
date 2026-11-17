@@ -16,12 +16,52 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-// 🚨 PASTE YOUR ACTUAL ARRAYS HERE 🚨
-const FRUITS = [ /* Paste your real Fruit array data here */ ];
+// ✅ REAL ARRAYS POPULATED
+const FRUITS = [
+    { icon: '🍏', name: 'Green Apple', basePay: 1, prob: 8.0 },
+    { icon: '🍓', name: 'Strawberry', basePay: 2, prob: 4.0 },
+    { icon: '🍋', name: 'Lemon', basePay: 3, prob: 3.0 },
+    { icon: '🍍', name: 'Pineapple', basePay: 4, prob: 2.0 },
+    { icon: '🥥', name: 'Coconut', basePay: 5, prob: 1.5 },
+    { icon: '🍒', name: 'Cherry', basePay: 8, prob: 1.0 },
+    { icon: '🍎', name: 'Apple', basePay: 10, prob: 0.8 },
+    { icon: '🍉', name: 'Melon', basePay: 15, prob: 0.5 },
+    { icon: '🍌', name: 'Banana', basePay: 20, prob: 0.3 },
+    { icon: '🍇', name: 'Grape', basePay: 50, prob: 0.2 },
+    { icon: '🔔', name: 'Bell', basePay: 60, prob: 0.1 },
+    { icon: '🍊', name: 'Orange', basePay: 120, prob: 0.05 },
+    { icon: '🥭', name: 'Mango', basePay: 210, prob: 0.04 },
+    { icon: '777', name: 'JACKPOT', basePay: 1000, prob: 0.01, isJackpot: true }
+];
+
 const LOSS_TARGET = 3000;
-const SUPER_SPIN = [ /* Paste your real Super Spin array data here */ ];
-const ANIMALS = [ /* Paste your real Animals array data here */ ];
-const TREASURES = [ /* Paste your real Treasures array data here */ ];
+
+const SUPER_SPIN = [
+    { base: 100,  weight: 1 }, { base: 0.5,  weight: 1 }, { base: 50,   weight: 1 },
+    { base: 0.8,  weight: 1 }, { base: 10,   weight: 1 }, { base: 0.9,  weight: 1 },
+    { base: 5.0,  weight: 1 }, { base: 1.2,  weight: 1 }, { base: 1.5,  weight: 1 },
+    { base: 2.0,  weight: 1 }, { base: 3.0,  weight: 1 }
+];
+
+const ANIMALS = [
+    { name: 'Wolf',     multiplier: 0.1,   probability: 45.0 },
+    { name: 'Zebra',    multiplier: 0.3,   probability: 25.0 },
+    { name: 'Giraffe',  multiplier: 1.0,   probability: 15.0 },
+    { name: 'Gorilla',  multiplier: 2.0,   probability: 8.0 },
+    { name: 'Elephant', multiplier: 3.0,   probability: 4.0 },
+    { name: 'Cheetah',  multiplier: 5.0,   probability: 2.0 },
+    { name: 'Tiger',    multiplier: 15.0,  probability: 0.8 },
+    { name: 'Lion',     multiplier: 100.0, probability: 0.2 }
+];
+
+const TREASURES = [
+    { key: 'small',   name: 'Small',   multiplier: 0.2,   prob: 40 },
+    { key: 'silver',  name: 'Silver',  multiplier: 0.5,   prob: 25 },
+    { key: 'gold',    name: 'Gold',    multiplier: 1.0,   prob: 15 },
+    { key: 'diamond', name: 'Diamond', multiplier: 3.0,   prob: 10 },
+    { key: 'mega',    name: 'Mega',    multiplier: 10.0,  prob: 9 },
+    { key: 'jackpot', name: 'Jackpot', multiplier: 100.0, prob: 1 }
+];
 
 module.exports = async (req, res) => {
   // ✅ CORS HEADERS
@@ -31,7 +71,7 @@ module.exports = async (req, res) => {
   
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // 🚨 THE COLD START FIX: INSTANT WARMUP BYPASS
+  // 🚨 WARMUP BYPASS
   if (req.body?.action === 'warmup') {
       return res.status(200).json({ status: 'awake' });
   }
@@ -106,13 +146,16 @@ module.exports = async (req, res) => {
         t.update(userRef, { fruitDailyLoss: finalDailyLoss, lastFruitPlayDate: todayStr });
       } 
       else if (gameType === 'super_spin') {
-        const totalWeight = SUPER_SPIN.reduce((sum, item) => sum + item.weight, 0);
+        const totalWeight = SUPER_SPIN.reduce((sum, item) => sum + (item.weight || 1), 0);
         let rand = Math.random() * totalWeight;
-        let winIndex = 1;
+        let winIndex = 0;
+        
         for (let i = 0; i < SUPER_SPIN.length; i++) {
-            if (rand < SUPER_SPIN[i].weight) { winIndex = i; break; }
-            rand -= SUPER_SPIN[i].weight;
+            const weight = SUPER_SPIN[i].weight || 1;
+            if (rand < weight) { winIndex = i; break; }
+            rand -= weight;
         }
+        
         payoutAmount = Math.floor(SUPER_SPIN[winIndex].base * safeBetAmount);
         winData = { winIndex: winIndex }; 
       }
@@ -120,11 +163,13 @@ module.exports = async (req, res) => {
         const rand = Math.random() * 100;
         let cumulative = 0;
         let winIndex = 0;
+        
         for (let i = 0; i < ANIMALS.length; i++) {
-            if (rand <= cumulative + ANIMALS[i].prob) { winIndex = i; break; }
-            cumulative += ANIMALS[i].prob;
+            if (rand <= cumulative + ANIMALS[i].probability) { winIndex = i; break; }
+            cumulative += ANIMALS[i].probability;
         }
-        payoutAmount = Math.floor(ANIMALS[winIndex].mult * safeBetAmount);
+        
+        payoutAmount = Math.floor(ANIMALS[winIndex].multiplier * safeBetAmount);
         winData = { winIndex: winIndex };
       }
       else if (gameType === 'lucky_number') {
@@ -166,14 +211,16 @@ module.exports = async (req, res) => {
       else if (gameType === 'lucky_treasure') {
         const rand = Math.random() * 100;
         let cumulative = 0;
-        let reward = TREASURES[0];
+        let reward = TREASURES[0]; // Default fallback
         
         for (let r of TREASURES) {
-            if (rand <= cumulative + r.prob) { reward = r; break; }
-            cumulative += r.prob;
+            const prob = r.prob || 10;
+            if (rand <= cumulative + prob) { reward = r; break; }
+            cumulative += prob;
         }
-        payoutAmount = Math.floor(reward.mult * safeBetAmount);
-        winData = { key: reward.key, name: reward.name, mult: reward.mult };
+        
+        payoutAmount = Math.floor(reward.multiplier * safeBetAmount);
+        winData = { key: reward.key, name: reward.name, mult: reward.multiplier };
       }
       else {
         throw new Error("Unknown game type: " + gameType);
