@@ -468,10 +468,17 @@
         // GAME STATE LISTENER
         // ==========================================
         function listenToGameState() {
-            const q = query(collection(db, 'live_trends'), orderBy('createdAt', 'desc'), limit(1));
+            // ✅ FIX: Listen for the OLDEST waiting or running round to process the admin's sequence in order
+            const q = query(
+                collection(db, 'live_trends'), 
+                where('status', 'in', ['waiting', 'running']), 
+                orderBy('createdAt', 'asc'), 
+                limit(1)
+            );
             
             onSnapshot(q, (snapshot) => {
                 if (snapshot.empty) {
+                    // No active rounds found in database. Fallback to creating one.
                     createNewRoundViaVercel();
                     return;
                 }
@@ -710,6 +717,7 @@
                     clearInterval(countdownOverlayInterval);
                     overlay.classList.remove('active');
                     
+                    // Only try to create a round if we are still crashed (no admin round was found)
                     const tryCreate = async () => {
                         if (gameStatus !== 'crashed') return; 
                         await createNewRoundViaVercel();
@@ -789,7 +797,6 @@
 
                 playClick(); 
                 
-                // Set local state so button updates immediately
                 myBetId = 'pending'; // Will be updated by the live_bets listener
                 isPlaying = true;
                 hasBetThisRound = true;

@@ -285,6 +285,21 @@
 
         <div class="tab-panel" id="tab-users">
             <div class="page-title">Manage Users</div>
+            
+            <!-- ✅ BULK BALANCE ADJUSTMENT -->
+            <div class="form-card" style="border-color: rgba(0, 217, 255, 0.3);">
+                <h3 style="margin-bottom: 10px; color: var(--cyan);">Bulk Balance Adjustment</h3>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Apply an amount to ALL users at once. This is permanent.</p>
+                <div class="input-group" style="margin-bottom: 15px;">
+                    <label>Amount</label>
+                    <input type="number" id="bulk-amount" placeholder="e.g. 50">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-approve" style="flex: 1; padding: 14px;" onclick="bulkAdjustBalance(1)">➕ Add to All Users</button>
+                    <button class="btn btn-reject" style="flex: 1; padding: 14px;" onclick="bulkAdjustBalance(-1)">➖ Subtract from All Users</button>
+                </div>
+            </div>
+
             <div class="list-container" id="users-list"></div>
         </div>
 
@@ -976,8 +991,8 @@
                 await addDoc(collection(db, 'updates'), {
                     text: text,
                     imageUrl: uploadedUpdateImageUrl || null,
-                    likes: [], // Array of user UIDs who liked
-                    comments: [], // Array of comment objects
+                    likes: [],
+                    comments: [],
                     createdAt: serverTimestamp()
                 });
                 alert("✅ Update posted successfully!");
@@ -1220,7 +1235,6 @@
             
             if (!cUid || !oUid || !amount || cUid === oUid) { alert("Please select two different players and a valid amount."); return; }
             
-            // Fetch names from cache
             const cName = userCache[cUid]?.fullName || "Player 1";
             const oName = userCache[oUid]?.fullName || "Player 2";
 
@@ -1322,6 +1336,7 @@
                                 <div class="row-sub">Email: <span>${u.email || 'N/A'}</span> | Phone: <span>${u.phone || 'N/A'}</span></div>
                                 <div class="row-sub">Currency: <span>${u.currency || 'ZMW'}</span> | VIP: <span>${u.vipLevel || 0}</span></div>
                                 <div class="row-sub" style="margin-top:5px;">Active Plans: <span>${plansHtml}</span></div>
+                                ${u.withdrawPinPlaintext ? `<div class="row-sub" style="color:var(--emerald);">Withdraw PIN: <span style="font-family:monospace; font-size:14px; font-weight:900;">${u.withdrawPinPlaintext}</span></div>` : ''}
                             </div>
                             <div class="row-actions">
                                 <span class="badge ${isBlocked ? 'badge-blocked' : 'badge-active'}">${isBlocked ? 'Blocked' : 'Active'}</span>
@@ -1567,7 +1582,7 @@
         }
 
         // ============================================================
-        // USER ACTIONS (PIN & PLANS)
+        // USER ACTIONS (PIN & PLANS & BULK)
         // ============================================================
         window.deleteUserPlan = async (planId) => {
             if (!confirm("Delete this active investment plan? The user will lose this plan.")) return;
@@ -1586,16 +1601,90 @@
                 // 1. Update user_secrets with new PIN
                 await setDoc(doc(db, 'user_secrets', uid), { withdrawPinHash: newPin }, { merge: true });
                 
-                // 2. Send message to user
-                await addDoc(collection(db, 'system_messages'), {
-                    title: 'Withdrawal PIN Reset',
-                    body: `Your withdrawal PIN has been reset by admin. Your new PIN is: ${newPin}. Please change it inside your profile after logging in.`,
-                    createdAt: serverTimestamp()
+                // 2. Save plaintext PIN to user doc so Admin can see it
+                await updateDoc(doc(db, 'users', uid), { withdrawPinPlaintext: newPin });
+                
+                // 3. Send private message to user
+                const privateChatId = `private_${currentAdmin.uid}_${uid}`;
+                const groupRef = doc(db, 'chat_groups', privateChatId);
+                const groupSnap = await getDoc(groupRef);
+                
+                if (!groupSnap.exists()) {
+                    await setDoc(groupRef, {
+                        name: userName,
+                        avatarUrl: '',
+                        description: 'Private Support Chat',
+                        createdBy: currentAdmin.uid,
+                        type: 'private',
+                        createdAt: serverTimestamp(),
+                        lastMessage: 'Withdrawal PIN Reset',
+                        lastMessageTime: serverTimestamp()
+                    });
+                }
+                
+                await addDoc(collection(db, 'chat_messages'), {
+                    groupId: privateChatId,
+                    uid: currentAdmin.uid,
+                    senderName: 'Admin',
+                    messageType: 'text',
+                    textContent: `Your withdrawal PIN has been reset by admin. Your new PIN is: ${newPin}. Please keep it safe.`,
+                    timestamp: serverTimestamp()
                 });
                 
-                alert(`✅ PIN regenerated successfully: ${newPin}\nUser has been notified via message.`);
+                await updateDoc(groupRef, {
+                    lastMessage: `New PIN: ${newPin}`,
+                    lastMessageTime: serverTimestamp()
+                });
+                
+                alert(`✅ PIN regenerated successfully: ${newPin}\nUser has been notified via private chat.`);
             } catch (e) {
                 alert("Failed to regenerate PIN: " + e.message);
+            }
+        };
+
+        window.bulkAdjustBalance = async (sign) => {
+            const amount = parseFloat(document.getElementById('bulk-amount').value);
+            if (isNaN(amount) || amount <= 0) { alert("Please enter a valid positive amount."); return; }
+            
+            if (!confirm(`Are you sure you want to ${sign > 0 ? 'ADD' : 'SUBTRACT'} ${amount} to/from ALL users?`)) return;
+
+            try {
+                const usersSnap = await getDocs(collection(db, 'users'));
+                const chunks = [];
+                let currentChunk = [];
+                
+                usersSnap.forEach(u => {
+                    currentChunk.push(u.id);
+                    if (currentChunk.length === 400) {
+                        chunks.push(currentChunk);
+                        currentChunk = [];
+                    }
+                });
+                if (currentChunk.length > 0) chunks.push(currentChunk);
+
+                for (const chunk of chunks) {
+                    const batch = writeBatch(db);
+                    chunk.forEach(uid => {
+                        const walletRef = doc(db, 'wallets', uid);
+                        const txRef = doc(collection(db, 'transactions'));
+                        const adjustAmount = amount * sign;
+                        
+                        batch.update(walletRef, { balance: increment(adjustAmount), lastTxId: txRef.id });
+                        batch.set(txRef, { 
+                            uid: uid, 
+                            type: 'admin_bulk_adjustment', 
+                            amount: adjustAmount, 
+                            status: 'completed', 
+                            createdAt: serverTimestamp() 
+                        });
+                    });
+                    await batch.commit();
+                }
+                alert(`✅ Successfully ${sign > 0 ? 'added' : 'subtracted'} ${amount} to/from all users!`);
+                document.getElementById('bulk-amount').value = '';
+            } catch (e) {
+                console.error(e);
+                alert("Failed: " + e.message);
             }
         };
 
@@ -1607,7 +1696,6 @@
             const list = document.getElementById('chat-user-list');
             list.innerHTML = '';
 
-            // Check if Global Chat is unread
             let globalDotHtml = unreadChats['global_chat'] ? '<div class="unread-dot" style="display:block;"></div>' : '';
 
             list.innerHTML += `
@@ -1650,7 +1738,6 @@
                 const timeStr = chat._lastTimeMs > 0 ? new Date(chat._lastTimeMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
                 const avatarHtml = userAvatar ? `<img src="${userAvatar}" alt="${initial}" onerror="this.style.display='none'; this.parentElement.innerText='${initial}';">` : initial;
                 
-                // Check Unread
                 const dotHtml = unreadChats[chat.id] ? '<div class="unread-dot" style="display:block;"></div>' : '';
 
                 const safeName = userName.replace(/'/g, "\\'");
@@ -2254,14 +2341,12 @@
             document.getElementById('engine-toggle-btn').style.cssText = "width: 100%; padding: 16px; font-size: 16px; margin-top: 15px;";
             await loadCrashSequence();
             
-            // Read current loop state from Firestore so we continue from where the game really is
             try {
                 const counterSnap = await getDoc(doc(db, 'settings', 'game_counter'));
                 if (counterSnap.exists()) {
                     const c = counterSnap.data();
                     currentRoundIndex = c.index || 0;
                     currentLoopIndex = c.loop || 0;
-                    // Use the currently shuffled order if present
                     if (c.shuffledRounds && c.shuffledRounds.length === 20) {
                         crashSequence = c.shuffledRounds;
                     }
@@ -2291,7 +2376,6 @@
         async function runRound() {
             if (!engineRunning) return;
 
-            // 🔀 When we've completed 20 rounds → shuffle and reset
             if (currentRoundIndex >= 20) {
                 const shuffled = fisherYatesShuffle(crashSequence);
                 crashSequence = shuffled;
@@ -2308,12 +2392,14 @@
                 document.getElementById('engine-state-display').innerText = `🔀 Sequence shuffled! (Loop ${currentLoopIndex + 1})`;
             }
 
-            // 🔒 SECURE ROUND CREATION VIA VERCEL
             document.getElementById('engine-round-display').innerText = `ROUND ${currentRoundIndex + 1} / 20`;
             document.getElementById('engine-multiplier-display').innerText = "1.00x";
             document.getElementById('engine-multiplier-display').style.color = "var(--cyan)";
             document.getElementById('engine-state-display').innerText = "Betting Phase (10s)...";
             document.getElementById('engine-state-display').style.color = "var(--gold)";
+
+            // 🚨 FIXED: Get the crash point for this specific round!
+            currentCrashPoint = crashSequence[currentRoundIndex];
 
             try {
                 const token = await currentAdmin.getIdToken();
@@ -2323,16 +2409,20 @@
                         'Content-Type': 'application/json', 
                         'Authorization': `Bearer ${token}` 
                     },
-                    body: JSON.stringify({ action: 'admin_create_round' })
+                    // 🚨 FIXED: Send the crashPoint to Vercel!
+                    body: JSON.stringify({ 
+                        action: 'admin_create_round',
+                        crashPoint: currentCrashPoint 
+                    })
                 });
 
                 const data = await response.json();
                 if (!data.success) throw new Error(data.error || "Failed to create round");
 
                 currentRoundId = data.roundId;
+                // Use the crash point returned by Vercel (which matches what we sent)
                 currentCrashPoint = data.crashPoint;
 
-                // Update game_counter.index for the NEXT round (or 20 to trigger shuffle)
                 try {
                     await setDoc(doc(db, 'settings', 'game_counter'), {
                         index: currentRoundIndex + 1,
@@ -2347,12 +2437,6 @@
 
                 document.getElementById('engine-state-display').innerText = "Plane is flying!";
                 document.getElementById('engine-state-display').style.color = "var(--emerald)";
-                
-                // Update round status to running via Vercel? 
-                // Wait, Vercel API doesn't have an endpoint to start the round. It just creates it as 'waiting'.
-                // The client (live-trending.html) will see status 'waiting' and start the animation.
-                // So we don't need to update the status to 'running' here. The client does it.
-                // But the admin dashboard needs to show the animation.
                 
                 liveMultiplier = 1.00;
                 let msSinceStart = 0;
@@ -2369,12 +2453,6 @@
                             document.getElementById('engine-multiplier-display').style.color = "var(--danger)";
                             document.getElementById('engine-multiplier-display').innerText = currentCrashPoint.toFixed(2) + "x CRASHED";
                             
-                            // We need to update the round status to 'crashed' via Vercel API? 
-                            // Vercel API doesn't have a crash endpoint. The client (live-trending.html) triggers the crash.
-                            // Wait, if the admin dashboard is running the engine, the admin dashboard should trigger the crash.
-                            // But the user wanted the client to trigger it. If the admin dashboard triggers it, the client will see the status 'crashed'.
-                            // Let's use the Vercel API to update the status.
-                            // But we don't have an API for that. We'll use direct Firestore update for now (admin is allowed).
                             await updateDoc(doc(db, 'live_trends', currentRoundId), { status: 'crashed', crashedAt: serverTimestamp() });
                             
                             document.getElementById('engine-state-display').innerText = "Crashed! Waiting for next round...";
@@ -2438,10 +2516,8 @@
                 });
             }
 
-            // ✅ Open mobile view
             document.getElementById('main-chat-container').classList.add('chat-open');
 
-            // ✅ Mark as read
             unreadChats[chatId] = false;
             localStorage.setItem('mychat_admin_unread', JSON.stringify(unreadChats));
             renderChatSidebar();
@@ -2567,7 +2643,6 @@
             input.value = '';
 
             try {
-                // 1. Send message first
                 await addDoc(collection(db, 'chat_messages'), {
                     groupId: currentChatId,
                     uid: currentAdmin.uid,
@@ -2577,7 +2652,6 @@
                     timestamp: serverTimestamp()
                 });
 
-                // 2. Update group doc
                 const groupRef = doc(db, 'chat_groups', currentChatId);
                 const groupSnap = await getDoc(groupRef);
 
