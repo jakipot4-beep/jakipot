@@ -43,8 +43,6 @@
         #graph-canvas { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
 
         .market-info { position: absolute; top: 15px; left: 20px; z-index: 5; display: flex; align-items: center; gap: 10px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
-        .flag-container { width: 24px; height: 16px; border-radius: 2px; overflow: hidden; display: flex; border: 1px solid rgba(255,255,255,0.2); }
-        .flag-container svg { width: 100%; height: 100%; object-fit: cover; }
         .country-text { font-size: 12px; font-weight: 800; color: var(--text-white); text-transform: uppercase; letter-spacing: 0.5px; }
 
         .center-overlay { position: absolute; inset: 0; z-index: 4; pointer-events: none; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -135,8 +133,7 @@
             <canvas id="graph-canvas"></canvas>
             
             <div class="market-info">
-                <div class="flag-container" id="flag-container"></div>
-                <div class="country-text" id="country-text">Next Trend: Loading...</div>
+                <div class="country-text" id="country-text">JAKIPOT LIVE</div>
             </div>
 
             <div class="center-overlay">
@@ -236,7 +233,6 @@
         let animationFrame = null;
         let roundStartTime = 0;
         let crashPoint = 5.00; 
-        const timeToStart = 15; 
         
         const canvas = document.getElementById('graph-canvas');
         const ctx = canvas.getContext('2d');
@@ -468,17 +464,11 @@
         // GAME STATE LISTENER
         // ==========================================
         function listenToGameState() {
-            // ✅ FIX: Listen for the OLDEST waiting or running round to process the admin's sequence in order
-            const q = query(
-                collection(db, 'live_trends'), 
-                where('status', 'in', ['waiting', 'running']), 
-                orderBy('createdAt', 'asc'), 
-                limit(1)
-            );
+            // ✅ FIX: Just get the absolute latest round. No complex composite indexes required.
+            const q = query(collection(db, 'live_trends'), orderBy('createdAt', 'desc'), limit(1));
             
             onSnapshot(q, (snapshot) => {
                 if (snapshot.empty) {
-                    // No active rounds found in database. Fallback to creating one.
                     createNewRoundViaVercel();
                     return;
                 }
@@ -486,11 +476,17 @@
                 const roundDoc = snapshot.docs[0];
                 const data = roundDoc.data();
                 
+                // If the latest round is crashed, we wait for the Admin to make a new one.
+                if (data.status === 'crashed') {
+                    if (gameStatus !== 'crashed') {
+                        triggerCrashUI(data.finalMultiplier || data.crashPoint);
+                    }
+                    return;
+                }
+
                 if (!data.startTime) return; 
 
                 const startTimeMs = data.startTime.toMillis();
-                const runStartTimeMs = startTimeMs + (timeToStart * 1000);
-                const now = Date.now();
                 
                 if (currentRoundId !== roundDoc.id) {
                     currentRoundId = roundDoc.id;
@@ -507,23 +503,14 @@
                     subscribeToLiveBets(currentRoundId);
                 }
                 
-                if (data.status === 'crashed') {
-                    if (gameStatus !== 'crashed') {
-                        triggerCrashUI(data.finalMultiplier || data.crashPoint);
-                    }
-                } else if (data.status === 'running') {
+                // ✅ PERFECT SYNC: If the Admin Dashboard starts the round, we fly instantly.
+                if (data.status === 'running') {
                     if (gameStatus === 'waiting' || gameStatus === 'idle') {
-                        startRound(data.startTime ? data.startTime.toMillis() + (timeToStart * 1000) : Date.now());
+                        startRound(Date.now()); 
                     }
                 } else if (data.status === 'waiting') {
-                    if (now >= runStartTimeMs) {
-                        if (gameStatus === 'waiting' || gameStatus === 'idle') {
-                            startRound(runStartTimeMs);
-                        }
-                    } else {
-                        if (gameStatus === 'idle' || gameStatus === 'crashed') {
-                            startCountdown(startTimeMs);
-                        }
+                    if (gameStatus === 'idle' || gameStatus === 'crashed') {
+                        startCountdown(startTimeMs);
                     }
                 }
             });
@@ -574,10 +561,11 @@
             
             const tick = () => {
                 if (gameStatus !== 'waiting') return;
-                const timeLeft = Math.max(0, Math.ceil((startTimeMs + (timeToStart * 1000) - Date.now()) / 1000));
+                // Hardcoded 15s wait for the client
+                const timeLeft = Math.max(0, Math.ceil((startTimeMs + 15000 - Date.now()) / 1000));
                 
                 if (timeLeft <= 0) {
-                    startRound(startTimeMs + (timeToStart * 1000));
+                    startRound(Date.now());
                 } else {
                     document.getElementById('status-text').innerText = `Starting in ${timeLeft}s...`;
                     countdownTimeout = setTimeout(tick, 500);
@@ -638,7 +626,7 @@
         }
 
         // ==========================================
-        // ⚡ ATOMIC CRASH (Transaction Lock)
+        // ⚡ CLIENT CRASH (UI Only)
         // ==========================================
         async function triggerCrash(crashMultiplier) {
             if (gameStatus === 'crashed') return;
@@ -647,39 +635,8 @@
             
             triggerCrashUI(crashMultiplier);
             
-            let wonTheRace = false;
-            
-            try {
-                await runTransaction(db, async (transaction) => {
-                    const roundRef = doc(db, 'live_trends', currentRoundId);
-                    const roundSnap = await transaction.get(roundRef);
-                    
-                    if (!roundSnap.exists()) return;
-                    if (roundSnap.data().status === 'crashed') return; 
-                    
-                    transaction.update(roundRef, {
-                        status: 'crashed',
-                        crashedAt: serverTimestamp(),
-                        finalMultiplier: crashMultiplier
-                    });
-                    
-                    wonTheRace = true;
-                });
-            } catch(e) {
-                console.warn("Crash transaction failed:", e);
-            }
-            
-            if (wonTheRace) {
-                try {
-                    const q = query(collection(db, 'live_bets'), where('roundId', '==', currentRoundId), where('status', '==', 'active'));
-                    const snapshot = await getDocs(q);
-                    const batch = writeBatch(db);
-                    snapshot.forEach(doc => {
-                        batch.update(doc.ref, { status: 'lost' });
-                    });
-                    await batch.commit();
-                } catch(e) { console.warn("Bet cleanup failed:", e); }
-            }
+            // Note: We DO NOT write to the database here anymore. 
+            // The Admin Dashboard handles updating the round status to 'crashed'.
         }
 
         function triggerCrashUI(crashMultiplier) {
@@ -716,16 +673,6 @@
                 if (timeLeft <= 0) {
                     clearInterval(countdownOverlayInterval);
                     overlay.classList.remove('active');
-                    
-                    // Only try to create a round if we are still crashed (no admin round was found)
-                    const tryCreate = async () => {
-                        if (gameStatus !== 'crashed') return; 
-                        await createNewRoundViaVercel();
-                        if (gameStatus === 'crashed') {
-                            setTimeout(tryCreate, 2000); 
-                        }
-                    };
-                    tryCreate();
                 }
             }, 1000);
         }
@@ -797,7 +744,7 @@
 
                 playClick(); 
                 
-                myBetId = 'pending'; // Will be updated by the live_bets listener
+                myBetId = 'pending'; 
                 isPlaying = true;
                 hasBetThisRound = true;
                 updateUIState();
@@ -817,7 +764,6 @@
             
             const cashoutMultiplier = currentMultiplier;
             
-            // Disable button immediately to prevent double-clicks
             document.getElementById('action-btn').disabled = true;
 
             try {
