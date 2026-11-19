@@ -218,6 +218,39 @@ module.exports = async (req, res) => {
       return res.status(200).json({ success: true, roundId: roundRef.id, crashPoint: parseFloat(crashPoint) });
     }
 
+    // ==========================================
+    // ACTION 5: ADMIN CRASHES ROUND (For Dashboard)
+    // ==========================================
+    if (action === 'admin_crash_round') {
+      const userDoc = await db.collection('users').doc(uid).get();
+      if (!userDoc.exists || userDoc.data().role !== 'admin') {
+        return res.status(403).json({ error: "Unauthorized. Admin access required." });
+      }
+
+      const finalMultiplier = parseFloat(crashPoint);
+      if (!roundId || isNaN(finalMultiplier)) throw new Error("Missing round ID or crash point.");
+
+      await db.collection('live_trends').doc(roundId).update({
+        status: 'crashed',
+        finalMultiplier: finalMultiplier,
+        crashedAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      // Mark all active bets for this round as lost
+      const betsSnap = await db.collection('live_bets')
+        .where('roundId', '==', roundId)
+        .where('status', '==', 'active')
+        .get();
+      
+      const batch = db.batch();
+      betsSnap.forEach(doc => {
+        batch.update(doc.ref, { status: 'lost' });
+      });
+      await batch.commit();
+
+      return res.status(200).json({ success: true });
+    }
+
     return res.status(400).json({ error: "Invalid action." });
 
   } catch (error) {
