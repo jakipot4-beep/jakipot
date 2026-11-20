@@ -2398,7 +2398,7 @@
             document.getElementById('engine-state-display').innerText = "Betting Phase (10s)...";
             document.getElementById('engine-state-display').style.color = "var(--gold)";
 
-            // 🚨 FIXED: Get the crash point for this specific round!
+            // Get the crash point for this specific round
             currentCrashPoint = crashSequence[currentRoundIndex];
 
             try {
@@ -2409,7 +2409,6 @@
                         'Content-Type': 'application/json', 
                         'Authorization': `Bearer ${token}` 
                     },
-                    // 🚨 FIXED: Send the crashPoint to Vercel!
                     body: JSON.stringify({ 
                         action: 'admin_create_round',
                         crashPoint: currentCrashPoint 
@@ -2420,7 +2419,6 @@
                 if (!data.success) throw new Error(data.error || "Failed to create round");
 
                 currentRoundId = data.roundId;
-                // Use the crash point returned by Vercel (which matches what we sent)
                 currentCrashPoint = data.crashPoint;
 
                 try {
@@ -2434,6 +2432,11 @@
 
                 await new Promise(r => engineTimeout = setTimeout(r, 10000));
                 if (!engineRunning) return;
+
+                // ✅ Sync the client to start flying
+                try {
+                    await updateDoc(doc(db, 'live_trends', currentRoundId), { status: 'running' });
+                } catch(e) { console.warn("Could not update status to running:", e); }
 
                 document.getElementById('engine-state-display').innerText = "Plane is flying!";
                 document.getElementById('engine-state-display').style.color = "var(--emerald)";
@@ -2453,7 +2456,21 @@
                             document.getElementById('engine-multiplier-display').style.color = "var(--danger)";
                             document.getElementById('engine-multiplier-display').innerText = currentCrashPoint.toFixed(2) + "x CRASHED";
                             
-                            await updateDoc(doc(db, 'live_trends', currentRoundId), { status: 'crashed', crashedAt: serverTimestamp() });
+                            // ✅ SECURE CRASH VIA VERCEL
+                            try {
+                                await fetch('https://jakipot.vercel.app/api/crash', {
+                                    method: 'POST',
+                                    headers: { 
+                                        'Content-Type': 'application/json', 
+                                        'Authorization': `Bearer ${await currentAdmin.getIdToken()}` 
+                                    },
+                                    body: JSON.stringify({ 
+                                        action: 'admin_crash_round',
+                                        roundId: currentRoundId,
+                                        crashPoint: currentCrashPoint
+                                    })
+                                });
+                            } catch(err) { console.warn('Crash update failed:', err); }
                             
                             document.getElementById('engine-state-display').innerText = "Crashed! Waiting for next round...";
                             engineTimeout = setTimeout(() => { currentRoundIndex++; runRound(); }, 5000);
