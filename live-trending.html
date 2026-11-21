@@ -464,7 +464,7 @@
         // GAME STATE LISTENER
         // ==========================================
         function listenToGameState() {
-            // ✅ FIX: Just get the absolute latest round. No complex composite indexes required.
+            // Just get the absolute latest round. No complex composite indexes required.
             const q = query(collection(db, 'live_trends'), orderBy('createdAt', 'desc'), limit(1));
             
             onSnapshot(q, (snapshot) => {
@@ -487,6 +487,7 @@
                 if (!data.startTime) return; 
 
                 const startTimeMs = data.startTime.toMillis();
+                const now = Date.now();
                 
                 if (currentRoundId !== roundDoc.id) {
                     currentRoundId = roundDoc.id;
@@ -503,14 +504,19 @@
                     subscribeToLiveBets(currentRoundId);
                 }
                 
-                // ✅ PERFECT SYNC: If the Admin Dashboard starts the round, we fly instantly.
+                // PERFECT SYNC: If the Admin Dashboard starts the round, we fly instantly.
                 if (data.status === 'running') {
                     if (gameStatus === 'waiting' || gameStatus === 'idle') {
                         startRound(Date.now()); 
                     }
                 } else if (data.status === 'waiting') {
                     if (gameStatus === 'idle' || gameStatus === 'crashed') {
-                        startCountdown(startTimeMs);
+                        // 🚨 AUTO-START FIX: If the round is older than 15 seconds, start automatically!
+                        if (now - startTimeMs > 15000) {
+                            startRound(Date.now());
+                        } else {
+                            startCountdown(startTimeMs);
+                        }
                     }
                 }
             });
