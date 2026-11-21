@@ -481,8 +481,23 @@
                     if (gameStatus !== 'crashed') {
                         triggerCrashUI(data.finalMultiplier || data.crashPoint);
                     }
+
+                    // 🚨 BACKUP 2: If the latest round has been crashed for > 20s, force create a new one
+                    if (data.crashedAt) {
+                        const crashedTime = data.crashedAt.toMillis();
+                        if (Date.now() - crashedTime > 20000) {
+                            if (!window.forceNewRoundTriggered) {
+                                window.forceNewRoundTriggered = true;
+                                console.log("Game stuck on crashed. Creating fallback round...");
+                                createNewRoundViaVercel();
+                                setTimeout(() => { window.forceNewRoundTriggered = false; }, 15000);
+                            }
+                        }
+                    }
                     return;
                 }
+
+                window.forceNewRoundTriggered = false;
 
                 if (!data.startTime) return; 
 
@@ -504,7 +519,7 @@
                     subscribeToLiveBets(currentRoundId);
                 }
                 
-                // PERFECT SYNC: If the Admin Dashboard starts the round, we fly instantly.
+                // ✅ PERFECT SYNC: If the Admin Dashboard starts the round, we fly instantly.
                 if (data.status === 'running') {
                     if (gameStatus === 'waiting' || gameStatus === 'idle') {
                         startRound(Date.now()); 
@@ -679,6 +694,12 @@
                 if (timeLeft <= 0) {
                     clearInterval(countdownOverlayInterval);
                     overlay.classList.remove('active');
+                    
+                    // 🚨 BACKUP 1: If the Admin didn't create a new round after 10 seconds, create one!
+                    if (gameStatus === 'crashed') {
+                        console.log("No new round detected. Calling Vercel fallback...");
+                        await createNewRoundViaVercel();
+                    }
                 }
             }, 1000);
         }
